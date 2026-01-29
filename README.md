@@ -57,18 +57,18 @@ cp -r /path/to/agent-skills/skills/* .cursor/skills/
 
 Then commit the `.cursor/skills/` directory to your repository.
 
-### Option 4: Using npx (Coming Soon)
+### Option 4: Using npx skills
 
 ```bash
 # Install individual skills
-npx @lyonproducer/skills add angular/core
-npx @lyonproducer/skills add ionic/angular/architect
+npx skills add https://github.com/lyonproducer/agent-skills add --skill angular/core
+npx skills add https://github.com/lyonproducer/agent-skills add --skill ionic/angular/architect
 
 # Or install all Angular + Ionic skills
-npx @lyonproducer/skills add angular-ionic-suite
+npx skills add https://github.com/lyonproducer/agent-skills
 ```
 
-## Skill Locations
+## Cursor Skill Locations
 
 | Location | Scope | Use Case |
 |----------|-------|----------|
@@ -145,8 +145,8 @@ Angular Core Foundation
 ├─→ Forms (when needed)
 ├─→ Performance (when optimizing)
 └─→ Ionic Architecture
-        ↓
-    └─→ Capacitor Plugins (for mobile features)
+      ↓
+    └─→ Capacitor (for mobile features)
 ```
 
 **Key Principle**: Always load `angular-core` first, then other skills as needed.
@@ -258,7 +258,7 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 
 ## Credits
 
-Created by [789.mx](https://github.com/lyonproducer)
+Created by [Lyon Incode](https://github.com/lyonproducer)
 
 Inspired by:
 - [Vercel AI SDK Skills](https://github.com/vercel/ai-sdk-skills)
@@ -280,4 +280,4 @@ Inspired by:
 
 ---
 
-**Built with ❤️ for the Angular + Ionic community**
+**Built with ❤️ for the Ionic + Angular community**
