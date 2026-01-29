@@ -25,6 +25,43 @@ This repository provides curated skills that teach AI assistants how to work wit
 
 See [AGENTS.md](AGENTS.md) for detailed skill tree, triggers, and usage patterns.
 
+## 🏗️ Skills Architecture
+
+```
+Root
+├── AGENTS.md          ← Skill tree & triggers
+├── README.md          ← Installation guide
+├── CHANGES.md         ← Change log
+├── SUMMARY.md         ← Visual summary
+├── STATUS.md          ← This file
+├── setup.sh           ← Installation script
+├── .gitignore         ← Git exclusions
+│
+└── skills/
+    ├── angular/
+    │   ├── core/                          [207 lines]
+    │   │   └── SKILL.md
+    │   ├── forms/                         [125 lines]
+    │   │   └── SKILL.md
+    │   └── performance/                   [134 lines]
+    │       └── SKILL.md
+    │
+    └── ionic/
+        └── angular/
+            ├── architect/                 [335 lines]
+            │   ├── SKILL.md
+            │   ├── references/
+            │   │   ├── capacitor-platform-detection.md
+            │   │   └── project-structure.md
+            │   └── templates/
+            │       ├── app-component-initial.ts
+            │       ├── example-usage.md
+            │       └── push-notification.service.ts
+            │
+            └── capacitor/                 [398 lines] ⭐ NEW
+                └── SKILL.md
+```
+
 ## Quick Start
 
 ### Option 1: Install All Skills (Recommended)
