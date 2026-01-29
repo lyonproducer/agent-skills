@@ -48,14 +48,14 @@ Angular + Ionic Project
 │   ├── Route lazy loading
 │   └── SSR & hydration
 │
-├── ionic-angular-architecture(When architecting Ionic apps)
+├── ionic-angular-architecture (When architecting Ionic apps)
 │   ├── Scope Rule enforcement
 │   ├── Screaming Architecture
 │   ├── Project structure (tabs/menu/pages)
 │   ├── Routing patterns
 │   └── Component placement decisions
 │
-└── ionic-angular-capacitor(When configuring mobile features)
+└── ionic-angular-capacitor (When configuring mobile features)
     ├── Platform detection (Capacitor.getPlatform())
     ├── iOS status bar configuration
     ├── Push notifications service
@@ -208,10 +208,10 @@ When adding new skills:
 
 | Skill | Angular Version | Ionic Version | Capacitor Version |
 |-------|----------------|---------------|-------------------|
-| angular-core | 20+ | N/A | N/A |
-| angular-forms | 20+ (21+ for Signal Forms) | N/A | N/A |
-| angular-performance | 20+ | N/A | N/A |
-| ionic-angular-architecture| 20+ | 8+ | N/A |
+| angular-core | 20+ | 8+ | N/A |
+| angular-forms | 20+ (21+ for Signal Forms) | 8+ | N/A |
+| angular-performance | 20+ | 8+ | N/A |
+| ionic-angular-architecture| 20+ | 8+ | 6+ |
 | ionic-angular-capacitor| 20+ | 8+ | 6+ |
 
 ## Support
