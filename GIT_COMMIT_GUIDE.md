@@ -13,7 +13,7 @@ cd "/Users/leonardohernandez/Desktop/Trabajo/Lyon incode/agents-skill"
 git add -A
 
 # Commit with descriptive message
-git commit -m "$(cat <<'EOF'
+git commit -m "
 feat: reorganize skills and create hierarchical folder structure
 
 ## New Folder Structure
