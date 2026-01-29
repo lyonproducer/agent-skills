@@ -273,7 +273,7 @@ if (Capacitor.isPluginAvailable('Camera')) {
 // Usage
 import { AuthService } from '@core/services/auth.service';
 import { HeaderComponent } from '@shared/components/header.component';
-import { HomePage } from '@pages/tabs/home/home';
+import { HomePage } from '@pages/in-app/tabs/home/home';
 ```
 
 ---
@@ -281,10 +281,11 @@ import { HomePage } from '@pages/tabs/home/home';
 ## 🎯 File Naming
 
 ```
-✅ feature.ts          (not feature.component.ts)
-✅ auth.service.ts     (keep .service suffix)
-✅ auth.guard.ts       (keep .guard suffix)
-✅ format-date.pipe.ts (keep .pipe suffix)
+✅ feature.page.ts      (keep .page.ts)
+✅ card.component.ts    (keep .component.ts)
+✅ auth.service.ts      (keep .service suffix)
+✅ auth.guard.ts        (keep .guard suffix)
+✅ format-date.pipe.ts  (keep .pipe suffix)
 ```
 
 ---

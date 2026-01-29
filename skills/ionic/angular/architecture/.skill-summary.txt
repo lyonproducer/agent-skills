@@ -198,7 +198,7 @@ angular-ionic-architect/
 🤝 MAINTENANCE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Maintained by: 789.mx Development Team
+  Maintained by: Lyon Incode
   Created: 2026-01-28
   Last Updated: 2026-01-28
 

@@ -237,7 +237,7 @@ To improve this skill:
 
 ## 📄 License
 
-Created by 789.mx for internal use.
+Created by Lyon Incode.
 
 ---
 

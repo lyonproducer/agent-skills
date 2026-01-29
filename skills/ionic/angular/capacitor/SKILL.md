@@ -4,7 +4,7 @@ description: >
   Capacitor mobile plugins configuration: platform detection, status bar, push notifications, storage.
   Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.
 metadata:
-  author: 789.mx
+  author: Lyon Incode
   version: "1.0"
 ---
 
@@ -207,7 +207,7 @@ bootstrapApplication(AppComponent, {
     importProvidersFrom(
       IonicStorageModule.forRoot({
         name: DB_INDEX_NAME,
-        storeName: DB_INDEX_NAME,
+        storeName: DB_STORE_NAME,
       })
     ),
   ],
@@ -219,6 +219,7 @@ bootstrapApplication(AppComponent, {
 ```typescript
 export const DB_INDEX_NAME = '__myapp_db';
 export const DB_STORE_NAME = '__myapp_store';
+export const DB_TOKEN_NAME = '__myapp_token';
 ```
 
 **Usage in services:**

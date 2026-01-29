@@ -4,7 +4,7 @@ description: >
   Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns.
   Trigger: When architecting Ionic apps, organizing project structure, or applying Scope Rule to Angular + Ionic projects.
 metadata:
-  author: 789.mx
+  author: Lyon Incode
   version: "1.0"
 ---
 
@@ -39,77 +39,96 @@ Your structures must IMMEDIATELY communicate what the application does:
 
 ```
 src/
-  app/
-    pages/
-      start-app/                     # Onboarding & authentication pages
-        login/
-          login.ts
-          login.html
-          login.scss
-        register/
-          register.ts
-      
-      tabs/                          # Main tab-based navigation
-        home/
-          home.ts
-          components/                # Tab-specific components
-            feature-card.ts
-        profile/
-          profile.ts
-      
-      menu/                          # Side menu navigation (alternative to tabs)
-        dashboard/
-          dashboard.ts
-        settings/
-          settings.ts
-      
-      out-app/                       # Utility pages (404, FAQ, maintenance)
-        not-found/
-          not-found.ts
-        maintenance/
-          maintenance.ts
-    
-    shared/                          # ONLY for 2+ tabs/pages usage
-      components/                    # Shared standalone components
-        headers/
-          header-back.ts
-          header-main.ts
-        modals/
-          confirmation-modal.ts
-        cards/
-          info-card.ts
-      services/                      # Shared business logic services
-        data-sync.service.ts
-      guards/                        # Shared route guards
-        auth.guard.ts
-      pipes/                         # Shared pipes
-        date-format.pipe.ts
-      directives/                    # Shared directives
-        auto-focus.directive.ts
-      signals/                       # Global signal stores
-        user.store.ts
-      constants/                     # Shared constants
-        database.constants.ts
-        api.constants.ts
-    
-    core/                            # Singleton services & app-wide concerns
-      services/
-        auth.service.ts              # Authentication
-        api.service.ts               # HTTP client wrapper
-        push-notification.service.ts # Push notifications (Capacitor)
-        network.service.ts           # Network status
-        storage.service.ts           # Ionic Storage wrapper
-      interceptors/
-        app-http.interceptor.ts      # HTTP interceptor
-        auth.interceptor.ts          # JWT injection
-      guards/
-        auth.guard.ts                # Global auth guard
-    
-    app.component.ts                 # Root component
-    app.config.ts                    # App configuration
-    app.routes.ts                    # Route configuration
-    
-  main.ts                            # Bootstrap
+├── app/
+│   ├── core/                          # Singleton services & app-wide concerns
+│   │   ├── services/                  # Core plugins Services
+│   │   │   ├── auth.service.ts
+│   │   │   ├── api.service.ts
+│   │   │   ├── push-notification.service.ts
+│   │   │   ├── network.service.ts
+│   │   │   └── storage.service.ts
+│   │   ├── interceptors/
+│   │   │   ├── app-http.interceptor.ts
+│   │   │   └── crashlytics-error-handler.interceptor.ts
+│   │   └── guards/
+│   │       └── auth.guard.ts          # Global auth guard
+│   │       └── unauth.guard.ts        # Global unauth guard
+│   │
+│   ├── shared/                        # ONLY for 2+ (tabs | menu | feature)/pages usage
+│   │   ├── components/
+│   │   │   ├── headers/
+│   │   │   │   ├── header-back.ts
+│   │   │   │   └── header-main.ts
+│   │   │   ├── modals/
+│   │   │   │   └── confirmation-modal.ts
+│   │   │   └── cards/
+│   │   │       └── info-card.ts
+│   │   ├── services/
+│   │   │   └── data-sync.service.ts
+│   │   ├── guards/
+│   │   │   └── auth.guard.ts          # Shared route guards
+│   │   ├── pipes/
+│   │   │   └── date-format.pipe.ts
+│   │   ├── directives/
+│   │   │   └── auto-focus.directive.ts
+│   │   ├── signals/
+│   │   │   └── user.store.ts
+│   │   └── constants/
+│   │       ├── database.constants.ts
+│   │       └── api.constants.ts
+│   │
+│   ├── pages/
+│   │   ├── start-app/                 # Onboarding & authentication
+│   │   │   ├── login/
+│   │   │   │   ├── login.page.ts
+│   │   │   │   ├── login.page.html
+│   │   │   │   └── login.page.scss
+│   │   │   ├── register/
+│   │   │   │   └── register.page.ts
+│   │   │   └── start-app.routes.ts
+│   │   │
+│   │   ├── in-app/                    # Logged-in experience
+│   │   │   ├── tabs/                  # Main tab-based navigation (tabs only usage)
+│   │   │   │   ├── home/
+│   │   │   │   │   ├── home.page.ts
+│   │   │   │   │   └── components/    # Tab-specific components
+│   │   │   │   │       └── home-card.component.ts    # Used ONLY by home page
+│   │   │   │   ├── profile/
+│   │   │   │   │   └── profile.page.ts
+│   │   │   │   ├── tabs.routes.ts
+│   │   │   │   ├── tabs.page.ts
+│   │   │   │   ├── tabs.page.html
+│   │   │   │   └── tabs.page.scss
+│   │   │   │   
+│   │   │   ├── menu/                  # Side menu navigation for pages (menu only usage)
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   └── dashboard.page.ts
+│   │   │   │   ├── settings/
+│   │   │   │   │   └── settings.page.ts
+│   │   │   │   └── menu.routes.ts
+│   │   │   │   
+│   │   │   ├── features/               # Pages don't included on menu and tabs 
+│   │   │   │   ├── payment/
+│   │   │   │   │   ├── payment.page.ts
+│   │   │   │   │   └── components/     # payment-specific components
+│   │   │   │   │       └── payment-card.component.ts   # Used ONLY by payment page
+│   │   │   │   ├── withdraw/
+│   │   │   │   │   └── withdraw.page.ts
+│   │   │   │   └── features.routes.ts
+│   │   │   └── in-app.routes.ts
+│   │   │
+│   │   └── out-app/                   # Utility pages
+│   │       ├── not-found/
+│   │       │   └── not-found.page.ts
+│   │       ├── maintenance/
+│   │       │    └── maintenance.page.ts
+│   │       └── out-app.routes.ts
+│   │
+│   ├── app.component.ts
+│   ├── app.config.ts
+│   └── app.routes.ts
+│
+└── main.ts                        # Bootstrap
 ```
 
 ### Path Aliases Configuration
@@ -141,20 +160,70 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+  {
+    path: '',
+    loadChildren: () => import('./pages/start-app/start-app.routes').then(m => m.START_APP_ROUTES),
+  },
+  {
+    path: '',
+    loadChildren: () => import('./pages/in-app/in-app.routes').then(m => m.IN_APP_ROUTES),
+  },
+  {
+    path: '',
+    loadChildren: () => import('./pages/out-app/out-app.routes').then(m => m.OUT_APP_ROUTES),
+  },
+  {
+    path: '**',
+    redirectTo: 'not-found',
+  },
+];
+```
+
+### In-App Routing Pattern
+
+```typescript
+// pages/in-app/in-app.routes.ts
+import { Routes } from '@angular/router';
+
+export const IN_APP_ROUTES: Routes = [
+  {
+    path: '',
     redirectTo: 'tabs',
     pathMatch: 'full',
   },
   {
     path: 'tabs',
-    loadComponent: () => import('./pages/tabs/tabs').then(m => m.TabsPage),
+    loadChildren: () => import('./tabs/tabs.routes').then(m => m.tabsRoutes),
+  },
+  {
+    path: 'menu',
+    loadChildren: () => import('./menu/menu.routes').then(m => m.menuRoutes),
+  },
+];
+```
+
+### Tab-Based Navigation
+
+```typescript
+// pages/in-app/tabs/tabs.routes.ts
+import { Routes } from '@angular/router';
+import { TabsPage } from './tabs.page';
+
+export const tabsRoutes: Routes = [
+  {
+    path: '',
+    component: TabsPage,
     children: [
       {
         path: 'home',
-        loadComponent: () => import('./pages/tabs/home/home').then(m => m.HomePage),
+        loadComponent: () => import('./home/home.page').then(m => m.HomePage),
       },
       {
         path: 'profile',
-        loadComponent: () => import('./pages/tabs/profile/profile').then(m => m.ProfilePage),
+        loadComponent: () => import('./profile/profile.page').then(m => m.ProfilePage),
       },
       {
         path: '',
@@ -171,6 +240,7 @@ export const routes: Routes = [
 ```typescript
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
+import { TABS } from './tabs.constants';
 
 @Component({
   selector: 'app-tabs',
@@ -178,43 +248,19 @@ import { IonicModule } from '@ionic/angular';
   template: `
     <ion-tabs>
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="home">
-          <ion-icon name="home"></ion-icon>
-          <ion-label>Home</ion-label>
-        </ion-tab-button>
-        
-        <ion-tab-button tab="profile">
-          <ion-icon name="person"></ion-icon>
-          <ion-label>Profile</ion-label>
-        </ion-tab-button>
+        @for (tab of tabsItems; track tab.name) {
+          <ion-tab-button [tab]="tab.name">
+            <ion-icon [name]="tab.icon"></ion-icon>
+            <ion-label>{{ tab.label }}</ion-label>
+          </ion-tab-button>
+        }
       </ion-tab-bar>
     </ion-tabs>
   `,
 })
-export class TabsPage {}
-```
-
-### Menu-Based Navigation
-
-```typescript
-// app.routes.ts
-export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'menu',
-    pathMatch: 'full',
-  },
-  {
-    path: 'menu',
-    loadComponent: () => import('./pages/menu/menu').then(m => m.MenuPage),
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./pages/menu/dashboard/dashboard').then(m => m.DashboardPage),
-      },
-    ],
-  },
-];
+export class TabsPage {
+  readonly tabsItems = TABS;
+}
 ```
 
 ### Modal Navigation
@@ -259,7 +305,7 @@ When analyzing component/service placement, you MUST:
 
 | Component Type | Used In | Placement | Reason |
 |----------------|---------|-----------|--------|
-| `ProductCard` | Home tab only | `pages/tabs/home/components/` | Scope Rule: 1 tab |
+| `ProductCard` | Home tab only | `pages/in-app/tabs/home/components/` | Scope Rule: 1 tab |
 | `HeaderBack` | Home, Profile, Settings | `shared/components/headers/` | Scope Rule: 3+ tabs |
 | `AuthService` | Entire app | `core/services/` | Singleton service |
 | `DateFormatPipe` | 2 tabs | `shared/pipes/` | Scope Rule: 2+ tabs |
@@ -287,19 +333,20 @@ Before finalizing any architectural decision:
 // ❌ WRONG - Don't use generic "features" folder
 src/app/features/
 
-// ✅ CORRECT - Use tabs or menu
-src/app/pages/tabs/
-src/app/pages/menu/
+// ✅ CORRECT - Use tabs, menu or feature in app folder
+src/app/pages/in-app/tabs/
+src/app/pages/in-app/menu/
+src/app/pages/in-app/features/
 ```
 
 ### Don't: Violate Scope Rule
 
 ```typescript
 // ❌ WRONG - Component used in 3 tabs but placed locally
-pages/tabs/home/components/shared-card.ts  // Used in home, profile, settings
+pages/in-app/tabs/home/components/shared-card.ts  // Used in home, profile, settings
 
 // ✅ CORRECT
-shared/components/shared-card.ts
+shared/components/cards/shared-card.ts
 ```
 
 ### Don't: Mix Navigation Patterns

@@ -354,4 +354,4 @@ cp templates/* /your/project/
 
 **Last Updated**: 2026-01-28  
 **Version**: 1.0.0  
-**Maintained by**: 789.mx Development Team
+**Maintained by**: Lyon Incode

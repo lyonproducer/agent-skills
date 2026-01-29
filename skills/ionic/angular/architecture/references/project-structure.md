@@ -13,130 +13,95 @@
 ```
 src/
 ├── app/
-│   ├── pages/                          # All page components
-│   │   │
-│   │   ├── start-app/                 # 🔐 Onboarding & Authentication
-│   │   │   ├── login/
-│   │   │   │   ├── login.ts
-│   │   │   │   ├── login.html
-│   │   │   │   └── login.scss
-│   │   │   ├── register/
-│   │   │   │   ├── register.ts
-│   │   │   │   ├── register.html
-│   │   │   │   └── register.scss
-│   │   │   ├── verify-account/
-│   │   │   ├── forgot-password-email/
-│   │   │   ├── forgot-password-code/
-│   │   │   └── forgot-password-confirm/
-│   │   │
-│   │   ├── tabs/                      # 📱 Main App Tabs
-│   │   │   ├── home/
-│   │   │   │   ├── home.ts
-│   │   │   │   ├── home.html
-│   │   │   │   ├── home.scss
-│   │   │   │   └── components/        # Home-specific components
-│   │   │   │       ├── featured-card.ts
-│   │   │   │       └── quick-actions.ts
-│   │   │   │
-│   │   │   ├── search/
-│   │   │   │   ├── search.ts
-│   │   │   │   └── components/
-│   │   │   │       └── search-filters.ts
-│   │   │   │
-│   │   │   ├── notifications/
-│   │   │   │   └── notifications.ts
-│   │   │   │
-│   │   │   └── profile/
-│   │   │       ├── profile.ts
-│   │   │       └── components/
-│   │   │           ├── edit-information/
-│   │   │           ├── edit-email/
-│   │   │           ├── edit-password/
-│   │   │           └── delete-account/
-│   │   │
-│   │   └── out-app/                   # 🔧 Utility Pages
-│   │       ├── not-found/
-│   │       │   └── not-found.ts
-│   │       ├── faq/
-│   │       │   └── faq.ts
-│   │       ├── favorites/
-│   │       │   └── favorites.ts
-│   │       ├── privacy-policy/
-│   │       └── terms-of-service/
-│   │
-│   ├── shared/                        # 🔄 Shared Across 2+ Features
-│   │   ├── components/
-│   │   │   ├── headers/
-│   │   │   │   ├── header-back.ts     # Used by multiple pages
-│   │   │   │   └── header-main.ts
-│   │   │   ├── modals/
-│   │   │   │   ├── success-heading.ts
-│   │   │   │   └── confirmation-dialog.ts
-│   │   │   ├── cards/
-│   │   │   └── inputs/
-│   │   │
-│   │   ├── services/
-│   │   │   └── [shared-business-logic].service.ts
-│   │   │
-│   │   ├── guards/
-│   │   │   └── feature.guard.ts
-│   │   │
-│   │   ├── pipes/
-│   │   │   ├── format-date.pipe.ts
-│   │   │   └── currency-format.pipe.ts
-│   │   │
-│   │   ├── directives/
-│   │   │   └── auto-focus.directive.ts
-│   │   │
-│   │   └── signals/
-│   │       └── shared-state.signal.ts
-│   │
-│   ├── core/                          # 🏗️ App-Wide Singletons
-│   │   ├── services/
-│   │   │   ├── auth.service.ts       # Authentication
-│   │   │   ├── api.service.ts        # HTTP wrapper
-│   │   │   ├── storage.service.ts    # Local storage
-│   │   │   ├── network.service.ts    # Network monitoring
-│   │   │   ├── router.service.ts     # Router helper
-│   │   │   ├── utils.service.ts      # Utilities
-│   │   │   ├── screensize.service.ts # Screen size detection
-│   │   │   └── push-notification.service.ts  # 🚨 Required for mobile
-│   │   │
+│   ├── core/                          # Singleton services & app-wide concerns
+│   │   ├── services/                  # Core plugins Services
+│   │   │   ├── auth.service.ts
+│   │   │   ├── api.service.ts
+│   │   │   ├── push-notification.service.ts
+│   │   │   ├── network.service.ts
+│   │   │   ├── storage.service.ts
 │   │   ├── interceptors/
 │   │   │   ├── app-http.interceptor.ts
-│   │   │   └── error.interceptor.ts
-│   │   │
-│   │   ├── guards/
-│   │   │   ├── auth.guard.ts
-│   │   │   └── role.guard.ts
-│   │   │
-│   │   └── models/
-│   │       ├── user.model.ts
-│   │       └── api-response.model.ts
+│   │   │   └── crashlytics-error-handler.interceptor.ts
+│   │   └── guards/
+│   │       └── auth.guard.ts          # Global auth guard
+│   │       └── unauth.guard.ts        # Global unauth guard
 │   │
-│   ├── app.component.ts               # 🚨 Must include iOS config
-│   ├── app.component.html
-│   ├── app.component.scss
-│   ├── app.config.ts                  # App configuration
-│   └── app.routes.ts                  # Route definitions
+│   ├── shared/                        # ONLY for 2+ (tabs | menu | feature)/pages usage
+│   │   ├── components/
+│   │   │   ├── headers/
+│   │   │   │   ├── header-back.ts
+│   │   │   │   └── header-main.ts
+│   │   │   ├── modals/
+│   │   │   │   └── confirmation-modal.ts
+│   │   │   └── cards/
+│   │   │       └── info-card.ts
+│   │   ├── services/
+│   │   │   └── data-sync.service.ts
+│   │   ├── guards/
+│   │   │   └── auth.guard.ts          # Shared route guards
+│   │   ├── pipes/
+│   │   │   └── date-format.pipe.ts
+│   │   ├── directives/
+│   │   │   └── auto-focus.directive.ts
+│   │   ├── signals/
+│   │   │   └── user.store.ts
+│   │   └── constants/
+│   │       ├── database.constants.ts
+│   │       └── api.constants.ts
+│   │
+│   ├── pages/
+│   │   ├── start-app/                 # Onboarding & authentication
+│   │   │   ├── login/
+│   │   │   │   ├── login.page.ts
+│   │   │   │   ├── login.page.html
+│   │   │   │   └── login.page.scss
+│   │   │   ├── register/
+│   │   │   │   └── register.page.ts
+│   │   │   └── start-app.routes.ts
+│   │   │
+│   │   ├── in-app/                    # Logged-in experience
+│   │   │   ├── tabs/                  # Main tab-based navigation (tabs only usage)
+│   │   │   │   ├── home/
+│   │   │   │   │   ├── home.page.ts
+│   │   │   │   │   └── components/    # Tab-specific components
+│   │   │   │   │       └── home-card.component.ts      # Used ONLY by home page
+│   │   │   │   ├── profile/
+│   │   │   │   │   └── profile.page.ts
+│   │   │   │   ├── tabs.routes.ts
+│   │   │   │   ├── tabs.page.ts
+│   │   │   │   ├── tabs.page.html
+│   │   │   │   └── tabs.page.scss
+│   │   │   │   
+│   │   │   ├── menu/                  # Side menu navigation for pages (menu only usage)
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   └── dashboard.page.ts
+│   │   │   │   ├── settings/
+│   │   │   │   │   └── settings.page.ts
+│   │   │   │   └── menu.routes.ts
+│   │   │   │   
+│   │   │   ├── features/               # Pages don't included on menu and tabs 
+│   │   │   │   ├── payment/
+│   │   │   │   │   ├── payment.page.ts
+│   │   │   │   │   └── components/
+│   │   │   │   │       └── payment-card.component.ts
+│   │   │   │   ├── withdraw/
+│   │   │   │   │   └── withdraw.page.ts
+│   │   │   │   └── features.routes.ts
+│   │   │   └── in-app.routes.ts
+│   │   │
+│   │   └── out-app/                   # Utility pages
+│   │       ├── not-found/
+│   │       │   └── not-found.page.ts
+│   │       ├── maintenance/
+│   │       │    └── maintenance.page.ts
+│   │       └── out-app.routes.ts
+│   │
+│   ├── app.component.ts
+│   ├── app.config.ts
+│   └── app.routes.ts
 │
-├── assets/                            # Static assets
-│   ├── images/
-│   ├── icons/
-│   └── fonts/
-│
-├── environments/                      # Environment configs
-│   ├── environment.ts
-│   └── environment.prod.ts
-│
-├── theme/                             # Ionic theming
-│   └── variables.scss
-│
-├── global.scss                        # Global styles
-├── index.html
-├── main.ts                            # App bootstrap
-└── polyfills.ts
-
+└── main.ts                        # Bootstrap
 ```
 
 ## Decision Tree for Component Placement
@@ -172,7 +137,7 @@ src/
 ### 1. Pages Structure
 
 ```typescript
-// pages/tabs/home/home.ts
+// pages/in-app/tabs/home/home.ts
 @Component({
   selector: 'app-home',
   imports: [IonicModule, HeaderMainComponent],
@@ -189,7 +154,7 @@ export class HomePage { }
 ### 2. Local Feature Components
 
 ```typescript
-// pages/tabs/home/components/featured-card.ts
+// pages/in-app/tabs/home/components/featured-card.ts
 // ✅ Used ONLY in home page → Stays local
 @Component({
   selector: 'app-featured-card',
@@ -277,39 +242,83 @@ export class AuthService {
 
 ```typescript
 // app.routes.ts
+import { Routes } from '@angular/router';
+
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'start-app',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'start-app',
-    children: [
-      {
-        path: 'login',
-        loadComponent: () => import('@pages/start-app/login/login').then(m => m.LoginPage)
-      },
-      {
-        path: 'register',
-        loadComponent: () => import('@pages/start-app/register/register').then(m => m.RegisterPage)
-      }
-    ]
+    loadChildren: () => import('./pages/start-app/start-app.routes').then(m => m.START_APP_ROUTES),
+  },
+  {
+    path: 'in-app',
+    loadChildren: () => import('./pages/in-app/in-app.routes').then(m => m.IN_APP_ROUTES),
+  },
+  {
+    path: 'out-app',
+    loadChildren: () => import('./pages/out-app/out-app.routes').then(m => m.OUT_APP_ROUTES),
+  },
+  {
+    path: '**',
+    redirectTo: 'out-app/not-found',
+  },
+];
+```
+
+### In-App Routing Pattern
+
+```typescript
+// pages/in-app/in-app.routes.ts
+import { Routes } from '@angular/router';
+
+export const IN_APP_ROUTES: Routes = [
+  {
+    path: '',
+    redirectTo: 'tabs',
+    pathMatch: 'full',
   },
   {
     path: 'tabs',
-    loadComponent: () => import('@pages/tabs/tabs').then(m => m.TabsPage),
+    loadChildren: () => import('./tabs/tabs.routes').then(m => m.tabsRoutes),
+  },
+  {
+    path: 'menu',
+    loadChildren: () => import('./menu/menu.routes').then(m => m.menuRoutes),
+  },
+];
+```
+
+### Tab-Based Navigation
+
+```typescript
+// pages/in-app/tabs/tabs.routes.ts
+import { Routes } from '@angular/router';
+import { TabsPage } from './tabs.page';
+
+export const tabsRoutes: Routes = [
+  {
+    path: '',
+    component: TabsPage,
     children: [
       {
         path: 'home',
-        loadComponent: () => import('@pages/tabs/home/home').then(m => m.HomePage)
+        loadComponent: () => import('./home/home.page').then(m => m.HomePage),
       },
       {
         path: 'profile',
-        loadComponent: () => import('@pages/tabs/profile/profile').then(m => m.ProfilePage)
-      }
-    ]
-  }
+        loadComponent: () => import('./profile/profile.page').then(m => m.ProfilePage),
+      },
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full',
+      },
+    ],
+  },
 ];
 ```
 

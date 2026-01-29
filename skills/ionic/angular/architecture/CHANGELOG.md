@@ -91,5 +91,5 @@ All notable changes to the Angular Ionic Architect skill will be documented in t
 
 ---
 
-**Maintained by**: 789.mx Development Team  
+**Maintained by**: Lyon Incode  
 **Last Updated**: 2026-01-28

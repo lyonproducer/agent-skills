@@ -105,7 +105,7 @@ export class FavoriteButtonComponent {
 Use **Capacitor.getPlatform()** for platform detection:
 
 ```typescript
-// src/app/pages/tabs/profile/components/photo-upload.ts
+// src/app/pages/in-app/tabs/profile/components/photo-upload.ts
 import { Component, inject, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
