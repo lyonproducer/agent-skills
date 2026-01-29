@@ -24,11 +24,11 @@ feat: reorganize skills and create hierarchical folder structure
 - angular-core → angular/core
 - angular-forms → angular/forms
 - angular-performance → angular/performance
-- ionic-angular-architect → ionic/angular/architect
-- ionic-angular-capacitor-plugins → ionic/angular/capacitor
+- ionic-angular-architecture→ ionic/angular/architect
+- ionic-angular-capacitor→ ionic/angular/capacitor
 
 ## New Skills Created
-- ionic-angular-capacitor-plugins (398 lines)
+- ionic-angular-capacitor(398 lines)
   * Platform detection (Capacitor.getPlatform)
   * iOS status bar configuration
   * Push notifications service
@@ -36,7 +36,7 @@ feat: reorganize skills and create hierarchical folder structure
   * Main.ts configuration
 
 ## Skills Updated
-- ionic-angular-architect (335 lines)
+- ionic-angular-architecture(335 lines)
   * Remove Capacitor content
   * Remove Angular core patterns
   * Add Ionic routing patterns
@@ -99,8 +99,8 @@ git commit -m "feat: reorganize into hierarchical folder structure and create 5 
 
 - Create angular/ and ionic/angular/ folders
 - Move skills to new hierarchical structure
-- Create ionic-angular-capacitor-plugins skill
-- Update ionic-angular-architect skill
+- Create ionic-angular-capacitorskill
+- Update ionic-angular-architectureskill
 - Add comprehensive documentation
 - Add automated installation script
 

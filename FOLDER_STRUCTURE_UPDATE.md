@@ -59,10 +59,10 @@ The `name` field in each `SKILL.md` frontmatter remains the same:
 | `angular-core` | `skills/angular/core/` |
 | `angular-forms` | `skills/angular/forms/` |
 | `angular-performance` | `skills/angular/performance/` |
-| `ionic-angular-architect` | `skills/ionic/angular/architect/` |
-| `ionic-angular-capacitor-plugins` | `skills/ionic/angular/capacitor/` |
+| `ionic-angular-architecture` | `skills/ionic/angular/architect/` |
+| `ionic-angular-capacitor` | `skills/ionic/angular/capacitor/` |
 
-**Note**: The last skill removed the `-plugins` suffix from the folder name but the skill name in the frontmatter stays as `ionic-angular-capacitor-plugins`.
+**Note**: The last skill removed the `-plugins` suffix from the folder name but the skill name in the frontmatter stays as `ionic-angular-capacitor`.
 
 ---
 

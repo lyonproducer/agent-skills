@@ -16,11 +16,12 @@ This repository provides curated skills that teach AI assistants how to work wit
 
 | Skill | Description |
 |-------|-------------|
+| **angular-architecture** | Scope Rule, project structure, file naming |
 | **angular-core** | Foundation: standalone components, signals, inject(), control flow |
 | **angular-forms** | Signal Forms (experimental) and Reactive Forms patterns |
 | **angular-performance** | Performance optimization with NgOptimizedImage, @defer, SSR |
-| **ionic-angular-architect** | Project architecture with Scope Rule and routing patterns |
-| **ionic-angular-capacitor-plugins** | Capacitor configuration, platform detection, push notifications |
+| **ionic-angular-architecture** | Project architecture with Scope Rule and routing patterns |
+| **ionic-angular-capacitor** | Capacitor configuration, platform detection, push notifications |
 
 See [AGENTS.md](AGENTS.md) for detailed skill tree, triggers, and usage patterns.
 
@@ -113,7 +114,7 @@ export class UserProfile {
 ### Example 2: Deciding Component Placement
 
 ```typescript
-// AI will use ionic-angular-architect skill
+// AI will use ionic-angular-architectureskill
 // Prompt: "Where should I place a HeaderBack component used in 3 tabs?"
 
 // AI Response: "Following the Scope Rule:
@@ -125,7 +126,7 @@ export class UserProfile {
 ### Example 3: Platform Detection
 
 ```typescript
-// AI will use ionic-angular-capacitor-plugins skill
+// AI will use ionic-angular-capacitorskill
 // Prompt: "How do I detect if app is running on iOS?"
 
 // Result: Capacitor platform detection
@@ -238,7 +239,7 @@ Want to create your own skills? See the [skill-creator](https://github.com/anthr
 
 Skills are designed to work together. Load order:
 1. `angular-core` (foundation)
-2. Specific skill (`angular-forms`, `ionic-angular-architect`, etc.)
+2. Specific skill (`angular-forms`, `ionic-angular-architecture`, etc.)
 
 ## Contributing
 

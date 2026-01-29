@@ -22,8 +22,8 @@ When working on Angular + Ionic projects, AI assistants automatically load relev
 
 | Skill | Description | File |
 |-------|-------------|------|
-| `ionic-angular-architect` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](skills/ionic/angular/architect/SKILL.md) |
-| `ionic-angular-capacitor-plugins` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](skills/ionic/angular/capacitor/SKILL.md) |
+| `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](skills/ionic/angular/architect/SKILL.md) |
+| `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](skills/ionic/angular/capacitor/SKILL.md) |
 
 ## Skill Tree & Dependencies
 
@@ -48,14 +48,14 @@ Angular + Ionic Project
 │   ├── Route lazy loading
 │   └── SSR & hydration
 │
-├── ionic-angular-architect (When architecting Ionic apps)
+├── ionic-angular-architecture(When architecting Ionic apps)
 │   ├── Scope Rule enforcement
 │   ├── Screaming Architecture
 │   ├── Project structure (tabs/menu/pages)
 │   ├── Routing patterns
 │   └── Component placement decisions
 │
-└── ionic-angular-capacitor-plugins (When configuring mobile features)
+└── ionic-angular-capacitor(When configuring mobile features)
     ├── Platform detection (Capacitor.getPlatform())
     ├── iOS status bar configuration
     ├── Push notifications service
@@ -74,13 +74,13 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 | Working with forms | `angular-forms` | Signal Forms vs Reactive Forms patterns |
 | Optimizing images | `angular-performance` | NgOptimizedImage requirements |
 | Lazy loading components | `angular-performance` | @defer patterns and triggers |
-| Structuring Ionic project | `ionic-angular-architect` | Scope Rule, tabs/menu structure |
-| Deciding component placement | `ionic-angular-architect` | Scope Rule: 1 tab = local, 2+ tabs = shared |
-| Setting up navigation | `ionic-angular-architect` | Tab-based vs menu-based patterns |
-| Detecting iOS/Android | `ionic-angular-capacitor-plugins` | Capacitor.getPlatform() - NEVER Ionic Platform |
-| Configuring status bar | `ionic-angular-capacitor-plugins` | iOS status bar setup in app.component |
-| Setting up push notifications | `ionic-angular-capacitor-plugins` | Push notification service structure |
-| Configuring storage | `ionic-angular-capacitor-plugins` | Ionic Storage setup in main.ts |
+| Structuring Ionic project | `ionic-angular-architecture` | Scope Rule, tabs/menu structure |
+| Deciding component placement | `ionic-angular-architecture` | Scope Rule: 1 tab = local, 2+ tabs = shared |
+| Setting up navigation | `ionic-angular-architecture` | Tab-based vs menu-based patterns |
+| Detecting iOS/Android | `ionic-angular-capacitor` | Capacitor.getPlatform() - NEVER Ionic Platform |
+| Configuring status bar | `ionic-angular-capacitor` | iOS status bar setup in app.component |
+| Setting up push notifications | `ionic-angular-capacitor` | Push notification service structure |
+| Configuring storage | `ionic-angular-capacitor` | Ionic Storage setup in main.ts |
 
 ## Trigger Patterns
 
@@ -136,7 +136,7 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 
 1. **ALWAYS load first**: `angular-core` - Foundation for all Angular code
 2. **Load when needed**: Other skills based on context
-3. **Multiple skills**: Can be loaded simultaneously (e.g., `angular-core` + `ionic-angular-architect`)
+3. **Multiple skills**: Can be loaded simultaneously (e.g., `angular-core` + `ionic-angular-architecture`)
 
 ## Core Principles Across All Skills
 
@@ -211,8 +211,8 @@ When adding new skills:
 | angular-core | 20+ | N/A | N/A |
 | angular-forms | 20+ (21+ for Signal Forms) | N/A | N/A |
 | angular-performance | 20+ | N/A | N/A |
-| ionic-angular-architect | 20+ | 8+ | N/A |
-| ionic-angular-capacitor-plugins | 20+ | 8+ | 6+ |
+| ionic-angular-architecture| 20+ | 8+ | N/A |
+| ionic-angular-capacitor| 20+ | 8+ | 6+ |
 
 ## Support
 

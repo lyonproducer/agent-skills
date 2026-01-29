@@ -1,5 +1,5 @@
 ---
-name: ionic-angular-capacitor-plugins
+name: ionic-angular-capacitor
 description: >
   Capacitor mobile plugins configuration: platform detection, status bar, push notifications, storage.
   Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.

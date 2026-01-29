@@ -1,5 +1,5 @@
 ---
-name: ionic-angular-architect
+name: ionic-angular-architecture
 description: >
   Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns.
   Trigger: When architecting Ionic apps, organizing project structure, or applying Scope Rule to Angular + Ionic projects.

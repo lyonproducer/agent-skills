@@ -8,8 +8,8 @@
 ## 🎯 What Was Accomplished
 
 ### Phase 1: Skills Creation & Organization ✅
-- Created `ionic-angular-capacitor-plugins` skill
-- Updated `ionic-angular-architect` skill
+- Created `ionic-angular-capacitor` skill
+- Updated `ionic-angular-architecture` skill
 - Removed all duplicates
 - Fixed all "features" → "tabs/menu" terminology
 
@@ -44,8 +44,8 @@ skills/
 | angular-core | `angular/core/` | 207 | ✅ Moved |
 | angular-forms | `angular/forms/` | 125 | ✅ Moved |
 | angular-performance | `angular/performance/` | 134 | ✅ Moved |
-| ionic-angular-architect | `ionic/angular/architect/` | 335 | ✅ Moved |
-| ionic-angular-capacitor-plugins | `ionic/angular/capacitor/` | 398 | ✅ New & Moved |
+| ionic-angular-architecture| `ionic/angular/architect/` | 335 | ✅ Moved |
+| ionic-angular-capacitor| `ionic/angular/capacitor/` | 398 | ✅ New & Moved |
 
 **Total**: 1,199 lines across 5 skills (avg: 240 lines per skill)
 
@@ -183,8 +183,8 @@ git commit -m "feat: reorganize into hierarchical folder structure and create 5 
 
 - Create angular/ and ionic/angular/ folders
 - Move skills to new hierarchical structure
-- Create ionic-angular-capacitor-plugins skill
-- Update ionic-angular-architect skill
+- Create ionic-angular-capacitorskill
+- Update ionic-angular-architectureskill
 - Add comprehensive documentation
 - Add automated installation script
 

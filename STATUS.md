@@ -135,7 +135,7 @@ Available Skills:
 
 | Requirement | Status | Notes |
 |-------------|--------|-------|
-| Create ionic-angular-capacitor-plugins | ✅ | 398 lines, complete |
+| Create ionic-angular-capacitor| ✅ | 398 lines, complete |
 | Move Capacitor rules | ✅ | Lines 61-127 moved |
 | Add Ionic Storage config | ✅ | With DB constants |
 | Add main.ts config | ✅ | IonicModule.forRoot |
@@ -167,7 +167,7 @@ git diff skills/ionic-angular-architect/SKILL.md
 git add .
 git commit -m "feat: reorganize into 5 specialized skills
 
-- Create ionic-angular-capacitor-plugins skill
+- Create ionic-angular-capacitorskill
 - Update ionic-angular-architect
 - Add AGENTS.md with skill tree
 - Add README.md with installation

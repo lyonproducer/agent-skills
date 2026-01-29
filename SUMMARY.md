@@ -8,7 +8,7 @@ Following the skill-creator guidelines, I've successfully reorganized your Angul
 
 ## 📦 What Was Created
 
-### 1. NEW SKILL: `ionic-angular-capacitor-plugins`
+### 1. NEW SKILL: `ionic-angular-capacitor`
 ```
 skills/ionic/angular/capacitor/
 └── SKILL.md (NEW!)
@@ -26,11 +26,11 @@ skills/ionic/angular/capacitor/
 - ✅ Common Capacitor plugins table
 - ✅ Anti-patterns section
 
-**Moved from**: `ionic-angular-architect` (lines 61-127)
+**Moved from**: `ionic-angular-architecture` (lines 61-127)
 
 ---
 
-### 2. UPDATED: `ionic-angular-architect`
+### 2. UPDATED: `ionic-angular-architecture`
 ```
 skills/ionic/angular/architect/
 ├── SKILL.md (UPDATED!)
@@ -171,11 +171,11 @@ Ignores: `.DS_Store`, IDE folders, `node_modules`, build outputs
 ### Content Moved
 | Content | From | To |
 |---------|------|-----|
-| Platform detection | `ionic-angular-architect` | `ionic-angular-capacitor-plugins` |
-| iOS status bar | `ionic-angular-architect` | `ionic-angular-capacitor-plugins` |
-| Push notifications | `ionic-angular-architect` | `ionic-angular-capacitor-plugins` |
-| Ionic Storage | N/A | `ionic-angular-capacitor-plugins` (NEW) |
-| Main.ts config | N/A | `ionic-angular-capacitor-plugins` (NEW) |
+| Platform detection | `ionic-angular-architecture` | `ionic-angular-capacitor` |
+| iOS status bar | `ionic-angular-architecture` | `ionic-angular-capacitor` |
+| Push notifications | `ionic-angular-architecture` | `ionic-angular-capacitor` |
+| Ionic Storage | N/A | `ionic-angular-capacitor` (NEW) |
+| Main.ts config | N/A | `ionic-angular-capacitor` (NEW) |
 
 ---
 
@@ -252,11 +252,11 @@ git commit -m "Add AI agent skills"
 
 | Request | Status |
 |---------|--------|
-| Create `ionic-angular-capacitor-plugins` skill | ✅ Done |
+| Create `ionic-angular-capacitor` skill | ✅ Done |
 | Move Capacitor rules (lines 61-80, 89-108, 110-127) | ✅ Done |
 | Add Ionic Storage config | ✅ Done (with constants in shared/) |
 | Add main.ts IonicModule.forRoot config | ✅ Done |
-| Remove duplicates from `ionic-angular-architect` | ✅ Done |
+| Remove duplicates from `ionic-angular-architecture` | ✅ Done |
 | Change "features" to "tabs"/"menu" | ✅ Done |
 | Create AGENTS.md with triggers | ✅ Done |
 | Create README with installation | ✅ Done |
@@ -284,7 +284,7 @@ git diff skills/ionic-angular-architect/SKILL.md
 git add .
 git commit -m "feat: reorganize into 5 specialized skills
 
-- Create ionic-angular-capacitor-plugins skill
+- Create ionic-angular-capacitorskill
 - Update ionic-angular-architect
 - Add AGENTS.md with skill tree
 - Add README.md with installation

@@ -10,11 +10,11 @@ Reorganized the skills structure from a single monolithic `angular-ionic-archite
 
 ## Changes Made
 
-### 1. New Skill Created: `ionic-angular-capacitor-plugins`
+### 1. New Skill Created: `ionic-angular-capacitor`
 
 **Location**: `skills/ionic/angular/capacitor/SKILL.md`
 
-**Content Moved From**: `ionic-angular-architect` SKILL.md lines 61-127
+**Content Moved From**: `ionic-angular-architecture` SKILL.md lines 61-127
 
 **New Content Added**:
 - Ionic Storage configuration in `main.ts`
@@ -33,7 +33,7 @@ Reorganized the skills structure from a single monolithic `angular-ionic-archite
 - ✅ Ionic Storage setup and usage
 - ✅ Main.ts configuration
 
-### 2. Updated Skill: `ionic-angular-architect`
+### 2. Updated Skill: `ionic-angular-architecture`
 
 **Location**: `skills/ionic/angular/architect/SKILL.md`
 
@@ -73,8 +73,8 @@ Reorganized the skills structure from a single monolithic `angular-ionic-archite
 1. `angular-core` - Foundation
 2. `angular-forms` - Forms handling
 3. `angular-performance` - Performance optimization
-4. `ionic-angular-architect` - Architecture & structure
-5. `ionic-angular-capacitor-plugins` - Mobile plugins
+4. `ionic-angular-architecture` - Architecture & structure
+5. `ionic-angular-capacitor` - Mobile plugins
 
 ### 4. Created: `README.md`
 
@@ -152,7 +152,7 @@ skills/
 
 ## Content Distribution
 
-### `ionic-angular-architect` (Updated)
+### `ionic-angular-architecture` (Updated)
 - Scope Rule enforcement
 - Screaming Architecture
 - Project structure (tabs/menu/pages)
@@ -160,7 +160,7 @@ skills/
 - Component placement decisions
 - Quality checklist
 
-### `ionic-angular-capacitor-plugins` (New)
+### `ionic-angular-capacitor` (New)
 - Platform detection (Capacitor.getPlatform())
 - iOS status bar configuration
 - Push notifications service
@@ -200,8 +200,8 @@ All occurrences of "features" changed to:
    git add .
    git commit -m "feat: reorganize skills into 5 specialized skills
 
-   - Create ionic-angular-capacitor-plugins skill
-   - Update ionic-angular-architect (remove duplicates, fix terminology)
+   - Create ionic-angular-capacitorskill
+   - Update ionic-angular-architecture(remove duplicates, fix terminology)
    - Add AGENTS.md with skill tree and triggers
    - Add README.md with installation instructions
    - Add setup.sh installation script

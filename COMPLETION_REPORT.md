@@ -15,8 +15,8 @@ Successfully reorganized Angular + Ionic AI Agent Skills from a monolithic archi
 
 ### Key Achievements
 
-- ✅ Created 1 new skill (`ionic-angular-capacitor-plugins`)
-- ✅ Updated 1 existing skill (`ionic-angular-architect`)
+- ✅ Created 1 new skill (`ionic-angular-capacitor`)
+- ✅ Updated 1 existing skill (`ionic-angular-architecture`)
 - ✅ Created 7 documentation files
 - ✅ Added automated installation script
 - ✅ Eliminated all content duplication
@@ -30,11 +30,11 @@ Successfully reorganized Angular + Ionic AI Agent Skills from a monolithic archi
 | Your Request | Delivered |
 |--------------|-----------|
 | Verify what we'll do using skill-creator | ✅ Followed all guidelines |
-| Create ionic-angular-capacitor-plugins skill | ✅ 398 lines, fully documented |
+| Create ionic-angular-capacitorskill | ✅ 398 lines, fully documented |
 | Move Capacitor rules to new skill | ✅ Lines 61-127 moved |
 | Add Ionic Storage configuration | ✅ With DB constants |
 | Add main.ts IonicModule.forRoot config | ✅ With innerHTMLTemplatesEnabled |
-| Remove duplicates from ionic-angular-architect | ✅ No angular-core overlaps |
+| Remove duplicates from ionic-angular-architecture| ✅ No angular-core overlaps |
 | Change "features" to "tabs"/"menu" | ✅ 100% complete |
 | Create AGENTS.md with triggers | ✅ Complete skill tree |
 | Add README with installation | ✅ 4 installation methods |
