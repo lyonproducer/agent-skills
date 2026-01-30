@@ -13,25 +13,12 @@ Based on your requirements, here's the recommended Angular 20 + Ionic 8 architec
 
 ```
 src/app/
-├── pages/
-│   ├── start-app/                    # Authentication flow
-│   │   ├── login/
-│   │   ├── register/
-│   │   └── verify-phone/
-│   │
-│   ├── tabs/                         # Main app tabs
-│   │   ├── browse/                   # Restaurant browsing
-│   │   │   ├── browse.ts
-│   │   │   └── components/
-│   │   │       ├── restaurant-card.ts
-│   │   │       └── category-filter.ts
-│   │   ├── cart/                     # Shopping cart
-│   │   ├── orders/                   # Order history & tracking
-│   │   └── profile/
-│   │
-│   └── out-app/
-│       ├── restaurant-details/       # Individual restaurant page
-│       └── order-tracking/           # Live order tracking
+├── core/
+│   └── services/
+│       ├── auth.service.ts
+│       ├── cart.service.ts           # Global cart state
+│       ├── ui.service.ts             # Centralized UI controllers
+│       └── push-notification.service.ts  # 🚨 Required for updates
 │
 ├── shared/
 │   └── components/
@@ -41,13 +28,29 @@ src/app/
 │       └── modals/
 │           └── add-to-cart-modal.ts
 │
-└── core/
-    └── services/
-        ├── auth.service.ts
-        ├── restaurant.service.ts
-        ├── order.service.ts
-        ├── cart.service.ts           # Global cart state
-        └── push-notification.service.ts  # 🚨 Required for order updates
+└── pages/
+    ├── start-app/                    # Authentication flow
+    │   ├── login/
+    │   ├── register/
+    │   └── verify-phone/
+    │
+    ├── in-app/
+    │   ├── tabs/                     # Main app tabs
+    │   │   ├── browse/               # Restaurant browsing
+    │   │   │   ├── browse.page.ts
+    │   │   │   └── components/
+    │   │   │       ├── restaurant-card.ts
+    │   │   │       └── category-filter.ts
+    │   │   ├── cart/                 # Shopping cart
+    │   │   ├── orders/               # Order history & tracking
+    │   │   └── profile/
+    │   │
+    │   ├── menu/                     # Side menu pages
+    │   └── features/                 # Non-tab features
+    │
+    └── out-app/
+        ├── restaurant-details/       # Individual restaurant page
+        └── order-tracking/           # Live order tracking
 ```
 
 **Don't forget the iOS configuration in app.component.ts!**
@@ -425,6 +428,96 @@ export class MyComponent {
 
 ---
 
+## Example 7: Centralized UI Controllers (UiService)
+
+### User Request
+> "I need a consistent way to show loading, toast, and alert across the app."
+
+### Skill Response
+
+Create a core UI service and inject it where needed:
+
+```typescript
+// src/app/core/services/ui.service.ts
+import { inject, Injectable } from '@angular/core';
+import { AlertButton, AlertController, LoadingController, ToastController } from '@ionic/angular';
+
+@Injectable({ providedIn: 'root' })
+export class UiService {
+  private readonly loadingCtrl = inject(LoadingController);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly alertCtrl = inject(AlertController);
+
+  private currentLoading: HTMLIonLoadingElement | null = null;
+
+  async showLoading(message: string = 'Cargando...') {
+    this.currentLoading = await this.loadingCtrl.create({
+      message,
+      cssClass: 'custom-loading',
+    });
+    await this.currentLoading.present();
+  }
+
+  async dismissLoading() {
+    if (this.currentLoading) {
+      await this.currentLoading.dismiss();
+      this.currentLoading = null;
+    }
+  }
+
+  async showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success') {
+    const toast = await this.toastCtrl.create({
+      message,
+      color,
+      duration: 2000,
+      position: 'top',
+    });
+    return await toast.present();
+  }
+
+  async showAlert(message: string, buttons: (string | AlertButton)[] = ['OK']) {
+    const alert = await this.alertCtrl.create({
+      message,
+      buttons,
+      mode: 'md',
+    });
+    await alert.present();
+  }
+}
+```
+
+Use it from any page or component with `inject()`:
+
+```typescript
+import { Component, inject } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
+import { UiService } from '@core/services/ui.service';
+
+@Component({
+  selector: 'app-orders',
+  imports: [IonicModule],
+  template: `<ion-button (click)="sync()">Sync</ion-button>`,
+})
+export class OrdersPage {
+  private readonly ui = inject(UiService);
+
+  async sync(): Promise<void> {
+    await this.ui.showLoading('Sincronizando...');
+    try {
+      // ...sync
+      await this.ui.showToast('Sincronizado', 'success');
+    } catch {
+      await this.ui.showToast('Error al sincronizar', 'danger');
+      await this.ui.showAlert('Intenta nuevamente más tarde');
+    } finally {
+      await this.ui.dismissLoading();
+    }
+  }
+}
+```
+
+---
+
 ## Summary
 
 These examples demonstrate:
@@ -435,5 +528,6 @@ These examples demonstrate:
 4. **Modern Patterns** - Angular 20 signals and standalone
 5. **Push Notifications** - Proper mobile integration
 6. **Migration Path** - From legacy to modern code
+7. **UI Controllers** - Centralized Ionic UI interactions
 
 For more details, consult the reference documents in the `references/` folder!

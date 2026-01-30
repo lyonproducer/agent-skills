@@ -5,7 +5,7 @@ description: >
   Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.
 metadata:
   author: Lyon Incode
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -297,7 +297,13 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'dark',
       backgroundColor: '#000000'
-    }
+    },
+    Keyboard: {
+      resizeOnFullScreen: false
+    },
+    EdgeToEdge: {
+      backgroundColor: "#000000",
+    },
   }
 };
 
@@ -316,6 +322,11 @@ export default config;
 | `@capacitor/network` | Network status | `npm install @capacitor/network` |
 | `@capacitor/device` | Device info | `npm install @capacitor/device` |
 | `@capacitor/splash-screen` | Splash screen control | `npm install @capacitor/splash-screen` |
+| `@capawesome/capacitor-android-edge-to-edge-support` | Fix Android SDK 35 status bar overlay | `npm install @capawesome/capacitor-android-edge-to-edge-support` |
+| `@capacitor/keyboard` | Configure app keyboard behavior | `npm install @capacitor/keyboard` |
+| `@capgo/capacitor-social-login` | Social login (recommended, updated) | `npm install @capgo/capacitor-social-login` |
+| `@capacitor-firebase/crashlytics` | Crash analytics with Firebase | `npm install @capacitor-firebase/crashlytics` |
+| `@capacitor-firebase/analytics` | App analytics with Firebase | `npm install @capacitor-firebase/analytics` |
 
 ---
 
@@ -340,6 +351,354 @@ export class PhotoService {
     });
     
     return image.dataUrl!;
+  }
+}
+```
+
+---
+
+## Reference Services (Angular Core Patterns)
+
+### Crashlytics (Firebase)
+
+```typescript
+import { Injectable } from '@angular/core';
+import { FirebaseCrashlytics } from '@capacitor-firebase/crashlytics';
+import { Capacitor } from '@capacitor/core';
+import * as StackTrace from 'stacktrace-js';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class CrashlyticsService {
+  async crash(message: string = 'Test Crash') {
+    await FirebaseCrashlytics.crash({ message });
+  }
+
+  async setCustomKey(
+    key: string,
+    value: string | number | boolean,
+    type: 'string' | 'long' | 'double' | 'boolean'
+  ) {
+    await FirebaseCrashlytics.setCustomKey({
+      key,
+      value,
+      type,
+    });
+  }
+
+  async setUserId(userId: string) {
+    await FirebaseCrashlytics.setUserId({
+      userId,
+    });
+  }
+
+  async log(message: string) {
+    await FirebaseCrashlytics.log({
+      message,
+    });
+  }
+
+  async setEnabled(enabled: boolean) {
+    await FirebaseCrashlytics.setEnabled({
+      enabled,
+    });
+  }
+
+  async isEnabled(): Promise<boolean> {
+    const { enabled } = await FirebaseCrashlytics.isEnabled();
+    return enabled;
+  }
+
+  async didCrashOnPreviousExecution(): Promise<boolean> {
+    const { crashed } = await FirebaseCrashlytics.didCrashOnPreviousExecution();
+    return crashed;
+  }
+
+  async sendUnsentReports() {
+    await FirebaseCrashlytics.sendUnsentReports();
+  }
+
+  async deleteUnsentReports() {
+    await FirebaseCrashlytics.deleteUnsentReports();
+  }
+
+  async recordException(message: string) {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await FirebaseCrashlytics.recordException({
+      message,
+    });
+  }
+
+  async recordExceptionWithStacktrace(error: Error, message: string = 'Non-fatal error') {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    const stacktrace = await StackTrace.fromError(error);
+    await FirebaseCrashlytics.recordException({
+      message,
+      stacktrace,
+    });
+  }
+}
+```
+
+**Required packages:**
+```bash
+npm install @capacitor-firebase/crashlytics stacktrace-js
+```
+
+### Analytics (Firebase)
+
+```typescript
+import { Injectable } from '@angular/core';
+import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
+import { Capacitor } from '@capacitor/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AnalyticsService {
+  async logEvent(name: string, params?: Record<string, string | number>) {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await FirebaseAnalytics.logEvent({
+      name,
+      params,
+    });
+  }
+
+  async setUserId(userId: string) {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await FirebaseAnalytics.setUserId({
+      userId,
+    });
+  }
+}
+```
+
+**Required packages:**
+```bash
+npm install @capacitor-firebase/analytics
+```
+
+### Social Login (Capgo)
+
+```typescript
+import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
+import { SocialLogin, LoginProvider } from '@capgo/capacitor-social-login';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class SocialLoginService {
+  async signInWithGoogle() {
+    if (Capacitor.getPlatform() === 'web') {
+      return null;
+    }
+    return await SocialLogin.login({
+      provider: LoginProvider.GOOGLE,
+    });
+  }
+
+  async signOut() {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await SocialLogin.logout();
+  }
+}
+```
+
+**Required packages:**
+```bash
+npm install @capgo/capacitor-social-login
+```
+
+### Keyboard Configuration
+
+```typescript
+import { Injectable } from '@angular/core';
+import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
+import { Capacitor } from '@capacitor/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class KeyboardService {
+  async setResizeMode(mode: KeyboardResize = KeyboardResize.Body) {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await Keyboard.setResizeMode({ mode });
+  }
+
+  async hide(): Promise<void> {
+    if (Capacitor.getPlatform() === 'web') {
+      return;
+    }
+    await Keyboard.hide();
+  }
+}
+```
+
+**Required packages:**
+```bash
+npm install @capacitor/keyboard
+```
+
+### Android Edge-to-Edge Support (SDK 35 Overlay)
+
+```typescript
+import { Capacitor } from '@capacitor/core';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
+
+export async function disableAndroidEdgeToEdge(): Promise<void> {
+  if (Capacitor.getPlatform() !== 'android') {
+    return;
+  }
+  await EdgeToEdge.disable();
+}
+```
+
+**Why:** Helps avoid status bar overlay issues on Android SDK 35. Verify behavior on SDK 36 and Capacitor 8/9.
+
+### Geolocation (with permissions)
+
+```typescript
+import { Injectable, inject, signal } from '@angular/core';
+import { Geolocation, Position, PositionOptions } from '@capacitor/geolocation';
+import { AlertController } from '@ionic/angular';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class GeolocationService {
+  private readonly alertController = inject(AlertController);
+  readonly position = signal<Position | null>(null);
+
+  async getCurrentPosition() {
+    try {
+      const coordinates = await Geolocation.getCurrentPosition();
+      this.position.set(coordinates);
+      console.log('Current position:', coordinates);
+    } catch (error) {
+      console.error('Error getting location:', error);
+    }
+  }
+
+  async initGeolocation(): Promise<void> {
+    try {
+      const result = await Geolocation.checkPermissions();
+      if (result.location === 'denied') {
+        console.log('Location disabled in device settings');
+        await this.showAlertPermissions();
+        return;
+      }
+
+      const permission = await this.requestGeolocationPermission();
+      if (permission === 'granted') {
+        this.getCurrentPosition();
+        this.watchPosition();
+      } else {
+        console.log('Location permission denied', permission);
+      }
+    } catch (error) {
+      console.error('Error checking geolocation permissions:', error);
+    }
+  }
+
+  async requestGeolocationPermission() {
+    try {
+      const result = await Geolocation.requestPermissions();
+      return result.location;
+    } catch (error) {
+      console.error('Error requesting geolocation permissions:', error);
+      return 'denied';
+    }
+  }
+
+  watchPosition() {
+    const options: PositionOptions = {
+      enableHighAccuracy: true,
+      minimumUpdateInterval: 5000,
+      maximumAge: 0,
+    };
+
+    Geolocation.watchPosition(options, (position?: Position | null) => {
+      if (position) {
+        this.position.set(position);
+      }
+    });
+  }
+
+  private async showAlertPermissions(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Location permissions denied',
+      message: 'To use this feature, enable location permissions in your device settings.',
+      buttons: ['OK'],
+    });
+    await alert.present();
+  }
+}
+```
+
+### Network Status
+
+```typescript
+import { Injectable, inject, signal } from '@angular/core';
+import { ConnectionStatus, Network } from '@capacitor/network';
+import { ToastController } from '@ionic/angular';
+
+export enum NetworkStatus {
+  offline = 0,
+  online = 1,
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class NetworkService {
+  private readonly toastController = inject(ToastController);
+  readonly status = signal<NetworkStatus>(NetworkStatus.offline);
+
+  async initializeNetworkEvents() {
+    const current = await this.logCurrentNetworkStatus();
+    this.setNetwork(current);
+
+    Network.addListener('networkStatusChange', (networkStatus: ConnectionStatus) => {
+      this.setNetwork(networkStatus);
+    });
+  }
+
+  setNetwork(networkStatus: ConnectionStatus) {
+    const status = networkStatus.connected ? NetworkStatus.online : NetworkStatus.offline;
+    this.status.set(status);
+  }
+
+  logCurrentNetworkStatus() {
+    return Network.getStatus();
+  }
+
+  async updateNetworkStatus(status: NetworkStatus) {
+    const connection = status === NetworkStatus.offline ? 'offline' : 'online';
+    try {
+      const toast = await this.toastController.create({
+        color: status === NetworkStatus.offline ? 'danger' : 'success',
+        message: `Currently ${connection}`,
+        duration: 3000,
+        position: 'top',
+      });
+      toast.present();
+    } catch (error) {
+      console.error('Error showing network toast', error);
+    }
   }
 }
 ```

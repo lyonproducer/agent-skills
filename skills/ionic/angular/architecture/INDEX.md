@@ -16,10 +16,12 @@ angular-ionic-architect/
 ├── 📁 templates/
 │   ├── push-notification.service.ts    🔔 Complete push notification service
 │   ├── app-component-initial.ts        📱 App component with iOS config
+│   ├── ui.service.ts                   🎛️ Ionic UI controllers service
 │   └── example-usage.md                💡 Real-world examples
 │
 └── 📁 references/
     ├── capacitor-platform-detection.md  🎯 Platform detection guide
+    ├── ui-interaction-pattern.md         🎛️ UI interaction pattern
     └── project-structure.md             🏗️ Complete structure guide
 ```
 
@@ -35,10 +37,12 @@ angular-ionic-architect/
 ### Need Templates?
 - **Push Notifications**: `templates/push-notification.service.ts`
 - **App Bootstrap**: `templates/app-component-initial.ts`
+- **UI Controllers**: `templates/ui.service.ts`
 - **Usage Examples**: `templates/example-usage.md`
 
 ### Need Detailed Guidance?
 - **Platform Detection**: `references/capacitor-platform-detection.md`
+- **UI Interaction Pattern**: `references/ui-interaction-pattern.md`
 - **Project Structure**: `references/project-structure.md`
 
 ---
@@ -120,6 +124,18 @@ angular-ionic-architect/
 
 ---
 
+### templates/ui.service.ts
+**Size**: ~70 lines | **Type**: Code template
+
+**Contains**:
+- Centralized UI controllers service (alerts, toasts, loading)
+- Modern inject() usage
+- Consistent UI patterns
+
+**When to use**: When standardizing UI interactions across the app
+
+---
+
 ### templates/example-usage.md
 **Size**: ~500 lines | **Read Time**: 20 min
 
@@ -164,6 +180,18 @@ angular-ionic-architect/
 - Common mistakes
 
 **When to read**: Setting up new project or refactoring structure
+
+---
+
+### references/ui-interaction-pattern.md
+**Size**: ~120 lines | **Read Time**: 5 min
+
+**Contains**:
+- Why to centralize Ionic controllers
+- UiService usage example
+- Rules for UI interaction
+
+**When to read**: When implementing alerts/toasts/loaders
 
 ---
 
@@ -282,6 +310,7 @@ angular-ionic-architect/
 | capacitor-platform-detection.md | ~250 | 10 min | Guide |
 | push-notification.service.ts | ~100 | - | Template |
 | app-component-initial.ts | ~60 | - | Template |
+| ui.service.ts | ~70 | - | Template |
 | CHANGELOG.md | ~100 | 5 min | History |
 
 **Total Documentation**: ~2,600 lines (~90 min read time)
@@ -353,5 +382,5 @@ cp templates/* /your/project/
 ---
 
 **Last Updated**: 2026-01-28  
-**Version**: 1.0.0  
+**Version**: 1.0.1  
 **Maintained by**: Lyon Incode

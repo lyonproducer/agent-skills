@@ -5,7 +5,7 @@ description: >
   Trigger: When architecting Ionic apps, organizing project structure, or applying Scope Rule to Angular + Ionic projects.
 metadata:
   author: Lyon Incode
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -46,7 +46,8 @@ src/
 │   │   │   ├── api.service.ts
 │   │   │   ├── push-notification.service.ts
 │   │   │   ├── network.service.ts
-│   │   │   └── storage.service.ts
+│   │   │   ├── storage.service.ts
+│   │   │   └── ui.service.ts
 │   │   ├── interceptors/
 │   │   │   ├── app-http.interceptor.ts
 │   │   │   └── crashlytics-error-handler.interceptor.ts
