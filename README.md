@@ -99,7 +99,8 @@ Then commit the `.cursor/skills/` directory to your repository.
 ```bash
 # Install individual skills
 npx skills add https://github.com/lyonproducer/agent-skills --skill angular-core
-npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angular-architect
+npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angular-architecture
+npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angular-capacitor
 
 # Or install all Angular + Ionic skills
 npx skills add https://github.com/lyonproducer/agent-skills
