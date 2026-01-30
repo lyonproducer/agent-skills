@@ -20,6 +20,10 @@ yarn-error.log*
 dist/
 build/
 *.skill
+.cursor/
+.agents/
+.agent 
+
 
 # Temporary files
 tmp/
