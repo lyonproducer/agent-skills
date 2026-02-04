@@ -74,8 +74,8 @@ Root
 Clone only the `skills/` folder without extra documentation files:
 
 ```bash
-# Method 1: Using sparse checkout (Git 2.25+)
-npx degit lyonproducer/agent-skills/skills skills && cd skills && ./setup.sh 
+# Method 1: Using degit
+npx degit lyonproducer/agent-skills/skills skills && ./skills/setup.sh
 
 # Run setup
 ./setup.sh
