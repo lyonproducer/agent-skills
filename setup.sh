@@ -1,11 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Angular + Ionic AI Agent Skills Installer
-# Usage: ./setup.sh [--global|--project|--skill SKILL_NAME]
+# Multi-assistant setup (agentskills.io style) + Cursor installer.
+#
+# Usage:
+#   ./setup.sh                     # Interactive mode (select assistants & skills)
+#   ./setup.sh --all               # Configure all assistants
+#   ./setup.sh --claude            # Configure Claude Code
+#   ./setup.sh --gemini            # Configure Gemini CLI
+#   ./setup.sh --codex             # Configure Codex (OpenAI)
+#   ./setup.sh --copilot           # Configure GitHub Copilot
+#   ./setup.sh --kilocode          # Configure Kilocode
+#   ./setup.sh --cursor            # Install skills to ./.cursor/skills (project-specific)
 
 set -e
 
-SKILLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/skills"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR" && pwd)"
+SKILLS_DIR="$REPO_ROOT/skills"
 CURSOR_GLOBAL="$HOME/.cursor/skills"
 CURSOR_PROJECT=".cursor/skills"
 
@@ -14,15 +26,31 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
+
+# Selection flags (assistants)
+SETUP_CLAUDE=false
+SETUP_GEMINI=false
+SETUP_CODEX=false
+SETUP_COPILOT=false
+SETUP_KILOCODE=false
+
+# Selected skills (for interactive mode) - using simple array approach
+SELECTED_SKILLS_LIST=()
+
+# Cursor installation flag
+SETUP_CURSOR=false
 
 # Available skills (path relative to skills/)
 AVAILABLE_SKILLS=(
     "angular/core"
     "angular/forms"
     "angular/performance"
-    "ionic/angular/architect"
+    "ionic/angular/architecture"
     "ionic/angular/capacitor"
+    "ionic/angular/migration-standalone"
 )
 
 # Helper functions
@@ -49,6 +77,243 @@ print_info() {
     echo -e "${BLUE}→${NC} $1"
 }
 
+show_assistants_menu() {
+    echo -e "${BOLD}Which AI assistants do you use?${NC}"
+    echo -e "${CYAN}(Use numbers to toggle, Enter to confirm)${NC}"
+    echo ""
+
+    local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode")
+    local selected=(true false false false false)
+
+    while true; do
+        for i in "${!options[@]}"; do
+            if [ "${selected[$i]}" = true ]; then
+                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${options[$i]}"
+            else
+                echo -e "  [ ] $((i+1)). ${options[$i]}"
+            fi
+        done
+        echo ""
+        echo -e "  ${YELLOW}a${NC}. Select all"
+        echo -e "  ${YELLOW}n${NC}. Select none"
+        echo ""
+        echo -n "Toggle (1-5, a, n) or Enter to confirm: "
+
+        read -r choice
+
+        case $choice in
+            1) selected[0]=$([ "${selected[0]}" = true ] && echo false || echo true) ;;
+            2) selected[1]=$([ "${selected[1]}" = true ] && echo false || echo true) ;;
+            3) selected[2]=$([ "${selected[2]}" = true ] && echo false || echo true) ;;
+            4) selected[3]=$([ "${selected[3]}" = true ] && echo false || echo true) ;;
+            5) selected[4]=$([ "${selected[4]}" = true ] && echo false || echo true) ;;
+            a|A) selected=(true true true true true) ;;
+            n|N) selected=(false false false false false) ;;
+            "") break ;;
+            *) echo -e "${RED}Invalid option${NC}" ;;
+        esac
+
+        echo -en "\033[12A\033[J"
+    done
+
+    SETUP_CLAUDE=${selected[0]}
+    SETUP_GEMINI=${selected[1]}
+    SETUP_CODEX=${selected[2]}
+    SETUP_COPILOT=${selected[3]}
+    SETUP_KILOCODE=${selected[4]}
+}
+
+show_skills_menu() {
+    # Detect already installed skills
+    local installed=($(get_installed_skills))
+    local available_to_install=($(get_available_skills_to_install))
+    
+    # Show already installed skills if any
+    if [ ${#installed[@]} -gt 0 ]; then
+        echo -e "${GREEN}✓ Already installed (${#installed[@]} skills):${NC}"
+        for skill in "${installed[@]}"; do
+            echo -e "  ${GREEN}✓${NC} $skill"
+        done
+        echo ""
+        
+        # Ask if user wants to reinstall or add new
+        echo -e "${YELLOW}Options:${NC}"
+        echo -e "  ${YELLOW}c${NC}. Continue (install new skills only)"
+        echo -e "  ${YELLOW}r${NC}. Reinstall (show all skills including installed)"
+        echo ""
+        echo -n "Choose option (c/r): "
+        
+        read -r reinstall_choice
+        echo ""
+        
+        if [ "$reinstall_choice" = "r" ] || [ "$reinstall_choice" = "R" ]; then
+            # Show all skills for reinstallation
+            available_to_install=("${AVAILABLE_SKILLS[@]}")
+            echo -e "${BOLD}Showing all skills (including installed):${NC}"
+            echo ""
+        fi
+    fi
+    
+    # Check if there are skills to install
+    if [ ${#available_to_install[@]} -eq 0 ]; then
+        echo -e "${GREEN}✓ All skills are already installed!${NC}"
+        echo ""
+        echo "Nothing to install. Use option 'r' to reinstall if needed."
+        return
+    fi
+    
+    echo -e "${BOLD}Which skills do you want to install?${NC}"
+    echo -e "${CYAN}(Use numbers to toggle, Enter to confirm)${NC}"
+    echo ""
+
+    local selected=()
+    for skill in "${available_to_install[@]}"; do
+        selected+=(true)  # Default all to selected
+    done
+
+    while true; do
+        for i in "${!available_to_install[@]}"; do
+            if [ "${selected[$i]}" = true ]; then
+                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${available_to_install[$i]}"
+            else
+                echo -e "  [ ] $((i+1)). ${available_to_install[$i]}"
+            fi
+        done
+        echo ""
+        echo -e "  ${YELLOW}a${NC}. Select all"
+        echo -e "  ${YELLOW}n${NC}. Select none"
+        echo ""
+        echo -n "Toggle (1-${#available_to_install[@]}, a, n) or Enter to confirm: "
+
+        read -r choice
+
+        case $choice in
+            [1-9])
+                idx=$((choice - 1))
+                if [ $idx -lt ${#available_to_install[@]} ]; then
+                    selected[$idx]=$([ "${selected[$idx]}" = true ] && echo false || echo true)
+                else
+                    echo -e "${RED}Invalid option${NC}"
+                fi
+                ;;
+            a|A)
+                for i in "${!available_to_install[@]}"; do
+                    selected[$i]=true
+                done
+                ;;
+            n|N)
+                for i in "${!available_to_install[@]}"; do
+                    selected[$i]=false
+                done
+                ;;
+            "") break ;;
+            *) echo -e "${RED}Invalid option${NC}" ;;
+        esac
+
+        echo -en "\033[$((${#available_to_install[@]} + 4))A\033[J"
+    done
+
+    # Store selected skills
+    SELECTED_SKILLS_LIST=()
+    for i in "${!available_to_install[@]}"; do
+        if [ "${selected[$i]}" = true ]; then
+            SELECTED_SKILLS_LIST+=("${available_to_install[$i]}")
+        fi
+    done
+}
+
+# Get installed skills by reading .cursor/skills/ directory
+get_installed_skills() {
+    local installed=()
+    
+    # Check if .cursor/skills exists in current directory
+    if [ -d ".cursor/skills" ]; then
+        for dir in .cursor/skills/*/; do
+            if [ -d "$dir" ]; then
+                local skill_name=$(basename "$dir")
+                installed+=("$skill_name")
+            fi
+        done
+    fi
+    
+    printf '%s\n' "${installed[@]}"
+}
+
+# Get available skills to install (filter out already installed)
+get_available_skills_to_install() {
+    local installed=($(get_installed_skills))
+    local available=()
+    
+    for skill in "${AVAILABLE_SKILLS[@]}"; do
+        local skill_basename=$(basename "$skill")
+        local is_installed=false
+        
+        # Check if this skill is already installed
+        for installed_skill in "${installed[@]}"; do
+            if [ "$skill_basename" = "$installed_skill" ]; then
+                is_installed=true
+                break
+            fi
+        done
+        
+        # If not installed, add to available list
+        if [ "$is_installed" = false ]; then
+            available+=("$skill")
+        fi
+    done
+    
+    printf '%s\n' "${available[@]}"
+}
+
+# Show installation status
+show_status() {
+    local installed=($(get_installed_skills))
+    local total=${#AVAILABLE_SKILLS[@]}
+    local installed_count=${#installed[@]}
+    local available_count=$((total - installed_count))
+    
+    echo ""
+    echo -e "${BOLD}Skills Installation Status${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    
+    if [ ${#installed[@]} -eq 0 ]; then
+        echo -e "${YELLOW}✗ No skills installed yet${NC}"
+        echo ""
+        echo -e "Available skills to install: ${BOLD}$total${NC}"
+    else
+        echo -e "${GREEN}✓ Installed Skills ($installed_count/$total):${NC}"
+        for skill in "${installed[@]}"; do
+            echo -e "  ${GREEN}✓${NC} $skill"
+        done
+        echo ""
+        
+        if [ $available_count -gt 0 ]; then
+            echo -e "${YELLOW}○ Available to Install ($available_count/$total):${NC}"
+            local available_list=($(get_available_skills_to_install))
+            for skill in "${available_list[@]}"; do
+                local skill_name=$(basename "$skill")
+                echo -e "  ${YELLOW}○${NC} $skill_name"
+            done
+        else
+            echo -e "${GREEN}✓ All skills are installed!${NC}"
+        fi
+    fi
+    
+    echo ""
+    echo -e "${BLUE}Installation Path:${NC} ./.cursor/skills/"
+    echo ""
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    if [ $available_count -gt 0 ] || [ ${#installed[@]} -eq 0 ]; then
+        echo ""
+        echo -e "${CYAN}To install skills:${NC}"
+        echo "  ./setup.sh           # Interactive mode"
+        echo "  ./setup.sh --cursor  # Install to current project"
+    fi
+    echo ""
+}
+
 # Check if skills directory exists
 check_skills_dir() {
     if [ ! -d "$SKILLS_DIR" ]; then
@@ -71,32 +336,8 @@ list_skills() {
     echo ""
 }
 
-# Install all skills globally
-install_global() {
-    print_info "Installing skills to: $CURSOR_GLOBAL"
-    
-    # Create directory if it doesn't exist
-    mkdir -p "$CURSOR_GLOBAL"
-    
-    # Copy each skill
-    local count=0
-    for skill in "${AVAILABLE_SKILLS[@]}"; do
-        if [ -d "$SKILLS_DIR/$skill" ]; then
-            cp -r "$SKILLS_DIR/$skill" "$CURSOR_GLOBAL/"
-            print_success "Installed: $skill"
-            ((count++))
-        else
-            print_warning "Skipped: $skill (not found)"
-        fi
-    done
-    
-    echo ""
-    print_success "Installed $count skills globally"
-    print_info "Skills are now available in all your projects"
-}
-
-# Install all skills to project
-install_project() {
+# Cursor: install selected or all skills to project
+install_cursor_project() {
     if [ ! -f "angular.json" ]; then
         print_error "Not an Angular project (angular.json not found)"
         print_info "Run this command from your Angular project root"
@@ -108,11 +349,30 @@ install_project() {
     # Create directory if it doesn't exist
     mkdir -p "$CURSOR_PROJECT"
     
+    # Determine which skills to install
+    local skills_to_install=()
+    if [ ${#SELECTED_SKILLS_LIST[@]} -gt 0 ]; then
+        # Use selected skills
+        skills_to_install=("${SELECTED_SKILLS_LIST[@]}")
+    else
+        # Use all skills
+        skills_to_install=("${AVAILABLE_SKILLS[@]}")
+    fi
+    
     # Copy each skill
     local count=0
-    for skill in "${AVAILABLE_SKILLS[@]}"; do
+    for skill in "${skills_to_install[@]}"; do
         if [ -d "$SKILLS_DIR/$skill" ]; then
-            cp -r "$SKILLS_DIR/$skill" "$CURSOR_PROJECT/"
+            # Extract skill name for flat installation
+            local skill_name=$(basename "$skill")
+            local target_path="$CURSOR_PROJECT/$skill_name"
+            
+            # Remove existing if present
+            if [ -d "$target_path" ]; then
+                rm -rf "$target_path"
+            fi
+            
+            cp -r "$SKILLS_DIR/$skill" "$target_path"
             print_success "Installed: $skill"
             ((count++))
         else
@@ -125,30 +385,84 @@ install_project() {
     print_info "Don't forget to commit .cursor/skills/ to your repository"
 }
 
-# Install specific skill globally
-install_skill() {
-    local skill_name=$1
-    
-    if [ -z "$skill_name" ]; then
-        print_error "Skill name required"
-        echo "Usage: ./setup.sh --skill SKILL_NAME"
-        list_skills
-        exit 1
+
+ensure_dir() {
+    local target="$1"
+    if [ ! -d "$target" ]; then
+        mkdir -p "$target"
     fi
-    
-    # Check if skill exists
-    if [ ! -d "$SKILLS_DIR/$skill_name" ]; then
-        print_error "Skill not found: $skill_name"
-        list_skills
-        exit 1
+}
+
+replace_link() {
+    local target="$1"
+    local source="$2"
+
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
     fi
-    
-    # Create directory if it doesn't exist
-    mkdir -p "$CURSOR_GLOBAL"
-    
-    # Copy skill
-    cp -r "$SKILLS_DIR/$skill_name" "$CURSOR_GLOBAL/"
-    print_success "Installed: $skill_name to $CURSOR_GLOBAL"
+
+    ln -s "$source" "$target"
+}
+
+copy_agents_md() {
+    local target_name="$1"
+    local agents_files
+    local count=0
+
+    agents_files=$(find "$REPO_ROOT" -name "AGENTS.md" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null)
+
+    for agents_file in $agents_files; do
+        local agents_dir
+        agents_dir=$(dirname "$agents_file")
+        cp "$agents_file" "$agents_dir/$target_name"
+        count=$((count + 1))
+    done
+
+    print_success "Copied $count AGENTS.md -> $target_name"
+}
+
+setup_claude() {
+    local target="$REPO_ROOT/.claude/skills"
+    ensure_dir "$REPO_ROOT/.claude"
+    replace_link "$target" "$SKILLS_DIR"
+    print_success ".claude/skills -> skills/"
+    copy_agents_md "CLAUDE.md"
+}
+
+setup_gemini() {
+    local target="$REPO_ROOT/.gemini/skills"
+    ensure_dir "$REPO_ROOT/.gemini"
+    replace_link "$target" "$SKILLS_DIR"
+    print_success ".gemini/skills -> skills/"
+    copy_agents_md "GEMINI.md"
+}
+
+setup_codex() {
+    local target="$REPO_ROOT/.codex/skills"
+    ensure_dir "$REPO_ROOT/.codex"
+    replace_link "$target" "$SKILLS_DIR"
+    print_success ".codex/skills -> skills/"
+    print_success "Codex uses AGENTS.md natively"
+}
+
+setup_copilot() {
+    if [ -f "$REPO_ROOT/AGENTS.md" ]; then
+        ensure_dir "$REPO_ROOT/.github"
+        cp "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/.github/copilot-instructions.md"
+        print_success "AGENTS.md -> .github/copilot-instructions.md"
+    else
+        print_warning "AGENTS.md not found at repo root"
+    fi
+}
+
+setup_kilocode() {
+    local target="$REPO_ROOT/.kilocode/skills"
+    ensure_dir "$REPO_ROOT/.kilocode"
+    replace_link "$target" "$SKILLS_DIR"
+    print_success ".kilocode/skills -> skills/"
+    copy_agents_md "AGENTS.md"
 }
 
 # Show usage
@@ -156,16 +470,23 @@ show_usage() {
     echo "Usage: ./setup.sh [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --global              Install all skills globally (~/.cursor/skills/)"
-    echo "  --project             Install all skills to current project (.cursor/skills/)"
-    echo "  --skill SKILL_NAME    Install specific skill globally"
+    echo "  --all                 Configure all AI assistants"
+    echo "  --claude              Configure Claude Code (.claude/skills + CLAUDE.md)"
+    echo "  --gemini              Configure Gemini CLI (.gemini/skills + GEMINI.md)"
+    echo "  --codex               Configure Codex (.codex/skills + AGENTS.md)"
+    echo "  --copilot             Configure GitHub Copilot (.github/copilot-instructions.md)"
+    echo "  --kilocode            Configure Kilocode (.kilocode/skills + KILOCODE.md)"
+    echo "  --cursor              Install skills to current project (.cursor/skills/)"
     echo "  --list                List available skills"
+    echo "  --status              Show installed vs available skills"
     echo "  --help                Show this help message"
     echo ""
     echo "Examples:"
-    echo "  ./setup.sh --global                    # Install all skills globally"
-    echo "  ./setup.sh --project                   # Install to current project"
-    echo "  ./setup.sh --skill angular-core        # Install only angular-core"
+    echo "  ./setup.sh                             # Interactive mode"
+    echo "  ./setup.sh --all                       # Configure all assistants"
+    echo "  ./setup.sh --claude --codex --kilocode # Multiple assistants"
+    echo "  ./setup.sh --cursor                    # Install to current project"
+    echo "  ./setup.sh --status                    # Check installation status"
     echo "  ./setup.sh --list                      # List available skills"
     echo ""
 }
@@ -176,40 +497,107 @@ main() {
     check_skills_dir
     
     # Parse arguments
-    case "${1:-}" in
-        --global)
-            install_global
-            ;;
-        --project)
-            install_project
-            ;;
-        --skill)
-            if [ -z "${2:-}" ]; then
-                print_error "Skill name required"
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --all)
+                SETUP_CLAUDE=true
+                SETUP_GEMINI=true
+                SETUP_CODEX=true
+                SETUP_COPILOT=true
+                SETUP_KILOCODE=true
+                shift
+                ;;
+            --claude)
+                SETUP_CLAUDE=true
+                shift
+                ;;
+            --gemini)
+                SETUP_GEMINI=true
+                shift
+                ;;
+            --codex)
+                SETUP_CODEX=true
+                shift
+                ;;
+            --copilot)
+                SETUP_COPILOT=true
+                shift
+                ;;
+            --kilocode)
+                SETUP_KILOCODE=true
+                shift
+                ;;
+            --cursor)
+                SETUP_CURSOR=true
+                shift
+                ;;
+            --list)
+                list_skills
+                exit 0
+                ;;
+            --status)
+                show_status
+                exit 0
+                ;;
+            --help|-h|"")
+                show_usage
+                exit 0
+                ;;
+            *)
+                print_error "Unknown option: $1"
                 show_usage
                 exit 1
-            fi
-            install_skill "$2"
-            ;;
-        --list)
-            list_skills
-            ;;
-        --help|"")
-            show_usage
-            ;;
-        *)
-            print_error "Unknown option: $1"
-            show_usage
-            exit 1
-            ;;
-    esac
+                ;;
+        esac
+    done
+
+    # Interactive mode if no flags provided
+    if [ "$SETUP_CLAUDE" = false ] && [ "$SETUP_GEMINI" = false ] && [ "$SETUP_CODEX" = false ] && [ "$SETUP_COPILOT" = false ] && [ "$SETUP_KILOCODE" = false ] && [ "$SETUP_CURSOR" = false ]; then
+        show_assistants_menu
+        echo ""
+        
+        # If any assistant was selected, ask which skills
+        if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ]; then
+            show_skills_menu
+            echo ""
+        fi
+    fi
+
+    if [ "$SETUP_CLAUDE" = true ]; then
+        print_info "Setting up Claude Code..."
+        setup_claude
+    fi
+
+    if [ "$SETUP_GEMINI" = true ]; then
+        print_info "Setting up Gemini CLI..."
+        setup_gemini
+    fi
+
+    if [ "$SETUP_CODEX" = true ]; then
+        print_info "Setting up Codex (OpenAI)..."
+        setup_codex
+    fi
+
+    if [ "$SETUP_COPILOT" = true ]; then
+        print_info "Setting up GitHub Copilot..."
+        setup_copilot
+    fi
+
+    if [ "$SETUP_KILOCODE" = true ]; then
+        print_info "Setting up Kilocode..."
+        setup_kilocode
+    fi
+
+    if [ "$SETUP_CURSOR" = true ]; then
+        install_cursor_project
+    fi
     
     echo ""
     print_success "Setup complete!"
     echo ""
     print_info "Next steps:"
-    echo "  1. Restart Cursor"
-    echo "  2. Open a chat and type: 'What Angular skills are available?'"
+    echo "  1. Restart your AI assistant"
+    echo "  2. Verify skills are detected"
     echo "  3. Start coding with AI assistance!"
     echo ""
     print_info "Documentation: https://github.com/lyonproducer/agent-skills"

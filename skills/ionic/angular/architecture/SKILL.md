@@ -241,27 +241,64 @@ export const tabsRoutes: Routes = [
 ```typescript
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { TABS } from './tabs.constants';
+import { TABS } from '@shared/constants/settings';
 
 @Component({
   selector: 'app-tabs',
   imports: [IonicModule],
-  template: `
-    <ion-tabs>
-      <ion-tab-bar slot="bottom">
-        @for (tab of tabsItems; track tab.name) {
-          <ion-tab-button [tab]="tab.name">
-            <ion-icon [name]="tab.icon"></ion-icon>
-            <ion-label>{{ tab.label }}</ion-label>
-          </ion-tab-button>
-        }
-      </ion-tab-bar>
-    </ion-tabs>
-  `,
+  templateUrl: './tabs.page.html',
 })
 export class TabsPage {
   readonly tabsItems = TABS;
 }
+```
+
+**tabs.page.html:**
+
+```html
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    @for (item of tabsItems; track $index) {
+      <ion-tab-button [tab]="item.tab">
+        <ion-icon aria-hidden="true" [name]="item.icon"></ion-icon>
+        <ion-label>{{ item.title }}</ion-label>
+      </ion-tab-button>
+    }
+  </ion-tab-bar>
+</ion-tabs>
+```
+
+**TABS constant in `src/app/shared/constants/settings.ts`:**
+
+```typescript
+export interface ITabItem {
+  tab: string;
+  title: string;
+  icon: string;
+}
+
+export const TABS: ITabItem[] = [
+  {
+    tab: 'home',
+    title: 'Home',
+    icon: 'home-outline',
+  },
+  {
+    tab: 'library',
+    title: 'Library',
+    icon: 'library-outline',
+  },
+  {
+    tab: 'my-space',
+    title: 'Space',
+    icon: 'planet-outline',
+  },
+  {
+    tab: 'social',
+    title: 'Social',
+    icon: 'people-outline',
+  },
+];
 ```
 
 ### Modal Navigation

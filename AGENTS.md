@@ -22,8 +22,9 @@ When working on Angular + Ionic projects, AI assistants automatically load relev
 
 | Skill | Description | File |
 |-------|-------------|------|
-| `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](skills/ionic/angular/architect/SKILL.md) |
+| `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](skills/ionic/angular/architecture/SKILL.md) |
 | `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](skills/ionic/angular/capacitor/SKILL.md) |
+| `ionic-angular-migration-standalone` | Migration guide for converting Ionic Angular apps to Standalone architecture | [SKILL.md](skills/ionic/angular/migration-standalone/SKILL.md) |
 
 ## Skill Tree & Dependencies
 
@@ -125,6 +126,15 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 - Setting up iOS status bar
 - User mentions: "Capacitor", "iOS", "Android", "platform", "push notification", "storage", "status bar"
 
+### ionic-angular-migration-standalone
+**Triggers when:**
+- Migrating Ionic app to Standalone
+- Removing IonicModule
+- Converting NgModule pages to Standalone
+- Updating to provideIonicAngular
+- Registering ionicons
+- User mentions: "migration", "standalone", "NgModule", "IonicModule", "migrate to standalone"
+
 ## How Skills Work
 
 1. **Auto-detection**: AI assistants read AGENTS.md which contains skill triggers
@@ -183,12 +193,16 @@ skills/
         │   ├── SKILL.md
         │   ├── references/
         │   │   ├── capacitor-platform-detection.md
-        │   │   └── project-structure.md
+        │   │   ├── project-structure.md
+        │   │   └── ui-interaction-pattern.md
         │   └── templates/
         │       ├── app-component-initial.ts
         │       ├── example-usage.md
-        │       └── push-notification.service.ts
-        └── capacitor/
+        │       ├── push-notification.service.ts
+        │       └── ui.service.ts
+        ├── capacitor/
+        │   └── SKILL.md
+        └── migration-standalone/
             └── SKILL.md
 ```
 
