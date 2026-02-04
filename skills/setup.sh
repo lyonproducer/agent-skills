@@ -338,11 +338,6 @@ list_skills() {
 
 # Cursor: install selected or all skills to project
 install_cursor_project() {
-    if [ ! -f "angular.json" ]; then
-        print_error "Not an Angular project (angular.json not found)"
-        print_info "Run this command from your Angular project root"
-        exit 1
-    fi
     
     print_info "Installing skills to: $CURSOR_PROJECT"
     
