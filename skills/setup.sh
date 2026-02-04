@@ -79,42 +79,91 @@ print_info() {
 
 show_assistants_menu() {
     echo -e "${BOLD}Which AI assistants do you use?${NC}"
-    echo -e "${CYAN}(Use numbers to toggle, Enter to confirm)${NC}"
+    echo -e "${CYAN}(↑/↓: Navigate, Space: Toggle, Enter: Confirm, a: All, n: None)${NC}"
     echo ""
 
     local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode")
     local selected=(true false false false false)
+    local current=0
+    local total=${#options[@]}
+
+    # Hide cursor
+    tput civis
 
     while true; do
+        # Print menu
         for i in "${!options[@]}"; do
+            local checkbox=" "
+            local line_style=""
+            
+            # Check if selected
             if [ "${selected[$i]}" = true ]; then
-                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${options[$i]}"
-            else
-                echo -e "  [ ] $((i+1)). ${options[$i]}"
+                checkbox="${GREEN}✓${NC}"
             fi
+            
+            # Highlight current line
+            if [ $i -eq $current ]; then
+                line_style="${CYAN}❯ ${BOLD}"
+            else
+                line_style="  "
+            fi
+            
+            echo -e "${line_style}[${checkbox}] ${options[$i]}${NC}"
         done
+        
         echo ""
-        echo -e "  ${YELLOW}a${NC}. Select all"
-        echo -e "  ${YELLOW}n${NC}. Select none"
-        echo ""
-        echo -n "Toggle (1-5, a, n) or Enter to confirm: "
-
-        read -r choice
-
-        case $choice in
-            1) selected[0]=$([ "${selected[0]}" = true ] && echo false || echo true) ;;
-            2) selected[1]=$([ "${selected[1]}" = true ] && echo false || echo true) ;;
-            3) selected[2]=$([ "${selected[2]}" = true ] && echo false || echo true) ;;
-            4) selected[3]=$([ "${selected[3]}" = true ] && echo false || echo true) ;;
-            5) selected[4]=$([ "${selected[4]}" = true ] && echo false || echo true) ;;
-            a|A) selected=(true true true true true) ;;
-            n|N) selected=(false false false false false) ;;
-            "") break ;;
-            *) echo -e "${RED}Invalid option${NC}" ;;
-        esac
-
-        echo -en "\033[12A\033[J"
+        echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
+        
+        # Read key
+        read -rsn1 key
+        
+        # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
+        if [ "$key" = $'\x1b' ]; then
+            read -rsn2 key
+            case $key in
+                '[A') # Up arrow
+                    ((current--))
+                    if [ $current -lt 0 ]; then
+                        current=$((total - 1))
+                    fi
+                    ;;
+                '[B') # Down arrow
+                    ((current++))
+                    if [ $current -ge $total ]; then
+                        current=0
+                    fi
+                    ;;
+            esac
+        else
+            case $key in
+                ' ') # Space - toggle current
+                    selected[$current]=$([ "${selected[$current]}" = true ] && echo false || echo true)
+                    ;;
+                '') # Enter - confirm
+                    break
+                    ;;
+                'a'|'A') # Select all
+                    for i in "${!options[@]}"; do
+                        selected[$i]=true
+                    done
+                    ;;
+                'n'|'N') # Select none
+                    for i in "${!options[@]}"; do
+                        selected[$i]=false
+                    done
+                    ;;
+            esac
+        fi
+        
+        # Clear menu (total lines + 2 for shortcuts)
+        echo -en "\033[$((total + 2))A\033[J"
     done
+    
+    # Show cursor again
+    tput cnorm
+    
+    # Clear menu
+    echo -en "\033[$((total + 2))A\033[J"
 
     SETUP_CLAUDE=${selected[0]}
     SETUP_GEMINI=${selected[1]}
@@ -163,7 +212,7 @@ show_skills_menu() {
     fi
     
     echo -e "${BOLD}Which skills do you want to install?${NC}"
-    echo -e "${CYAN}(Use numbers to toggle, Enter to confirm)${NC}"
+    echo -e "${CYAN}(↑/↓: Navigate, Space: Toggle, Enter: Confirm, a: All, n: None)${NC}"
     echo ""
 
     local selected=()
@@ -171,47 +220,86 @@ show_skills_menu() {
         selected+=(true)  # Default all to selected
     done
 
+    local current=0
+    local total=${#available_to_install[@]}
+
+    # Hide cursor
+    tput civis
+
     while true; do
+        # Print menu
         for i in "${!available_to_install[@]}"; do
+            local checkbox=" "
+            local line_style=""
+            
+            # Check if selected
             if [ "${selected[$i]}" = true ]; then
-                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${available_to_install[$i]}"
-            else
-                echo -e "  [ ] $((i+1)). ${available_to_install[$i]}"
+                checkbox="${GREEN}✓${NC}"
             fi
+            
+            # Highlight current line
+            if [ $i -eq $current ]; then
+                line_style="${CYAN}❯ ${BOLD}"
+            else
+                line_style="  "
+            fi
+            
+            echo -e "${line_style}[${checkbox}] ${available_to_install[$i]}${NC}"
         done
+        
         echo ""
-        echo -e "  ${YELLOW}a${NC}. Select all"
-        echo -e "  ${YELLOW}n${NC}. Select none"
-        echo ""
-        echo -n "Toggle (1-${#available_to_install[@]}, a, n) or Enter to confirm: "
-
-        read -r choice
-
-        case $choice in
-            [1-9])
-                idx=$((choice - 1))
-                if [ $idx -lt ${#available_to_install[@]} ]; then
-                    selected[$idx]=$([ "${selected[$idx]}" = true ] && echo false || echo true)
-                else
-                    echo -e "${RED}Invalid option${NC}"
-                fi
-                ;;
-            a|A)
-                for i in "${!available_to_install[@]}"; do
-                    selected[$i]=true
-                done
-                ;;
-            n|N)
-                for i in "${!available_to_install[@]}"; do
-                    selected[$i]=false
-                done
-                ;;
-            "") break ;;
-            *) echo -e "${RED}Invalid option${NC}" ;;
-        esac
-
-        echo -en "\033[$((${#available_to_install[@]} + 4))A\033[J"
+        echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
+        
+        # Read key
+        read -rsn1 key
+        
+        # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
+        if [ "$key" = $'\x1b' ]; then
+            read -rsn2 key
+            case $key in
+                '[A') # Up arrow
+                    ((current--))
+                    if [ $current -lt 0 ]; then
+                        current=$((total - 1))
+                    fi
+                    ;;
+                '[B') # Down arrow
+                    ((current++))
+                    if [ $current -ge $total ]; then
+                        current=0
+                    fi
+                    ;;
+            esac
+        else
+            case $key in
+                ' ') # Space - toggle current
+                    selected[$current]=$([ "${selected[$current]}" = true ] && echo false || echo true)
+                    ;;
+                '') # Enter - confirm
+                    break
+                    ;;
+                'a'|'A') # Select all
+                    for i in "${!available_to_install[@]}"; do
+                        selected[$i]=true
+                    done
+                    ;;
+                'n'|'N') # Select none
+                    for i in "${!available_to_install[@]}"; do
+                        selected[$i]=false
+                    done
+                    ;;
+            esac
+        fi
+        
+        # Clear menu (total lines + 2 for shortcuts)
+        echo -en "\033[$((total + 2))A\033[J"
     done
+    
+    # Show cursor again
+    tput cnorm
+    
+    # Clear menu
+    echo -en "\033[$((total + 2))A\033[J"
 
     # Store selected skills
     SELECTED_SKILLS_LIST=()
