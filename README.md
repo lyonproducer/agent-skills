@@ -64,37 +64,39 @@ Root
 
 ## Quick Start
 
-### Option 1: Install All Skills (Recommended)
+### Option 1: Use setup.sh (Recommended - Interactive & Multi-Assistant) + AGENTS.MD 
 
+The `setup.sh` script supports both multi-assistant configuration (Claude, Gemini, Codex, Copilot, Kilocode) and Cursor-specific installations.
+
+**Interactive Mode (Recommended):**
 ```bash
-# Clone the repository
-git clone https://github.com/lyonproducer/agent-skills.git
+# Run without arguments for interactive selection
+./setup.sh
 
-# Copy skills to your Cursor configuration
-cp -r agent-skills/skills ~/.cursor/skills/
+# You'll be prompted to:
+# 1. Select which AI assistants to configure
+# 2. Select which skills to install
 ```
 
-### Option 2: Install Specific Skills
-
+**Command-Line Mode:**
 ```bash
-# Copy only the skills you need
-cp -r agent-skills/skills/angular/core ~/.cursor/skills/angular-core
-cp -r agent-skills/skills/ionic/angular/architect ~/.cursor/skills/ionic-angular-architect
+# Configure all assistants with all skills
+./setup.sh --all
+
+# Configure specific assistants
+./setup.sh --claude --codex --kilocode
+
+# Cursor-only install (current project)
+./setup.sh --cursor                  # All skills to .cursor/skills
 ```
 
-### Option 3: Project-Specific Installation
+**What it does:**
+- Creates symlinks from `.claude/skills`, `.gemini/skills`, `.codex/skills`, `.kilocode/skills` → `skills/`
+- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, `AGENTS.md (Kilocode... etc)`
+- Copies `AGENTS.md` to `.github/copilot-instructions.md` for Copilot
+- Installs selected skills to Cursor (project-specific in `.cursor/skills/`)
 
-For team-wide usage, install skills in your project:
-
-```bash
-# Inside your Angular + Ionic project
-mkdir -p .cursor/skills
-cp -r /path/to/agent-skills/skills/* .cursor/skills/
-```
-
-Then commit the `.cursor/skills/` directory to your repository.
-
-### Option 4: Using npx skills
+### Option 2: Using npx skills - AGENTS.MD
 
 ```bash
 # Install individual skills
@@ -108,10 +110,16 @@ npx skills add https://github.com/lyonproducer/agent-skills
 
 ## Cursor Skill Locations
 
-| Location | Scope | Use Case |
-|----------|-------|----------|
-| `~/.cursor/skills/` | Personal (all projects) | Your personal preferences |
-| `<project>/.cursor/skills/` | Project-specific | Team-wide standards |
+| Location | Use Case | Supported By |
+|----------|----------|--------------|
+| `<project>/.cursor/skills/` | Project-specific team standards | `.cursor` directory |
+| `.claude/skills/` | Claude Code assistant | Claude + symlink |
+| `.gemini/skills/` | Gemini CLI assistant | Gemini + symlink |
+| `.codex/skills/` | Codex (OpenAI) assistant | Codex + symlink |
+| `.kilocode/skills/` | Kilocode assistant | Kilocode + symlink |
+| `.github/copilot-instructions.md` | GitHub Copilot | Copilot + copy |
+
+**Note**: Skills are now project-specific only for better team collaboration and version control.
 
 ## Verification
 
@@ -244,19 +252,28 @@ cd agent-skills
 git pull origin main
 
 # Update your installation
-cp -r skills/* ~/.cursor/skills/
+cp -r skills/* .cursor/skills/
 ```
 
 ## Skill Development
 
 Want to create your own skills? See the [skill-creator](https://github.com/anthropics/skills) guide.
 
+```markdown
 ### Creating a New Skill
 
-1. Use the skill template from `.agents/skills/skill-creator/`
-2. Follow YAML frontmatter requirements
-3. Keep SKILL.md under 500 lines
-4. Add to AGENTS.md trigger table
+#### Option 1: Using Official Skill-Creator (Recommended)
+Install and use the official Anthropic skill-creator:
+
+```bash
+# Install skill-creator tool
+npx skills add https://github.com/anthropics/skills --skill skill-creator
+
+# Create your new skill (interactive)
+npx skills create my-new-skill
+
+# Follow the generated structure and guidelines
+```
 
 ## Troubleshooting
 
