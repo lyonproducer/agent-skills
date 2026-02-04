@@ -75,15 +75,7 @@ Clone only the `skills/` folder without extra documentation files:
 
 ```bash
 # Method 1: Using sparse checkout (Git 2.25+)
-git clone --depth 1 --filter=blob:none --sparse \
-  https://github.com/lyonproducer/agent-skills.git
-cd agent-skills
-git sparse-checkout set skills
-cd skills
-
-# Method 2: Using svn export (simpler)
-svn export https://github.com/lyonproducer/agent-skills/trunk/skills
-cd skills
+npx degit lyonproducer/agent-skills/skills skills && cd skills && ./setup.sh 
 
 # Run setup
 ./setup.sh
