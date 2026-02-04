@@ -183,19 +183,6 @@ if (Capacitor.getPlatform() === 'ios') {
 }
 ```
 
-## Skill Architecture
-
-```
-Angular Core Foundation
-    ↓
-├─→ Forms (when needed)
-├─→ Performance (when optimizing)
-└─→ Ionic Architecture
-      ↓
-    └─→ Capacitor (for mobile features)
-```
-
-**Key Principle**: Always load `angular-core` first, then other skills as needed.
 
 ## Key Concepts
 

@@ -124,47 +124,85 @@ show_assistants_menu() {
 }
 
 show_skills_menu() {
+    # Detect already installed skills
+    local installed=($(get_installed_skills))
+    local available_to_install=($(get_available_skills_to_install))
+    
+    # Show already installed skills if any
+    if [ ${#installed[@]} -gt 0 ]; then
+        echo -e "${GREEN}✓ Already installed (${#installed[@]} skills):${NC}"
+        for skill in "${installed[@]}"; do
+            echo -e "  ${GREEN}✓${NC} $skill"
+        done
+        echo ""
+        
+        # Ask if user wants to reinstall or add new
+        echo -e "${YELLOW}Options:${NC}"
+        echo -e "  ${YELLOW}c${NC}. Continue (install new skills only)"
+        echo -e "  ${YELLOW}r${NC}. Reinstall (show all skills including installed)"
+        echo ""
+        echo -n "Choose option (c/r): "
+        
+        read -r reinstall_choice
+        echo ""
+        
+        if [ "$reinstall_choice" = "r" ] || [ "$reinstall_choice" = "R" ]; then
+            # Show all skills for reinstallation
+            available_to_install=("${AVAILABLE_SKILLS[@]}")
+            echo -e "${BOLD}Showing all skills (including installed):${NC}"
+            echo ""
+        fi
+    fi
+    
+    # Check if there are skills to install
+    if [ ${#available_to_install[@]} -eq 0 ]; then
+        echo -e "${GREEN}✓ All skills are already installed!${NC}"
+        echo ""
+        echo "Nothing to install. Use option 'r' to reinstall if needed."
+        return
+    fi
+    
     echo -e "${BOLD}Which skills do you want to install?${NC}"
     echo -e "${CYAN}(Use numbers to toggle, Enter to confirm)${NC}"
     echo ""
 
     local selected=()
-    for skill in "${AVAILABLE_SKILLS[@]}"; do
-        selected+=(true)
+    for skill in "${available_to_install[@]}"; do
+        selected+=(true)  # Default all to selected
     done
 
     while true; do
-        for i in "${!AVAILABLE_SKILLS[@]}"; do
+        for i in "${!available_to_install[@]}"; do
             if [ "${selected[$i]}" = true ]; then
-                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${AVAILABLE_SKILLS[$i]}"
+                echo -e "  ${GREEN}[x]${NC} $((i+1)). ${available_to_install[$i]}"
             else
-                echo -e "  [ ] $((i+1)). ${AVAILABLE_SKILLS[$i]}"
+                echo -e "  [ ] $((i+1)). ${available_to_install[$i]}"
             fi
         done
         echo ""
         echo -e "  ${YELLOW}a${NC}. Select all"
         echo -e "  ${YELLOW}n${NC}. Select none"
         echo ""
-        echo -n "Toggle (1-${#AVAILABLE_SKILLS[@]}, a, n) or Enter to confirm: "
+        echo -n "Toggle (1-${#available_to_install[@]}, a, n) or Enter to confirm: "
 
         read -r choice
 
         case $choice in
             [1-9])
                 idx=$((choice - 1))
-                if [ $idx -lt ${#AVAILABLE_SKILLS[@]} ]; then
+                if [ $idx -lt ${#available_to_install[@]} ]; then
                     selected[$idx]=$([ "${selected[$idx]}" = true ] && echo false || echo true)
                 else
                     echo -e "${RED}Invalid option${NC}"
                 fi
                 ;;
             a|A)
-                for i in "${!AVAILABLE_SKILLS[@]}"; do
+                for i in "${!available_to_install[@]}"; do
                     selected[$i]=true
                 done
                 ;;
             n|N)
-                for i in "${!AVAILABLE_SKILLS[@]}"; do
+                for i in "${!available_to_install[@]}"; do
                     selected[$i]=false
                 done
                 ;;
@@ -172,16 +210,108 @@ show_skills_menu() {
             *) echo -e "${RED}Invalid option${NC}" ;;
         esac
 
-        echo -en "\033[$((${#AVAILABLE_SKILLS[@]} + 4))A\033[J"
+        echo -en "\033[$((${#available_to_install[@]} + 4))A\033[J"
     done
 
     # Store selected skills
     SELECTED_SKILLS_LIST=()
-    for i in "${!AVAILABLE_SKILLS[@]}"; do
+    for i in "${!available_to_install[@]}"; do
         if [ "${selected[$i]}" = true ]; then
-            SELECTED_SKILLS_LIST+=("${AVAILABLE_SKILLS[$i]}")
+            SELECTED_SKILLS_LIST+=("${available_to_install[$i]}")
         fi
     done
+}
+
+# Get installed skills by reading .cursor/skills/ directory
+get_installed_skills() {
+    local installed=()
+    
+    # Check if .cursor/skills exists in current directory
+    if [ -d ".cursor/skills" ]; then
+        for dir in .cursor/skills/*/; do
+            if [ -d "$dir" ]; then
+                local skill_name=$(basename "$dir")
+                installed+=("$skill_name")
+            fi
+        done
+    fi
+    
+    printf '%s\n' "${installed[@]}"
+}
+
+# Get available skills to install (filter out already installed)
+get_available_skills_to_install() {
+    local installed=($(get_installed_skills))
+    local available=()
+    
+    for skill in "${AVAILABLE_SKILLS[@]}"; do
+        local skill_basename=$(basename "$skill")
+        local is_installed=false
+        
+        # Check if this skill is already installed
+        for installed_skill in "${installed[@]}"; do
+            if [ "$skill_basename" = "$installed_skill" ]; then
+                is_installed=true
+                break
+            fi
+        done
+        
+        # If not installed, add to available list
+        if [ "$is_installed" = false ]; then
+            available+=("$skill")
+        fi
+    done
+    
+    printf '%s\n' "${available[@]}"
+}
+
+# Show installation status
+show_status() {
+    local installed=($(get_installed_skills))
+    local total=${#AVAILABLE_SKILLS[@]}
+    local installed_count=${#installed[@]}
+    local available_count=$((total - installed_count))
+    
+    echo ""
+    echo -e "${BOLD}Skills Installation Status${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    
+    if [ ${#installed[@]} -eq 0 ]; then
+        echo -e "${YELLOW}✗ No skills installed yet${NC}"
+        echo ""
+        echo -e "Available skills to install: ${BOLD}$total${NC}"
+    else
+        echo -e "${GREEN}✓ Installed Skills ($installed_count/$total):${NC}"
+        for skill in "${installed[@]}"; do
+            echo -e "  ${GREEN}✓${NC} $skill"
+        done
+        echo ""
+        
+        if [ $available_count -gt 0 ]; then
+            echo -e "${YELLOW}○ Available to Install ($available_count/$total):${NC}"
+            local available_list=($(get_available_skills_to_install))
+            for skill in "${available_list[@]}"; do
+                local skill_name=$(basename "$skill")
+                echo -e "  ${YELLOW}○${NC} $skill_name"
+            done
+        else
+            echo -e "${GREEN}✓ All skills are installed!${NC}"
+        fi
+    fi
+    
+    echo ""
+    echo -e "${BLUE}Installation Path:${NC} ./.cursor/skills/"
+    echo ""
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    if [ $available_count -gt 0 ] || [ ${#installed[@]} -eq 0 ]; then
+        echo ""
+        echo -e "${CYAN}To install skills:${NC}"
+        echo "  ./setup.sh           # Interactive mode"
+        echo "  ./setup.sh --cursor  # Install to current project"
+    fi
+    echo ""
 }
 
 # Check if skills directory exists
@@ -348,13 +478,15 @@ show_usage() {
     echo "  --kilocode            Configure Kilocode (.kilocode/skills + KILOCODE.md)"
     echo "  --cursor              Install skills to current project (.cursor/skills/)"
     echo "  --list                List available skills"
+    echo "  --status              Show installed vs available skills"
     echo "  --help                Show this help message"
     echo ""
     echo "Examples:"
     echo "  ./setup.sh                             # Interactive mode"
     echo "  ./setup.sh --all                       # Configure all assistants"
-    echo "  ./setup.sh --claude --codex --kilocode # Multiple assistants skills installed to current project"
-    echo "  ./setup.sh --cursor                    # Install skills to current project (.cursor/skills/)"
+    echo "  ./setup.sh --claude --codex --kilocode # Multiple assistants"
+    echo "  ./setup.sh --cursor                    # Install to current project"
+    echo "  ./setup.sh --status                    # Check installation status"
     echo "  ./setup.sh --list                      # List available skills"
     echo ""
 }
@@ -401,6 +533,10 @@ main() {
                 ;;
             --list)
                 list_skills
+                exit 0
+                ;;
+            --status)
+                show_status
                 exit 0
                 ;;
             --help|-h|"")
