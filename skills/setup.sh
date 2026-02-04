@@ -16,8 +16,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && pwd)"
-SKILLS_DIR="$REPO_ROOT/skills"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+SKILLS_DIR="$SCRIPT_DIR"
 CURSOR_GLOBAL="$HOME/.cursor/skills"
 CURSOR_PROJECT=".cursor/skills"
 
@@ -408,19 +408,14 @@ replace_link() {
 
 copy_agents_md() {
     local target_name="$1"
-    local agents_files
-    local count=0
-
-    agents_files=$(find "$REPO_ROOT" -name "AGENTS.md" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null)
-
-    for agents_file in $agents_files; do
-        local agents_dir
-        agents_dir=$(dirname "$agents_file")
-        cp "$agents_file" "$agents_dir/$target_name"
-        count=$((count + 1))
-    done
-
-    print_success "Copied $count AGENTS.md -> $target_name"
+    local agents_file="$SCRIPT_DIR/AGENTS.md"
+    
+    if [ -f "$agents_file" ]; then
+        cp "$agents_file" "$REPO_ROOT/$target_name"
+        print_success "Copied AGENTS.md -> $target_name"
+    else
+        print_warning "AGENTS.md not found at $SCRIPT_DIR"
+    fi
 }
 
 setup_claude() {
@@ -448,12 +443,12 @@ setup_codex() {
 }
 
 setup_copilot() {
-    if [ -f "$REPO_ROOT/AGENTS.md" ]; then
+    if [ -f "$SCRIPT_DIR/AGENTS.md" ]; then
         ensure_dir "$REPO_ROOT/.github"
-        cp "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/.github/copilot-instructions.md"
+        cp "$SCRIPT_DIR/AGENTS.md" "$REPO_ROOT/.github/copilot-instructions.md"
         print_success "AGENTS.md -> .github/copilot-instructions.md"
     else
-        print_warning "AGENTS.md not found at repo root"
+        print_warning "AGENTS.md not found at skills directory"
     fi
 }
 

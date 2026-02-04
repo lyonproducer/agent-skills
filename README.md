@@ -29,15 +29,15 @@ See [AGENTS.md](AGENTS.md) for detailed skill tree, triggers, and usage patterns
 
 ```
 Root
-├── AGENTS.md          ← Skill tree & triggers
-├── README.md          ← Installation guide
+├── README.md          ← Installation guide (full repo)
 ├── CHANGES.md         ← Change log
-├── SUMMARY.md         ← Visual summary
-├── STATUS.md          ← This file
-├── setup.sh           ← Installation script
+├── LICENSE            ← License file
 ├── .gitignore         ← Git exclusions
 │
-└── skills/
+└── skills/            ← Clone this folder only! 📦
+    ├── AGENTS.md      ← Skill tree & triggers
+    ├── setup.sh       ← Installation script
+    │
     ├── angular/
     │   ├── core/                          [207 lines]
     │   │   └── SKILL.md
@@ -48,7 +48,7 @@ Root
     │
     └── ionic/
         └── angular/
-            ├── architect/                 [335 lines]
+            ├── architecture/              [335 lines]
             │   ├── SKILL.md
             │   ├── references/
             │   │   ├── capacitor-platform-detection.md
@@ -58,18 +58,53 @@ Root
             │       ├── example-usage.md
             │       └── push-notification.service.ts
             │
-            └── capacitor/                 [398 lines] ⭐ NEW
+            ├── capacitor/                 [398 lines]
+            │   └── SKILL.md
+            │
+            └── migration-standalone/      [285 lines] ⭐ NEW
                 └── SKILL.md
 ```
 
+**💡 Pro Tip**: Clone only `skills/` folder for a lightweight setup without docs!
+
 ## Quick Start
 
-### Option 1: Use setup.sh (Recommended - Interactive & Multi-Assistant) + AGENTS.MD 
+### Option 0: Clone Only Skills Folder (Lightweight)
+
+Clone only the `skills/` folder without extra documentation files:
+
+```bash
+# Method 1: Using sparse checkout (Git 2.25+)
+git clone --depth 1 --filter=blob:none --sparse \
+  https://github.com/lyonproducer/agent-skills.git
+cd agent-skills
+git sparse-checkout set skills
+cd skills
+
+# Method 2: Using svn export (simpler)
+svn export https://github.com/lyonproducer/agent-skills/trunk/skills
+cd skills
+
+# Run setup
+./setup.sh
+```
+
+**What you get:**
+- ✅ Just `skills/` folder with all skills
+- ✅ `setup.sh` script included
+- ✅ `AGENTS.md` for AI assistants
+- ❌ No extra docs (README, CHANGES, LICENSE, etc.)
+
+### Option 1: Use setup.sh (Full Repository - Interactive & Multi-Assistant)
 
 The `setup.sh` script supports both multi-assistant configuration (Claude, Gemini, Codex, Copilot, Kilocode) and Cursor-specific installations.
 
 **Interactive Mode (Recommended):**
 ```bash
+# Clone full repository
+git clone https://github.com/lyonproducer/agent-skills.git
+cd agent-skills/skills
+
 # Run without arguments for interactive selection
 ./setup.sh
 
@@ -80,6 +115,9 @@ The `setup.sh` script supports both multi-assistant configuration (Claude, Gemin
 
 **Command-Line Mode:**
 ```bash
+# From skills/ directory
+cd skills
+
 # Configure all assistants with all skills
 ./setup.sh --all
 
@@ -88,6 +126,9 @@ The `setup.sh` script supports both multi-assistant configuration (Claude, Gemin
 
 # Cursor-only install (current project)
 ./setup.sh --cursor                  # All skills to .cursor/skills
+
+# Check installation status
+./setup.sh --status
 ```
 
 **What it does:**
