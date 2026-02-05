@@ -18,7 +18,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SKILLS_DIR="$SCRIPT_DIR"
-CURSOR_GLOBAL="$HOME/.cursor/skills"
+AGENTS_SKILLS=".agents/skills"
 CURSOR_PROJECT=".cursor/skills"
 
 # Colors for output
@@ -313,13 +313,13 @@ show_skills_menu() {
     done
 }
 
-# Get installed skills by reading .cursor/skills/ directory
+# Get installed skills by reading .agents/skills/ directory (source of truth)
 get_installed_skills() {
     local installed=()
     
-    # Check if .cursor/skills exists in current directory
-    if [ -d ".cursor/skills" ]; then
-        for dir in .cursor/skills/*/; do
+    # Check if .agents/skills exists (source of truth for all installed skills)
+    if [ -d "$AGENTS_SKILLS" ]; then
+        for dir in $AGENTS_SKILLS/*/; do
             if [ -d "$dir" ]; then
                 local skill_name=$(basename "$dir")
                 installed+=("$skill_name")
@@ -392,7 +392,8 @@ show_status() {
     fi
     
     echo ""
-    echo -e "${BLUE}Installation Path:${NC} ./.cursor/skills/"
+    echo -e "${BLUE}Installation Path:${NC} ./.agents/skills/"
+    echo -e "${BLUE}Symlinks:${NC} .cursor/skills/, .kilocode/skills/, etc. → .agents/skills/"
     echo ""
     echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     
@@ -427,18 +428,18 @@ list_skills() {
     echo ""
 }
 
-# Cursor: install selected or all skills to project
-install_cursor_project() {
+# Install selected skills to .agents/skills (source of truth)
+install_skills_to_agents() {
     if [ ! -f "angular.json" ]; then
         print_error "Not an Angular project (angular.json not found)"
         print_info "Run this command from your Angular project root"
         exit 1
     fi
     
-    print_info "Installing skills to: $CURSOR_PROJECT"
+    print_info "Installing skills to: $AGENTS_SKILLS"
     
-    # Create directory if it doesn't exist
-    mkdir -p "$CURSOR_PROJECT"
+    # Create .agents/skills directory if it doesn't exist
+    mkdir -p "$AGENTS_SKILLS"
     
     # Determine which skills to install
     local skills_to_install=()
@@ -456,7 +457,7 @@ install_cursor_project() {
         if [ -d "$SKILLS_DIR/$skill" ]; then
             # Extract skill name for flat installation
             local skill_name=$(basename "$skill")
-            local target_path="$CURSOR_PROJECT/$skill_name"
+            local target_path="$AGENTS_SKILLS/$skill_name"
             
             # Remove existing if present
             if [ -d "$target_path" ]; then
@@ -472,8 +473,25 @@ install_cursor_project() {
     done
     
     echo ""
-    print_success "Installed $count skills to project"
-    print_info "Don't forget to commit .cursor/skills/ to your repository"
+    print_success "Installed $count skills to .agents/skills/"
+    print_info "Skills are now available for all assistants via symlinks"
+}
+
+# Create symlink for Cursor to .agents/skills
+setup_cursor_symlink() {
+    ensure_dir ".cursor"
+    
+    # Remove existing .cursor/skills if it exists
+    if [ -L "$CURSOR_PROJECT" ]; then
+        rm "$CURSOR_PROJECT"
+    elif [ -d "$CURSOR_PROJECT" ]; then
+        mv "$CURSOR_PROJECT" "${CURSOR_PROJECT}.backup.$(date +%s)"
+        print_warning "Backed up existing .cursor/skills to ${CURSOR_PROJECT}.backup.*"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$CURSOR_PROJECT"
+    print_success ".cursor/skills -> .agents/skills/"
 }
 
 
@@ -512,24 +530,51 @@ copy_agents_md() {
 setup_claude() {
     local target="$REPO_ROOT/.claude/skills"
     ensure_dir "$REPO_ROOT/.claude"
-    replace_link "$target" "$SKILLS_DIR"
-    print_success ".claude/skills -> skills/"
+    
+    # Remove existing
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    print_success ".claude/skills -> .agents/skills/"
     copy_agents_md "CLAUDE.md"
 }
 
 setup_gemini() {
     local target="$REPO_ROOT/.gemini/skills"
     ensure_dir "$REPO_ROOT/.gemini"
-    replace_link "$target" "$SKILLS_DIR"
-    print_success ".gemini/skills -> skills/"
+    
+    # Remove existing
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    print_success ".gemini/skills -> .agents/skills/"
     copy_agents_md "GEMINI.md"
 }
 
 setup_codex() {
     local target="$REPO_ROOT/.codex/skills"
     ensure_dir "$REPO_ROOT/.codex"
-    replace_link "$target" "$SKILLS_DIR"
-    print_success ".codex/skills -> skills/"
+    
+    # Remove existing
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    print_success ".codex/skills -> .agents/skills/"
     print_success "Codex uses AGENTS.md natively"
 }
 
@@ -546,9 +591,18 @@ setup_copilot() {
 setup_kilocode() {
     local target="$REPO_ROOT/.kilocode/skills"
     ensure_dir "$REPO_ROOT/.kilocode"
-    replace_link "$target" "$SKILLS_DIR"
-    print_success ".kilocode/skills -> skills/"
-    copy_agents_md "AGENTS.md"
+    
+    # Remove existing
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    print_success ".kilocode/skills -> .agents/skills/"
+    print_success "Kilocode uses AGENTS.md natively"
 }
 
 # Show usage
@@ -561,8 +615,8 @@ show_usage() {
     echo "  --gemini              Configure Gemini CLI (.gemini/skills + GEMINI.md)"
     echo "  --codex               Configure Codex (.codex/skills + AGENTS.md)"
     echo "  --copilot             Configure GitHub Copilot (.github/copilot-instructions.md)"
-    echo "  --kilocode            Configure Kilocode (.kilocode/skills + KILOCODE.md)"
-    echo "  --cursor              Install skills to current project (.cursor/skills/)"
+    echo "  --kilocode            Configure Kilocode (.kilocode/skills + AGENTS.md)"
+    echo "  --cursor              Configure Cursor (.cursor/skills + AGENTS.md)"
     echo "  --list                List available skills"
     echo "  --status              Show installed vs available skills"
     echo "  --help                Show this help message"
@@ -591,6 +645,7 @@ main() {
                 SETUP_CODEX=true
                 SETUP_COPILOT=true
                 SETUP_KILOCODE=true
+                SETUP_CURSOR=true
                 shift
                 ;;
             --claude)
@@ -644,11 +699,12 @@ main() {
         
         # Show selected assistants summary
         local selected_count=0
-        [ "$SETUP_CLAUDE" = true ] && ((selected_count++))
-        [ "$SETUP_GEMINI" = true ] && ((selected_count++))
-        [ "$SETUP_CODEX" = true ] && ((selected_count++))
-        [ "$SETUP_COPILOT" = true ] && ((selected_count++))
-        [ "$SETUP_KILOCODE" = true ] && ((selected_count++))
+            [ "$SETUP_CLAUDE" = true ] && ((selected_count++))
+            [ "$SETUP_GEMINI" = true ] && ((selected_count++))
+            [ "$SETUP_CODEX" = true ] && ((selected_count++))
+            [ "$SETUP_COPILOT" = true ] && ((selected_count++))
+            [ "$SETUP_KILOCODE" = true ] && ((selected_count++))
+            [ "$SETUP_CURSOR" = true ] && ((selected_count++))
         
         if [ $selected_count -eq 0 ]; then
             print_warning "No assistants selected. Exiting."
@@ -661,10 +717,11 @@ main() {
         [ "$SETUP_CODEX" = true ] && echo -e "  ${GREEN}✓${NC} Codex (OpenAI)"
         [ "$SETUP_COPILOT" = true ] && echo -e "  ${GREEN}✓${NC} GitHub Copilot"
         [ "$SETUP_KILOCODE" = true ] && echo -e "  ${GREEN}✓${NC} Kilocode"
+        [ "$SETUP_CURSOR" = true ] && echo -e "  ${GREEN}✓${NC} Cursor"
         echo ""
         
         # If any assistant was selected, ask which skills
-        if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ]; then
+        if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ]; then
             show_skills_menu
             echo ""
             
@@ -682,33 +739,52 @@ main() {
         fi
     fi
 
+    # First, install skills to .agents/skills if any assistant or cursor was selected
+    local any_selected=false
+    [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || \
+    [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ] && any_selected=true
+    
+    if [ "$any_selected" = true ] && [ ${#SELECTED_SKILLS_LIST[@]} -gt 0 ]; then
+        print_info "Installing skills to .agents/skills/..."
+        install_skills_to_agents
+        echo ""
+    fi
+
+    # Now setup symlinks for each selected assistant
     if [ "$SETUP_CLAUDE" = true ]; then
         print_info "Setting up Claude Code..."
         setup_claude
+        echo ""
     fi
 
     if [ "$SETUP_GEMINI" = true ]; then
         print_info "Setting up Gemini CLI..."
         setup_gemini
+        echo ""
     fi
 
     if [ "$SETUP_CODEX" = true ]; then
         print_info "Setting up Codex (OpenAI)..."
         setup_codex
+        echo ""
     fi
 
     if [ "$SETUP_COPILOT" = true ]; then
         print_info "Setting up GitHub Copilot..."
         setup_copilot
+        echo ""
     fi
 
     if [ "$SETUP_KILOCODE" = true ]; then
         print_info "Setting up Kilocode..."
         setup_kilocode
+        echo ""
     fi
 
     if [ "$SETUP_CURSOR" = true ]; then
-        install_cursor_project
+        print_info "Setting up Cursor..."
+        setup_cursor_symlink
+        echo ""
     fi
     
     echo ""
