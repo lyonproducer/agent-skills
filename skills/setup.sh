@@ -19,7 +19,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 SKILLS_DIR="$SCRIPT_DIR"
 AGENTS_SKILLS=".agents/skills"
-CURSOR_PROJECT=".cursor/skills"
 
 # Colors for output
 RED='\033[0;31m'
@@ -36,12 +35,10 @@ SETUP_GEMINI=false
 SETUP_CODEX=false
 SETUP_COPILOT=false
 SETUP_KILOCODE=false
+SETUP_CURSOR=false
 
 # Selected skills (for interactive mode) - using simple array approach
 SELECTED_SKILLS_LIST=()
-
-# Cursor installation flag
-SETUP_CURSOR=false
 
 # Available skills (path relative to skills/)
 AVAILABLE_SKILLS=(
@@ -455,10 +452,20 @@ install_skills_to_agents() {
     local count=0
     for skill in "${skills_to_install[@]}"; do
         if [ -d "$SKILLS_DIR/$skill" ]; then
+        
             # Extract skill name for flat installation
-            local skill_name=$(basename "$skill")
-            local target_path="$AGENTS_SKILLS/$skill_name"
-            
+            # local skill_name=$(basename "$skill")
+            # local target_path="$AGENTS_SKILLS/$skill_name"
+
+            # Create target path
+            local target_path="$AGENTS_SKILLS/$skill"
+            local target_parent=$(dirname "$target_path")
+
+            # Create parent directory if it doesn't exist
+            if [ ! -d "$target_parent" ]; then
+                mkdir -p "$target_parent"
+            fi
+
             # Remove existing if present
             if [ -d "$target_path" ]; then
                 rm -rf "$target_path"
@@ -476,24 +483,6 @@ install_skills_to_agents() {
     print_success "Installed $count skills to .agents/skills/"
     print_info "Skills are now available for all assistants via symlinks"
 }
-
-# Create symlink for Cursor to .agents/skills
-setup_cursor_symlink() {
-    ensure_dir ".cursor"
-    
-    # Remove existing .cursor/skills if it exists
-    if [ -L "$CURSOR_PROJECT" ]; then
-        rm "$CURSOR_PROJECT"
-    elif [ -d "$CURSOR_PROJECT" ]; then
-        mv "$CURSOR_PROJECT" "${CURSOR_PROJECT}.backup.$(date +%s)"
-        print_warning "Backed up existing .cursor/skills to ${CURSOR_PROJECT}.backup.*"
-    fi
-    
-    # Create symlink to .agents/skills
-    ln -s "../$AGENTS_SKILLS" "$CURSOR_PROJECT"
-    print_success ".cursor/skills -> .agents/skills/"
-}
-
 
 ensure_dir() {
     local target="$1"
@@ -525,6 +514,25 @@ copy_agents_md() {
     else
         print_warning "AGENTS.md not found at $SCRIPT_DIR"
     fi
+}
+
+# Create symlink for Cursor to .agents/skills
+setup_cursor() {
+    local target="$REPO_ROOT/.cursor/skills"
+    ensure_dir "$REPO_ROOT/.cursor"
+    
+    # Remove existing .cursor/skills if it exists
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+        print_warning "Backed up existing .cursor/skills to ${target}.backup.*"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    print_success ".cursor/skills -> .agents/skills/"
+    print_success "Cursor uses AGENTS.md natively"
 }
 
 setup_claude() {
@@ -783,7 +791,7 @@ main() {
 
     if [ "$SETUP_CURSOR" = true ]; then
         print_info "Setting up Cursor..."
-        setup_cursor_symlink
+        setup_cursor
         echo ""
     fi
     
