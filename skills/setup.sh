@@ -74,6 +74,22 @@ print_info() {
     echo -e "${BLUE}→${NC} $1"
 }
 
+update_self() {
+    print_info "Updating skills and script from GitHub..."
+    
+    # try to download the latest version of the repo
+    if npx degit lyonproducer/agent-skills/skills "$SCRIPT_DIR" --force; then
+        print_success "Update completed successfully!"
+        print_info "Restarting script to apply changes..."
+        chmod +x "$0"
+        # Restart by removing the --update flag to avoid loop
+        exec "$0" "${@/--update/}" 
+    else
+        print_error "Error trying to update from GitHub."
+        exit 1
+    fi
+}
+
 show_assistants_menu() {
     echo -e "${BOLD}Which AI assistants do you use?${NC}"
     echo -e "${CYAN}(↑/↓: Navigate, ${BOLD}Space: Toggle${NC}${CYAN}, Enter: Confirm)${NC}"
@@ -314,16 +330,21 @@ show_skills_menu() {
 get_installed_skills() {
     local installed=()
     if [ -d "$AGENTS_SKILLS" ]; then
-        # search for directories that contain files (real skills)
-        # This assumes that each skill is a folder with content
+        # search for directories that do not have subdirectories inside 
+        # (i.e. the last level of the hierarchy)
         while IFS= read -r -d '' dir; do
-            # convert full path to relative to .agents/skills
-            local rel_path="${dir#$AGENTS_SKILLS/}"
-            [ -n "$rel_path" ] && installed+=("$rel_path")
+            # check if the directory has files inside (.md, .txt, etc)
+            if [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
+                local rel_path="${dir#$AGENTS_SKILLS/}"
+                # avoid adding the root directories "angular" or "ionic" if they were pasted
+                if [[ "$rel_path" == */* ]]; then
+                    installed+=("$rel_path")
+                fi
+            fi
         done < <(find "$AGENTS_SKILLS" -mindepth 2 -maxdepth 3 -type d -print0)
     fi
     printf '%s\n' "${installed[@]}"
-} 
+}
 
 # Get available skills to install (filter out already installed)
 get_available_skills_to_install() {
@@ -647,6 +668,10 @@ main() {
     # Parse arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
+            --update)
+                update_self "$@"
+                exit 0
+                ;;
             --all)
                 SETUP_CLAUDE=true
                 SETUP_GEMINI=true
@@ -801,7 +826,7 @@ main() {
     print_info "Next steps:"
     echo "  1. Restart your AI assistant"
     echo "  2. Verify skills are detected asking the AI assistant"
-    echo "  3. Add .agents/skills/*, and ./skills/AGENTS.md to gitignore if dont want to commit them"
+    echo "  3. Add .agents/skills/*, ./skills/AGENTS.md, ./skills to gitignore if dont want to commit them"
     echo "  4. Start coding with AI assistance!"
     echo ""
     print_info "Documentation: https://github.com/lyonproducer/agent-skills"
