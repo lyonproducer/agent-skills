@@ -75,9 +75,14 @@ Clone only the `skills/` folder without extra documentation files:
 
 ```bash
 # Method 1: Using degit
-npx degit lyonproducer/agent-skills/skills skills && ./skills/setup.sh
 
-# Run setup
+#from dev
+npx degit lyonproducer/agent-skills/skills#dev skills && chmod +x ./skills/setup.sh && ./skills/setup.sh   
+
+#from main
+npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh && ./skills/setup.sh      
+
+# Run setup to re-install
 ./setup.sh
 ```
 

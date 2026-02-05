@@ -79,7 +79,8 @@ print_info() {
 
 show_assistants_menu() {
     echo -e "${BOLD}Which AI assistants do you use?${NC}"
-    echo -e "${CYAN}(↑/↓: Navigate, Space: Toggle, Enter: Confirm, a: All, n: None)${NC}"
+    echo -e "${CYAN}(↑/↓: Navigate, ${BOLD}Space: Toggle${NC}${CYAN}, Enter: Confirm)${NC}"
+    echo -e "${YELLOW}💡 Multi-select:${NC} Use ${BOLD}Space${NC} to select multiple assistants, then press ${BOLD}Enter${NC}"
     echo ""
 
     local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode")
@@ -212,7 +213,8 @@ show_skills_menu() {
     fi
     
     echo -e "${BOLD}Which skills do you want to install?${NC}"
-    echo -e "${CYAN}(↑/↓: Navigate, Space: Toggle, Enter: Confirm, a: All, n: None)${NC}"
+    echo -e "${CYAN}(↑/↓: Navigate, ${BOLD}Space: Toggle${NC}${CYAN}, Enter: Confirm)${NC}"
+    echo -e "${YELLOW}💡 Multi-select:${NC} Use ${BOLD}Space${NC} to select multiple skills, then press ${BOLD}Enter${NC}"
     echo ""
 
     local selected=()
@@ -639,10 +641,43 @@ main() {
         show_assistants_menu
         echo ""
         
+        # Show selected assistants summary
+        local selected_count=0
+        [ "$SETUP_CLAUDE" = true ] && ((selected_count++))
+        [ "$SETUP_GEMINI" = true ] && ((selected_count++))
+        [ "$SETUP_CODEX" = true ] && ((selected_count++))
+        [ "$SETUP_COPILOT" = true ] && ((selected_count++))
+        [ "$SETUP_KILOCODE" = true ] && ((selected_count++))
+        
+        if [ $selected_count -eq 0 ]; then
+            print_warning "No assistants selected. Exiting."
+            exit 0
+        fi
+        
+        echo -e "${GREEN}✓ Selected $selected_count assistant(s):${NC}"
+        [ "$SETUP_CLAUDE" = true ] && echo -e "  ${GREEN}✓${NC} Claude Code"
+        [ "$SETUP_GEMINI" = true ] && echo -e "  ${GREEN}✓${NC} Gemini CLI"
+        [ "$SETUP_CODEX" = true ] && echo -e "  ${GREEN}✓${NC} Codex (OpenAI)"
+        [ "$SETUP_COPILOT" = true ] && echo -e "  ${GREEN}✓${NC} GitHub Copilot"
+        [ "$SETUP_KILOCODE" = true ] && echo -e "  ${GREEN}✓${NC} Kilocode"
+        echo ""
+        
         # If any assistant was selected, ask which skills
         if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ]; then
             show_skills_menu
             echo ""
+            
+            # Show selected skills summary
+            if [ ${#SELECTED_SKILLS_LIST[@]} -eq 0 ]; then
+                print_warning "No skills selected. Will configure assistants without installing skills."
+                echo ""
+            else
+                echo -e "${GREEN}✓ Selected ${#SELECTED_SKILLS_LIST[@]} skill(s):${NC}"
+                for skill in "${SELECTED_SKILLS_LIST[@]}"; do
+                    echo -e "  ${GREEN}✓${NC} $skill"
+                done
+                echo ""
+            fi
         fi
     fi
 
