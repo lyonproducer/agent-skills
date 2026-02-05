@@ -313,19 +313,17 @@ show_skills_menu() {
 # Get installed skills by reading .agents/skills/ directory (source of truth)
 get_installed_skills() {
     local installed=()
-    
-    # Check if .agents/skills exists (source of truth for all installed skills)
     if [ -d "$AGENTS_SKILLS" ]; then
-        for dir in $AGENTS_SKILLS/*/; do
-            if [ -d "$dir" ]; then
-                local skill_name=$(basename "$dir")
-                installed+=("$skill_name")
-            fi
-        done
+        # search for directories that contain files (real skills)
+        # This assumes that each skill is a folder with content
+        while IFS= read -r -d '' dir; do
+            # convert full path to relative to .agents/skills
+            local rel_path="${dir#$AGENTS_SKILLS/}"
+            [ -n "$rel_path" ] && installed+=("$rel_path")
+        done < <(find "$AGENTS_SKILLS" -mindepth 2 -maxdepth 3 -type d -print0)
     fi
-    
     printf '%s\n' "${installed[@]}"
-}
+} 
 
 # Get available skills to install (filter out already installed)
 get_available_skills_to_install() {
@@ -433,8 +431,6 @@ install_skills_to_agents() {
         exit 1
     fi
     
-    print_info "Installing skills to: $AGENTS_SKILLS"
-    
     # Create .agents/skills directory if it doesn't exist
     mkdir -p "$AGENTS_SKILLS"
     
@@ -452,7 +448,7 @@ install_skills_to_agents() {
     local count=0
     for skill in "${skills_to_install[@]}"; do
         if [ -d "$SKILLS_DIR/$skill" ]; then
-        
+
             # Extract skill name for flat installation
             # local skill_name=$(basename "$skill")
             # local target_path="$AGENTS_SKILLS/$skill_name"
