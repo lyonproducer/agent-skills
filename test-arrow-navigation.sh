@@ -76,8 +76,8 @@ select_menu() {
         echo "" >&2
         echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)" >&2
         
-        # Read key
-        read -rsn1 key
+        # Read key without timeout issues
+        IFS= read -rsn1 key
         
         # Handle arrow keys
         if [ "$key" = $'\x1b' ]; then
@@ -98,13 +98,13 @@ select_menu() {
             esac
         else
             case $key in
-                ' ') # Space
+                ' ') # Space - toggle (NOT enter!)
                     selected[$current]=$([ "${selected[$current]}" = true ] && echo false || echo true)
                     ;;
-                '') # Enter
+                $'\n'|$'\r'|'') # Enter - confirm and exit
                     break
                     ;;
-                'a'|'A')
+                'a'|'A') # Select all
                     for i in "${!options[@]}"; do
                         selected[$i]=true
                     done

@@ -83,8 +83,8 @@ show_assistants_menu() {
     echo -e "${YELLOW}💡 Multi-select:${NC} Use ${BOLD}Space${NC} to select multiple assistants, then press ${BOLD}Enter${NC}"
     echo ""
 
-    local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode")
-    local selected=(true false false false false)
+    local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode" "Cursor")
+    local selected=(false false false false false false)
     local current=0
     local total=${#options[@]}
 
@@ -115,8 +115,8 @@ show_assistants_menu() {
         echo ""
         echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
         
-        # Read key
-        read -rsn1 key
+        # Read key without timeout issues
+        IFS= read -rsn1 key
         
         # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
         if [ "$key" = $'\x1b' ]; then
@@ -137,10 +137,10 @@ show_assistants_menu() {
             esac
         else
             case $key in
-                ' ') # Space - toggle current
+                ' ') # Space - toggle current (NOT enter!)
                     selected[$current]=$([ "${selected[$current]}" = true ] && echo false || echo true)
                     ;;
-                '') # Enter - confirm
+                $'\n'|$'\r'|'') # Enter - confirm and exit
                     break
                     ;;
                 'a'|'A') # Select all
@@ -171,6 +171,7 @@ show_assistants_menu() {
     SETUP_CODEX=${selected[2]}
     SETUP_COPILOT=${selected[3]}
     SETUP_KILOCODE=${selected[4]}
+    SETUP_CURSOR=${selected[5]}
 }
 
 show_skills_menu() {
@@ -252,8 +253,8 @@ show_skills_menu() {
         echo ""
         echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
         
-        # Read key
-        read -rsn1 key
+        # Read key without timeout issues
+        IFS= read -rsn1 key
         
         # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
         if [ "$key" = $'\x1b' ]; then
@@ -274,10 +275,10 @@ show_skills_menu() {
             esac
         else
             case $key in
-                ' ') # Space - toggle current
+                ' ') # Space - toggle current (NOT enter!)
                     selected[$current]=$([ "${selected[$current]}" = true ] && echo false || echo true)
                     ;;
-                '') # Enter - confirm
+                $'\n'|$'\r'|'') # Enter - confirm and exit
                     break
                     ;;
                 'a'|'A') # Select all
