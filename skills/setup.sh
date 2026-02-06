@@ -42,6 +42,7 @@ SELECTED_SKILLS_LIST=()
 
 # Available skills (path relative to skills/)
 AVAILABLE_SKILLS=(
+    "angular/architecture"
     "angular/core"
     "angular/forms"
     "angular/performance"
@@ -330,18 +331,24 @@ show_skills_menu() {
 get_installed_skills() {
     local installed=()
     if [ -d "$AGENTS_SKILLS" ]; then
-        # search for directories that do not have subdirectories inside 
-        # (i.e. the last level of the hierarchy)
+        # search for directories that have files inside and are at depth 2 or 3
         while IFS= read -r -d '' dir; do
-            # check if the directory has files inside (.md, .txt, etc)
+            # check if it contains files to not count empty directories
             if [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
                 local rel_path="${dir#$AGENTS_SKILLS/}"
-                # avoid adding the root directories "angular" or "ionic" if they were pasted
-                if [[ "$rel_path" == */* ]]; then
-                    installed+=("$rel_path")
+                # only accept if it has a subdirectory structure (e.g. angular/core)
+                # and not an intermediate directory like "ionic/angular"
+                if [[ "$rel_path" == *"/"* ]]; then
+                    # if it is ionic/angular/architecture, it is valid.
+                    # but we need to filter to not count 'ionic/angular' if it is only the parent.
+                    # a easy way is to check if there are subdirectories. 
+                    # if it does not have subdirectories, it is a final skill.
+                    if [ $(find "$dir" -mindepth 1 -type d | wc -l) -eq 0 ]; then
+                        installed+=("$rel_path")
+                    fi
                 fi
             fi
-        done < <(find "$AGENTS_SKILLS" -mindepth 2 -maxdepth 3 -type d -print0)
+        done < <(find "$AGENTS_SKILLS" -mindepth 2 -maxdepth 4 -type d -print0)
     fi
     printf '%s\n' "${installed[@]}"
 }
@@ -352,23 +359,18 @@ get_available_skills_to_install() {
     local available=()
     
     for skill in "${AVAILABLE_SKILLS[@]}"; do
-        local skill_basename=$(basename "$skill")
         local is_installed=false
-        
-        # Check if this skill is already installed
-        for installed_skill in "${installed[@]}"; do
-            if [ "$skill_basename" = "$installed_skill" ]; then
+        for inst in "${installed[@]}"; do
+            if [ "$skill" == "$inst" ]; then
                 is_installed=true
                 break
             fi
         done
         
-        # If not installed, add to available list
         if [ "$is_installed" = false ]; then
             available+=("$skill")
         fi
     done
-    
     printf '%s\n' "${available[@]}"
 }
 
@@ -399,8 +401,7 @@ show_status() {
             echo -e "${YELLOW}○ Available to Install ($available_count/$total):${NC}"
             local available_list=($(get_available_skills_to_install))
             for skill in "${available_list[@]}"; do
-                local skill_name=$(basename "$skill")
-                echo -e "  ${YELLOW}○${NC} $skill_name"
+                echo -e "  ${YELLOW}○${NC} $skill"
             done
         else
             echo -e "${GREEN}✓ All skills are installed!${NC}"
