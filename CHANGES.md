@@ -4,11 +4,39 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ .agents/skills Architecture Implementation - February 5, 2026
+
+## Resumen
+- ✅ `.agents/skills/` es la **fuente de verdad** para todos los skills
+- ✅ Todos los asistentes usan **symlinks** a `.agents/skills/`
+- ✅ `get_installed_skills()` ahora lee desde `.agents/skills/`
+- ✅ Instalación única con `install_skills_to_agents()` y symlinks por asistente
+- ✅ `show_status()` y `--help` actualizados para la nueva arquitectura
+
+## Impacto
+- ✅ Sin duplicación de skills
+- ✅ Consistencia entre asistentes
+- ✅ Actualizar un skill actualiza para todos
+- ✅ Ahorro de espacio en disco
+
+# ✅ FINAL UX IMPROVEMENT SUMMARY - February 4, 2026
+
+## Resumen
+- ✅ Menús interactivos con **navegación por flechas** y **toggle con espacio**
+- ✅ Indicador visual (`❯`) y checkmarks (`✓`) para selección
+- ✅ Shortcuts preservados: `a` (all) y `n` (none)
+- ✅ Demo y documentación del nuevo UX
+
+## Impacto
+- ✅ UX profesional (estilo Vercel/Firebase)
+- ✅ Selección más rápida e intuitiva
+- ✅ Feedback visual claro
+
 # ✅ Smart Detection Update - February 4, 2026
 
 ## 🎯 Implementación Completada
 
-Implementada la **detección automática de skills instalados** y el comando **`--status`** para el setup.sh.
+Implementada la **detección automática de skills instalados** y el comando **`--status`** para el setup.sh usando `.agents/skills/` como fuente de verdad.
 
 ---
 
@@ -18,11 +46,11 @@ Implementada la **detección automática de skills instalados** y el comando **`
 
 **Función**: `get_installed_skills()`
 
-Lee el directorio `.cursor/skills/` para detectar qué skills están actualmente instalados.
+Lee el directorio `.agents/skills/` para detectar qué skills están actualmente instalados.
 
 ```bash
 get_installed_skills() {
-    # Lee .cursor/skills/
+    # Lee .agents/skills/
     # Retorna array con nombres de skills instalados
 }
 ```
@@ -119,7 +147,7 @@ Skills Installation Status
   ○ ionic/angular-capacitor
   ○ ionic/angular-migration-standalone
 
-Installation Path: ./.cursor/skills/
+Installation Path: ./.agents/skills/
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -181,7 +209,7 @@ $ ./setup.sh --status
 
 ### 1. Sin Estado Externo
 - ✅ No genera archivos de "estado"
-- ✅ Lee directamente `.cursor/skills/`
+- ✅ Lee directamente `.agents/skills/`
 - ✅ Siempre preciso
 
 ### 2. Sin Conflictos Git
@@ -207,7 +235,7 @@ $ ./setup.sh --status
 
 ### `get_installed_skills()`
 **Líneas**: ~15
-**Función**: Lee `.cursor/skills/` y retorna array de skills instalados
+**Función**: Lee `.agents/skills/` y retorna array de skills instalados
 
 ### `get_available_skills_to_install()`
 **Líneas**: ~20
@@ -268,7 +296,7 @@ $ ./setup.sh --status
 ### Test 3: Detección
 ```bash
 $ get_installed_skills
-✓ Lee .cursor/skills/
+✓ Lee .agents/skills/
 ✓ Retorna nombres correctos
 ✓ Funciona sin errores si directorio no existe
 ```
