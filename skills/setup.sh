@@ -331,24 +331,13 @@ show_skills_menu() {
 get_installed_skills() {
     local installed=()
     if [ -d "$AGENTS_SKILLS" ]; then
-        # search for directories that have files inside and are at depth 2 or 3
-        while IFS= read -r -d '' dir; do
-            # check if it contains files to not count empty directories
-            if [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
-                local rel_path="${dir#$AGENTS_SKILLS/}"
-                # only accept if it has a subdirectory structure (e.g. angular/core)
-                # and not an intermediate directory like "ionic/angular"
-                if [[ "$rel_path" == *"/"* ]]; then
-                    # if it is ionic/angular/architecture, it is valid.
-                    # but we need to filter to not count 'ionic/angular' if it is only the parent.
-                    # a easy way is to check if there are subdirectories. 
-                    # if it does not have subdirectories, it is a final skill.
-                    if [ $(find "$dir" -mindepth 1 -type d | wc -l) -eq 0 ]; then
-                        installed+=("$rel_path")
-                    fi
-                fi
+        # Iterate only over the official skills defined
+        for skill in "${AVAILABLE_SKILLS[@]}"; do
+            # Check if the directory exists and has files (like AGENTS.md or instructions)
+            if [ -d "$AGENTS_SKILLS/$skill" ] && [ -n "$(ls -A "$AGENTS_SKILLS/$skill" 2>/dev/null)" ]; then
+                installed+=("$skill")
             fi
-        done < <(find "$AGENTS_SKILLS" -mindepth 2 -maxdepth 4 -type d -print0)
+        done
     fi
     printf '%s\n' "${installed[@]}"
 }
