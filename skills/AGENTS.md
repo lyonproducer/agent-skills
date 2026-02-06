@@ -14,17 +14,17 @@ When working on Angular + Ionic projects, AI assistants automatically load relev
 
 | Skill | Description | File |
 |-------|-------------|------|
-| `angular-core` | Angular 20+ core patterns: standalone components, signals, inject(), control flow, zoneless | [SKILL.md](skills/angular/core/SKILL.md) |
-| `angular-forms` | Angular forms: Signal Forms (experimental) and Reactive Forms with validation | [SKILL.md](skills/angular/forms/SKILL.md) |
-| `angular-performance` | Angular performance optimization: NgOptimizedImage, @defer, lazy loading, SSR | [SKILL.md](skills/angular/performance/SKILL.md) |
+| `angular-core` | Angular 20+ core patterns: standalone components, signals, inject(), control flow, zoneless | [SKILL.md](.agents/skills/angular/core/SKILL.md) |
+| `angular-forms` | Angular forms: Signal Forms (experimental) and Reactive Forms with validation | [SKILL.md](.agents/skills/angular/forms/SKILL.md) |
+| `angular-performance` | Angular performance optimization: NgOptimizedImage, @defer, lazy loading, SSR | [SKILL.md](.agents/skills/angular/performance/SKILL.md) |
 
 ### Ionic + Capacitor Skills
 
 | Skill | Description | File |
 |-------|-------------|------|
-| `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](skills/ionic/angular/architecture/SKILL.md) |
-| `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](skills/ionic/angular/capacitor/SKILL.md) |
-| `ionic-angular-migration-standalone` | Migration guide for converting Ionic Angular apps to Standalone architecture | [SKILL.md](skills/ionic/angular/migration-standalone/SKILL.md) |
+| `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](.agents/skills/ionic/angular/architecture/SKILL.md) |
+| `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](.agents/skills/ionic/angular/capacitor/SKILL.md) |
+| `ionic-angular-migration-standalone` | Migration guide for converting Ionic Angular apps to Standalone architecture | [SKILL.md](.agents/skills/ionic/angular/migration-standalone/SKILL.md) |
 
 ## Skill Tree & Dependencies
 
