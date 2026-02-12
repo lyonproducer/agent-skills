@@ -626,7 +626,7 @@ setup_kilocode() {
 
 # Show usage
 show_usage() {
-    echo "Usage: ./setup.sh [OPTIONS]"
+    echo "Usage: ./skills/setup.sh [OPTIONS]"
     echo ""
     echo "Options:"
     echo "  --all                 Configure all AI assistants"
@@ -639,14 +639,16 @@ show_usage() {
     echo "  --list                List available skills"
     echo "  --status              Show installed vs available skills"
     echo "  --help                Show this help message"
+    echo "  --update              Update skills and script from GitHub"
     echo ""
     echo "Examples:"
-    echo "  ./setup.sh                             # Interactive mode"
-    echo "  ./setup.sh --all                       # Configure all assistants"
-    echo "  ./setup.sh --claude --codex --kilocode # Multiple assistants"
-    echo "  ./setup.sh --cursor                    # Install to current project"
-    echo "  ./setup.sh --status                    # Check installation status"
-    echo "  ./setup.sh --list                      # List available skills"
+    echo "  ./skills/setup.sh                             # Interactive mode"
+    echo "  ./skills/setup.sh --all                       # Configure all assistants"
+    echo "  ./skills/setup.sh --claude --codex --kilocode # Multiple assistants"
+    echo "  ./skills/setup.sh --cursor                    # Install to current project"
+    echo "  ./skills/setup.sh --status                    # Check installation status"
+    echo "  ./skills/setup.sh --list                      # List available skills"
+    echo "  ./skills/setup.sh --update                    # Update skills and script from GitHub"
     echo ""
 }
 
