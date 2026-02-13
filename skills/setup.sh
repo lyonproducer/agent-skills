@@ -11,6 +11,7 @@
 #   ./setup.sh --codex             # Configure Codex (OpenAI)
 #   ./setup.sh --copilot           # Configure GitHub Copilot
 #   ./setup.sh --kilocode          # Configure Kilocode
+#   ./setup.sh --antigravity       # Configure Antigravity
 #   ./setup.sh --cursor            # Install skills to ./.cursor/skills (project-specific)
 
 set -e
@@ -36,6 +37,7 @@ SETUP_CODEX=false
 SETUP_COPILOT=false
 SETUP_KILOCODE=false
 SETUP_CURSOR=false
+SETUP_ANTIGRAVITY=false
 
 # Selected skills (for interactive mode) - using simple array approach
 SELECTED_SKILLS_LIST=()
@@ -97,8 +99,8 @@ show_assistants_menu() {
     echo -e "${YELLOW}💡 Multi-select:${NC} Use ${BOLD}Space${NC} to select multiple assistants, then press ${BOLD}Enter${NC}"
     echo ""
 
-    local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode" "Cursor")
-    local selected=(false false false false false false)
+    local options=("Claude Code" "Gemini CLI" "Codex (OpenAI)" "GitHub Copilot" "Kilocode" "Cursor" "Antigravity")
+    local selected=(false false false false false false false)
     local current=0
     local total=${#options[@]}
 
@@ -186,6 +188,7 @@ show_assistants_menu() {
     SETUP_COPILOT=${selected[3]}
     SETUP_KILOCODE=${selected[4]}
     SETUP_CURSOR=${selected[5]}
+    SETUP_ANTIGRAVITY=${selected[6]}
 }
 
 show_skills_menu() {
@@ -544,6 +547,28 @@ setup_cursor() {
     print_success "Cursor uses AGENTS.md natively"
 }
 
+
+# Create symlink for Cursor to .agent/skills
+setup_antigravity() {
+    local target="$REPO_ROOT/.agent/skills"
+    ensure_dir "$REPO_ROOT/.agent"
+    
+    # Remove existing .agent/skills if it exists
+    if [ -L "$target" ]; then
+        rm "$target"
+    elif [ -d "$target" ]; then
+        mv "$target" "${target}.backup.$(date +%s)"
+        print_warning "Backed up existing .agent/skills to ${target}.backup.*"
+    fi
+    
+    # Create symlink to .agents/skills
+    ln -s "../$AGENTS_SKILLS" "$target"
+    
+    print_success ".agent/skills -> .agents/skills/"
+    copy_agents_md "GEMINI.md"
+    print_success "Antigravity uses GEMINI.md natively"
+}
+
 setup_claude() {
     local target="$REPO_ROOT/.claude/skills"
     ensure_dir "$REPO_ROOT/.claude"
@@ -636,6 +661,7 @@ show_usage() {
     echo "  --copilot             Configure GitHub Copilot (.github/copilot-instructions.md)"
     echo "  --kilocode            Configure Kilocode (.kilocode/skills + AGENTS.md)"
     echo "  --cursor              Configure Cursor (.cursor/skills + AGENTS.md)"
+    echo "  --antigravity         Configure Antigravity (.agent/skills + GEMINI.md)"
     echo "  --list                List available skills"
     echo "  --status              Show installed vs available skills"
     echo "  --help                Show this help message"
@@ -646,6 +672,7 @@ show_usage() {
     echo "  ./skills/setup.sh --all                       # Configure all assistants"
     echo "  ./skills/setup.sh --claude --codex --kilocode # Multiple assistants"
     echo "  ./skills/setup.sh --cursor                    # Install to current project"
+    echo "  ./skills/setup.sh --antigravity               # Install to current project"
     echo "  ./skills/setup.sh --status                    # Check installation status"
     echo "  ./skills/setup.sh --list                      # List available skills"
     echo "  ./skills/setup.sh --update                    # Update skills and script from GitHub"
@@ -671,6 +698,7 @@ main() {
                 SETUP_COPILOT=true
                 SETUP_KILOCODE=true
                 SETUP_CURSOR=true
+                SETUP_ANTIGRAVITY=true
                 shift
                 ;;
             --claude)
@@ -697,6 +725,10 @@ main() {
                 SETUP_CURSOR=true
                 shift
                 ;;
+            --antigravity)
+                SETUP_ANTIGRAVITY=true
+                shift
+                ;;
             --list)
                 list_skills
                 exit 0
@@ -718,7 +750,7 @@ main() {
     done
 
     # Interactive mode if no flags provided
-    if [ "$SETUP_CLAUDE" = false ] && [ "$SETUP_GEMINI" = false ] && [ "$SETUP_CODEX" = false ] && [ "$SETUP_COPILOT" = false ] && [ "$SETUP_KILOCODE" = false ] && [ "$SETUP_CURSOR" = false ]; then
+    if [ "$SETUP_CLAUDE" = false ] && [ "$SETUP_GEMINI" = false ] && [ "$SETUP_CODEX" = false ] && [ "$SETUP_COPILOT" = false ] && [ "$SETUP_KILOCODE" = false ] && [ "$SETUP_CURSOR" = false ] && [ "$SETUP_ANTIGRAVITY" = false ]; then
         show_assistants_menu
         echo ""
         
@@ -730,6 +762,7 @@ main() {
             [ "$SETUP_COPILOT" = true ] && ((selected_count++))
             [ "$SETUP_KILOCODE" = true ] && ((selected_count++))
             [ "$SETUP_CURSOR" = true ] && ((selected_count++))
+            [ "$SETUP_ANTIGRAVITY" = true ] && ((selected_count++))
         
         if [ $selected_count -eq 0 ]; then
             print_warning "No assistants selected. Exiting."
@@ -743,10 +776,11 @@ main() {
         [ "$SETUP_COPILOT" = true ] && echo -e "  ${GREEN}✓${NC} GitHub Copilot"
         [ "$SETUP_KILOCODE" = true ] && echo -e "  ${GREEN}✓${NC} Kilocode"
         [ "$SETUP_CURSOR" = true ] && echo -e "  ${GREEN}✓${NC} Cursor"
+        [ "$SETUP_ANTIGRAVITY" = true ] && echo -e "  ${GREEN}✓${NC} Antigravity"
         echo ""
         
         # If any assistant was selected, ask which skills
-        if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ]; then
+        if [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ] || [ "$SETUP_ANTIGRAVITY" = true ]; then
             show_skills_menu
             echo ""
             
@@ -767,7 +801,7 @@ main() {
     # First, install skills to .agents/skills if any assistant or cursor was selected
     local any_selected=false
     [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_GEMINI" = true ] || [ "$SETUP_CODEX" = true ] || \
-    [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ] && any_selected=true
+    [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ] || [ "$SETUP_ANTIGRAVITY" = true ] && any_selected=true
     
     if [ "$any_selected" = true ] && [ ${#SELECTED_SKILLS_LIST[@]} -gt 0 ]; then
         print_info "Installing skills to .agents/skills/..."
@@ -809,6 +843,12 @@ main() {
     if [ "$SETUP_CURSOR" = true ]; then
         print_info "Setting up Cursor..."
         setup_cursor
+        echo ""
+    fi
+    
+    if [ "$SETUP_ANTIGRAVITY" = true ]; then
+        print_info "Setting up Antigravity..."
+        setup_antigravity
         echo ""
     fi
     
