@@ -69,21 +69,29 @@ Root
 
 ## Quick Start
 
-### Option 0: Clone Only Skills Folder (Lightweight)
+### Option 1: clone and execute setup with npx degit 
 
 Clone only the `skills/` folder without extra documentation files:
 
 ```bash
-# Method 1: Using degit
+# Method 1: Using degit one line command
 
-#from dev
+# One line command from dev branch
 npx degit lyonproducer/agent-skills/skills#dev skills && chmod +x ./skills/setup.sh && ./skills/setup.sh   
 
-#from main
-npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh && ./skills/setup.sh      
+# One line command from main branch
+npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh && ./skills/setup.sh   
 
-# Run setup to re-install
-./setup.sh
+# Method 2: Step By step commands
+
+# 2.1: clone skills folder to root project
+npx degit lyonproducer/agent-skills/skills skills
+
+# 2.2: Set permissions to excecute bash
+chmod +x ./skills/setup.sh
+
+# 2.3: Execute bash code
+./skills/setup.sh 
 ```
 
 **What you get:**
@@ -91,24 +99,6 @@ npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh 
 - ✅ `setup.sh` script included
 - ✅ `AGENTS.md` for AI assistants
 - ❌ No extra docs (README, CHANGES, LICENSE, etc.)
-
-### Option 1: Use setup.sh (Full Repository - Interactive & Multi-Assistant)
-
-The `setup.sh` script supports both multi-assistant configuration (Claude, Gemini, Codex, Copilot, Kilocode) and Cursor-specific installations.
-
-**Interactive Mode (Recommended):**
-```bash
-# Clone full repository
-git clone https://github.com/lyonproducer/agent-skills.git
-cd agent-skills/skills
-
-# Run without arguments for interactive selection
-./setup.sh
-
-# You'll be prompted to:
-# 1. Select which AI assistants to configure
-# 2. Select which skills to install
-```
 
 **Command-Line Mode:**
 ```bash
@@ -121,18 +111,18 @@ cd skills
 # Configure specific assistants
 ./setup.sh --claude --codex --kilocode
 
-# Cursor-only install (current project)
-./setup.sh --cursor                  # All skills to .cursor/skills
+# Cursor-only install (current project, .cursor/skills)
+./setup.sh --cursor                
 
 # Check installation status
 ./setup.sh --status
 ```
 
 **What it does:**
-- Creates symlinks from `.claude/skills`, `.gemini/skills`, `.codex/skills`, `.kilocode/skills` → `skills/`
-- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, `AGENTS.md (Kilocode... etc)`
+- Creates symlinks from `.claude/skills`, `.gemini/skills`, `.codex/skills`, `.kilocode/skills`, `.agent/skills` → `.agents/skills/`
+- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, `AGENTS.md` root folder
 - Copies `AGENTS.md` to `.github/copilot-instructions.md` for Copilot
-- Installs selected skills to Cursor (project-specific in `.cursor/skills/`)
+- Installs selected skills (project-specific in `.cursor/skills/`, cursor example)
 
 ### Option 2: Using npx skills - AGENTS.MD
 
@@ -150,12 +140,13 @@ npx skills add https://github.com/lyonproducer/agent-skills
 
 | Location | Use Case | Supported By |
 |----------|----------|--------------|
-| `<project>/.cursor/skills/` | Project-specific team standards | `.cursor` directory |
+| `.cursor/skills/` | cursor Code assistand | `.cursor` + symlink |
 | `.claude/skills/` | Claude Code assistant | Claude + symlink |
 | `.gemini/skills/` | Gemini CLI assistant | Gemini + symlink |
 | `.codex/skills/` | Codex (OpenAI) assistant | Codex + symlink |
 | `.kilocode/skills/` | Kilocode assistant | Kilocode + symlink |
 | `.github/copilot-instructions.md` | GitHub Copilot | Copilot + copy |
+| `.agent/skills` | Antigravity | Gemini + symlink | 
 
 **Note**: Skills are now project-specific only for better team collaboration and version control.
 
@@ -273,11 +264,11 @@ if (this.platform.is('ios')) { }
 To update to the latest version:
 
 ```bash
-cd agent-skills
-git pull origin main
+# From skills/ directory
+cd skills
 
-# Update your installation
-cp -r skills/* .cursor/skills/
+# Update skills
+./setup.sh --update
 ```
 
 ## Skill Development
