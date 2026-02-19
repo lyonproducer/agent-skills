@@ -194,8 +194,8 @@ export class UserProfile {
 
 // AI Response: "Following the Scope Rule:
 // - Used in 3 tabs = 2+ usage
-// - Placement: src/app/shared/components/headers/header-back.ts
-// - Reason: Scope Rule requires shared placement for 2+ tabs"
+// - Placement: src/app/shared/ui/headers/header-back.ts
+// - Reason: Components used in 2+ pages/features go in shared/ui"
 ```
 
 ### Example 3: Platform Detection
@@ -220,8 +220,9 @@ if (Capacitor.getPlatform() === 'ios') {
 **"Scope determines structure"**
 
 - Used in 1 tab/page → Local placement
-- Used in 2+ tabs/pages → `shared/` directory
-- Used app-wide → `core/services/` (singletons)
+- Used in same feature across some pages → `features/<feature>/components/`
+- Used in 2+ tabs/pages/features → `shared/ui/`
+- Used app-wide infrastructure → `core/` (for example `core/auth/`, `core/device/`)
 
 ### 2. Modern Angular Patterns
 

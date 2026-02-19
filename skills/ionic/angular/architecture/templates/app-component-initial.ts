@@ -5,14 +5,16 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform, IonicModule } from '@ionic/angular';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 
-// Import your core services
-import { NetworkService } from '@core/services/network.service';
-import { UtilsService } from '@core/services/utils.service';
-import { RouterService } from '@core/services/router.service';
-import { PushNotificationService } from '@core/services/push-notification.service';
+// Import core device services (Capacitor plugin abstractions)
+import { NetworkService } from '@core/device/network.service';
+import { PushNotificationService } from '@core/device/push-notification.service';
+
+// Import shared utility services
+import { RouterService } from '@shared/utils/router.service';
+import { UiService } from '@shared/utils/ui.service';
 
 // Import shared components
-import { MenuComponent } from '@shared/components/menu/menu.component';
+import { MenuComponent } from '@shared/ui/menu/menu.component';
 
 /**
  * Root Application Component
@@ -28,16 +30,14 @@ import { MenuComponent } from '@shared/components/menu/menu.component';
 })
 export class AppComponent {
 
-  // Use inject() instead of constructor for modern Angular
   private readonly platform = inject(Platform);
   private readonly router = inject(Router);
-  private readonly utilsService = inject(UtilsService);
+  private readonly uiService = inject(UiService);
   private readonly networkService = inject(NetworkService);
   private readonly routerService = inject(RouterService);
   private readonly pushNotificationService = inject(PushNotificationService);
 
   constructor() {
-    // Activate dark mode by default (optional)
     this.initializeDarkMode();
 
     this.platform.ready().then(async () => {
@@ -45,30 +45,22 @@ export class AppComponent {
       // await this.localStorage.init();
       // await this.authService.getLocalUser();
 
-      // 🚨 REQUIRED: iOS Status Bar Configuration
-      // This ensures proper iOS safe area handling and appearance
       if (Capacitor.getPlatform() === 'ios') {
         await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: Style.Dark });
         await EdgeToEdge.disable();
       }
 
-      // Android-specific configuration (optional)
       if (Capacitor.getPlatform() === 'android') {
-        // Add Android-specific configuration here if needed
         await StatusBar.setStyle({ style: Style.Dark });
       }
 
-      // Initialize push notifications (if using)
       await this.pushNotificationService.addListeners();
 
-      // Handle hardware back button (Android)
-      this.utilsService.backButtonReview(this.platform, this.router);
+      this.uiService.backButtonReview(this.platform, this.router);
 
-      // Monitor router changes
       this.routerService.getRouterChanges();
 
-      // Monitor network status
       this.networkService.initializeNetworkEvents();
     });
   }

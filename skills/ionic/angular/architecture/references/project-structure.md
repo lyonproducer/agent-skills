@@ -4,31 +4,33 @@
 
 **"Scope determines structure"** - This is the fundamental principle that guides all architectural decisions.
 
-- If code is used by **1 feature** → Keep it **local** in that feature
-- If code is used by **2+ features** → Move it to **shared**
-- If code is **app-wide singleton** → Place it in **core**
+- If code is used by **1 page only** → Keep it **local** in that page
+- If a component is reused by **some pages inside the same feature** → place it in `features/<feature>/components/`
+- If a component is used by **2+ pages or features** → move it to `shared/ui/`
+- If code is **app-wide infrastructure singleton** (auth, guards, device plugins) → place it in `core/`
 
 ## Full Project Structure
 
 ```
 src/
 ├── app/
-│   ├── core/                          # Singleton services & app-wide concerns
-│   │   ├── services/                  # Core plugins Services
-│   │   │   ├── auth.service.ts
-│   │   │   ├── api.service.ts
-│   │   │   ├── push-notification.service.ts
-│   │   │   ├── network.service.ts
-│   │   │   ├── storage.service.ts
-│   │   ├── interceptors/
+│   ├── core/                          # Infrastructure (Singletons & Global)
+│   │   ├── auth/
+│   │   │   ├── guards/
+│   │   │   │   ├── auth.guard.ts
+│   │   │   │   └── public.guard.ts
+│   │   │   └── auth.service.ts
+│   │   ├── http/
 │   │   │   ├── app-http.interceptor.ts
 │   │   │   └── crashlytics-error-handler.interceptor.ts
-│   │   └── guards/
-│   │       └── auth.guard.ts          # Global auth guard
-│   │       └── unauth.guard.ts        # Global unauth guard
+│   │   ├── storage/
+│   │   │   └── storage.service.ts
+│   │   └── device/
+│   │       ├── network.service.ts
+│   │       └── push-notification.service.ts
 │   │
-│   ├── shared/                        # ONLY for 2+ (tabs | menu | feature)/pages usage
-│   │   ├── components/
+│   ├── shared/                        # Cross-feature UI + utilities
+│   │   ├── ui/                        # Components used by 2+ pages/features
 │   │   │   ├── headers/
 │   │   │   │   ├── header-back.ts
 │   │   │   │   └── header-main.ts
@@ -36,72 +38,49 @@ src/
 │   │   │   │   └── confirmation-modal.ts
 │   │   │   └── cards/
 │   │   │       └── info-card.ts
-│   │   ├── services/
-│   │   │   └── data-sync.service.ts
-│   │   ├── guards/
-│   │   │   └── auth.guard.ts          # Shared route guards
+│   │   ├── utils/
+│   │   │   ├── ui.service.ts
+│   │   │   └── router.service.ts
 │   │   ├── pipes/
 │   │   │   └── date-format.pipe.ts
 │   │   ├── directives/
 │   │   │   └── auto-focus.directive.ts
-│   │   ├── signals/
-│   │   │   └── user.store.ts
 │   │   └── constants/
 │   │       ├── database.constants.ts
 │   │       └── api.constants.ts
 │   │
+│   ├── features/                      # Business logic by domain
+│   │   ├── user/
+│   │   │   ├── models/
+│   │   │   ├── data/
+│   │   │   └── state/
+│   │   └── payments/
+│   │       ├── models/
+│   │       ├── data/
+│   │       ├── components/            # Reused in payments feature pages
+│   │       │   └── payment-form.ts
+│   │       └── payments.service.ts
+│   │
 │   ├── pages/
-│   │   ├── start-app/                 # Onboarding & authentication
+│   │   ├── start-app/
 │   │   │   ├── login/
-│   │   │   │   ├── login.page.ts
-│   │   │   │   ├── login.page.html
-│   │   │   │   └── login.page.scss
 │   │   │   ├── register/
-│   │   │   │   └── register.page.ts
 │   │   │   └── start-app.routes.ts
-│   │   │
-│   │   ├── in-app/                    # Logged-in experience
-│   │   │   ├── tabs/                  # Main tab-based navigation (tabs only usage)
-│   │   │   │   ├── home/
-│   │   │   │   │   ├── home.page.ts
-│   │   │   │   │   └── components/    # Tab-specific components
-│   │   │   │   │       └── home-card.component.ts      # Used ONLY by home page
-│   │   │   │   ├── profile/
-│   │   │   │   │   └── profile.page.ts
-│   │   │   │   ├── tabs.routes.ts
-│   │   │   │   ├── tabs.page.ts
-│   │   │   │   ├── tabs.page.html
-│   │   │   │   └── tabs.page.scss
-│   │   │   │   
-│   │   │   ├── menu/                  # Side menu navigation for pages (menu only usage)
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── dashboard.page.ts
-│   │   │   │   ├── settings/
-│   │   │   │   │   └── settings.page.ts
-│   │   │   │   └── menu.routes.ts
-│   │   │   │   
-│   │   │   ├── features/               # Pages don't included on menu and tabs 
-│   │   │   │   ├── payment/
-│   │   │   │   │   ├── payment.page.ts
-│   │   │   │   │   └── components/
-│   │   │   │   │       └── payment-card.component.ts
-│   │   │   │   ├── withdraw/
-│   │   │   │   │   └── withdraw.page.ts
-│   │   │   │   └── features.routes.ts
+│   │   ├── in-app/
+│   │   │   ├── tabs/
+│   │   │   ├── menu/
+│   │   │   ├── features/
 │   │   │   └── in-app.routes.ts
-│   │   │
-│   │   └── out-app/                   # Utility pages
+│   │   └── out-app/
 │   │       ├── not-found/
-│   │       │   └── not-found.page.ts
 │   │       ├── maintenance/
-│   │       │    └── maintenance.page.ts
 │   │       └── out-app.routes.ts
 │   │
 │   ├── app.component.ts
 │   ├── app.config.ts
 │   └── app.routes.ts
 │
-└── main.ts                        # Bootstrap
+└── main.ts
 ```
 
 ## Decision Tree for Component Placement
@@ -113,8 +92,8 @@ src/
                   │
                   ▼
          ┌────────────────────┐
-         │ How many features  │
-         │   will use this?   │
+        │ How many pages or  │
+        │ features use this? │
          └────────┬───────────┘
                   │
         ┌─────────┼─────────┐
@@ -122,14 +101,15 @@ src/
         ▼         ▼         ▼
     ┌───────┐ ┌───────┐ ┌──────────┐
     │  ONE  │ │ TWO+  │ │ APP-WIDE │
-    │feature│ │features│ │ SINGLETON│
+    │ page  │ │pages/ │ │ SINGLETON│
+    │       │ │feature│ │          │
     └───┬───┘ └───┬───┘ └─────┬────┘
         │         │           │
         ▼         ▼           ▼
-  ┌──────────┐ ┌────────┐ ┌───────┐
-  │  LOCAL   │ │ SHARED │ │ CORE  │
-  │in feature│ │  dir   │ │  dir  │
-  └──────────┘ └────────┘ └───────┘
+  ┌──────────┐ ┌──────────┐ ┌───────┐
+  │  LOCAL   │ │SHARED/UI │ │ CORE  │
+  │in page   │ │or FEATURE│ │  dir  │
+  └──────────┘ └──────────┘ └───────┘
 ```
 
 ## Examples by Category
@@ -137,7 +117,7 @@ src/
 ### 1. Pages Structure
 
 ```typescript
-// pages/in-app/tabs/home/home.ts
+// pages/in-app/tabs/home/home.page.ts
 @Component({
   selector: 'app-home',
   imports: [IonicModule, HeaderMainComponent],
@@ -167,8 +147,8 @@ export class FeaturedCardComponent { }
 ### 3. Shared Components
 
 ```typescript
-// shared/components/headers/header-back.ts
-// ✅ Used by multiple pages → Goes in shared
+// shared/ui/headers/header-back.ts
+// ✅ Used by multiple pages/features → Goes in shared/ui
 @Component({
   selector: 'app-header-back',
   imports: [IonicModule],
@@ -196,7 +176,7 @@ export class HeaderBackComponent {
 ### 4. Core Services
 
 ```typescript
-// core/services/auth.service.ts
+// core/auth/auth.service.ts
 // ✅ Singleton used throughout app → Goes in core
 @Injectable({
   providedIn: 'root'
@@ -220,6 +200,8 @@ export class AuthService {
 ### Files
 
 - **Components**: `feature-name.ts` (no `.component` suffix)
+- **Feature components**: `features/<feature>/components/feature-name.ts` (when reused in same feature pages)
+- **Shared UI components**: `shared/ui/<category>/feature-name.ts` (when reused in 2+ pages/features)
 - **Services**: `feature-name.service.ts`
 - **Guards**: `feature-name.guard.ts`
 - **Pipes**: `pipe-name.pipe.ts`

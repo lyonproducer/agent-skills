@@ -14,19 +14,46 @@ Based on your requirements, here's the recommended Angular 20 + Ionic 8 architec
 ```
 src/app/
 ├── core/
-│   └── services/
-│       ├── auth.service.ts
-│       ├── cart.service.ts           # Global cart state
-│       ├── ui.service.ts             # Centralized UI controllers
-│       └── push-notification.service.ts  # 🚨 Required for updates
+│   ├── auth/
+│   │   ├── guards/
+│   │   │   ├── auth.guard.ts
+│   │   │   └── public.guard.ts
+│   │   └── auth.service.ts
+│   ├── http/
+│   │   └── app-http.interceptor.ts
+│   ├── storage/
+│   │   └── storage.service.ts
+│   └── device/
+│       ├── network.service.ts
+│       └── push-notification.service.ts   # Required for order updates
 │
 ├── shared/
-│   └── components/
-│       ├── headers/                  # Used by multiple pages
-│       │   ├── header-back.ts
-│       │   └── header-main.ts
-│       └── modals/
-│           └── add-to-cart-modal.ts
+│   ├── ui/
+│   │   ├── headers/                  # Used by multiple pages
+│   │   │   ├── header-back.ts
+│   │   │   └── header-main.ts
+│   │   └── modals/
+│   │       └── add-to-cart-modal.ts  # Used across browse, cart, details
+│   └── utils/
+│       ├── ui.service.ts             # Centralized Ionic UI controllers
+│       └── router.service.ts
+│
+├── features/                         # Business logic by domain
+│   ├── restaurants/
+│   │   ├── models/                   # Restaurant, Category interfaces
+│   │   ├── data/                     # RestaurantRepository + Mappers
+│   │   ├── components/               # restaurant-card.ts, category-filter.ts
+│   │   └── restaurants.service.ts    # Facade for browse/details pages
+│   ├── cart/
+│   │   ├── models/
+│   │   ├── data/
+│   │   ├── state/                    # cart.store.ts (global cart signals)
+│   │   └── cart.service.ts
+│   └── orders/
+│       ├── models/
+│       ├── data/
+│       ├── state/                    # orders.store.ts
+│       └── orders.service.ts
 │
 └── pages/
     ├── start-app/                    # Authentication flow
@@ -36,21 +63,19 @@ src/app/
     │
     ├── in-app/
     │   ├── tabs/                     # Main app tabs
-    │   │   ├── browse/               # Restaurant browsing
-    │   │   │   ├── browse.page.ts
-    │   │   │   └── components/
-    │   │   │       ├── restaurant-card.ts
-    │   │   │       └── category-filter.ts
-    │   │   ├── cart/                 # Shopping cart
-    │   │   ├── orders/               # Order history & tracking
+    │   │   ├── browse/               # Restaurant browsing — uses features/restaurants
+    │   │   │   └── browse.page.ts
+    │   │   ├── cart/                 # Shopping cart — uses features/cart
+    │   │   ├── orders/               # Order history — uses features/orders
     │   │   └── profile/
     │   │
     │   ├── menu/                     # Side menu pages
-    │   └── features/                 # Non-tab features
+    │   └── features/                 # Non-tab, non-menu pages
+    │       ├── restaurant-details/   # Uses features/restaurants/components
+    │       └── order-tracking/
     │
     └── out-app/
-        ├── restaurant-details/       # Individual restaurant page
-        └── order-tracking/           # Live order tracking
+        └── not-found/
 ```
 
 **Don't forget the iOS configuration in app.component.ts!**
@@ -108,7 +133,7 @@ export class FavoriteButtonComponent {
 Use **Capacitor.getPlatform()** for platform detection:
 
 ```typescript
-// src/app/pages/in-app/tabs/profile/components/photo-upload.ts
+// src/app/features/profile/components/photo-upload.ts
 import { Component, inject, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
@@ -314,7 +339,7 @@ export class ProductListComponent {
 **Step 1**: Create the push notification service
 
 ```bash
-# Location: src/app/core/services/push-notification.service.ts
+# Location: src/app/core/device/push-notification.service.ts
 ```
 
 Use the template from `templates/push-notification.service.ts` (complete implementation included).
@@ -327,7 +352,7 @@ import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform, IonicModule } from '@ionic/angular';
 import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-import { PushNotificationService } from '@core/services/push-notification.service';
+import { PushNotificationService } from '@core/device/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -438,7 +463,7 @@ export class MyComponent {
 Create a core UI service and inject it where needed:
 
 ```typescript
-// src/app/core/services/ui.service.ts
+// src/app/shared/utils/ui.service.ts
 import { inject, Injectable } from '@angular/core';
 import { AlertButton, AlertController, LoadingController, ToastController } from '@ionic/angular';
 
@@ -491,7 +516,7 @@ Use it from any page or component with `inject()`:
 ```typescript
 import { Component, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { UiService } from '@core/services/ui.service';
+import { UiService } from '@shared/utils/ui.service';
 
 @Component({
   selector: 'app-orders',
