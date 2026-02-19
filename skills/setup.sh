@@ -91,31 +91,68 @@ line_exists_exact() {
     return 1
 }
 
-add_gitignore_entry_if_missing() {
-    local gitignore_path="$1"
-    local entry="$2"
-
-    if line_exists_exact "$gitignore_path" "$entry"; then
-        print_info "$entry already exists in .gitignore"
-    else
-        echo "$entry" >> "$gitignore_path"
-        print_success "Added $entry to .gitignore"
-    fi
+is_agent_skills_gitignore_entry() {
+    local line="$1"
+    case "$line" in
+        "/skills/"|"skills/"|"./skills/"|"/skills/*"|"skills/*"|"./skills/*"|\
+        "AGENTS.md"|"agents.md"|"AGENTS.MD"|"agents.MD"|\
+        "GEMINI.md"|"gemini.md"|"GEMINI.MD"|"gemini.MD"|\
+        "CLAUDE.md"|"claude.md"|"CLAUDE.MD"|"claude.MD")
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
-add_first_existing_variant_to_gitignore() {
+rebuild_gitignore_with_agent_skills_section() {
     local gitignore_path="$1"
     shift
-    local candidate=""
+    local section_entries=("$@")
+    local temp_file
+    local line=""
+    local in_agent_section=false
+    local section_written=false
 
-    for candidate in "$@"; do
-        if [ -f "$REPO_ROOT/$candidate" ]; then
-            add_gitignore_entry_if_missing "$gitignore_path" "$candidate"
-            return 0
+    temp_file="$(mktemp)"
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        if [ "$line" = "# Agent Skills" ]; then
+            in_agent_section=true
+            continue
         fi
+
+        if [ "$in_agent_section" = true ]; then
+            case "$line" in
+                \#*)
+                    in_agent_section=false
+                    ;;
+                *)
+                    continue
+                    ;;
+            esac
+        fi
+
+        if is_agent_skills_gitignore_entry "$line"; then
+            continue
+        fi
+
+        echo "$line" >> "$temp_file"
+    done < "$gitignore_path"
+
+    echo "" >> "$temp_file"
+    echo "# Agent Skills" >> "$temp_file"
+    for line in "${section_entries[@]}"; do
+        echo "$line" >> "$temp_file"
     done
 
-    return 1
+    mv "$temp_file" "$gitignore_path"
+    section_written=true
+
+    if [ "$section_written" = true ]; then
+        print_success "Updated .gitignore with # Agent Skills section"
+    fi
 }
 
 select_yes_no_menu() {
@@ -187,6 +224,9 @@ select_yes_no_menu() {
 
 prompt_add_gitignore_entries() {
     local gitignore_path="$REPO_ROOT/.gitignore"
+    local section_entries=("/skills/")
+    local candidate=""
+    local found_variant=false
 
     if [ ! -t 0 ]; then
         print_info "Skipping .gitignore prompt (non-interactive shell)."
@@ -204,14 +244,37 @@ prompt_add_gitignore_entries() {
         return
     fi
 
-    add_gitignore_entry_if_missing "$gitignore_path" "/skills/"
+    found_variant=false
+    for candidate in "AGENTS.md" "agents.md" "AGENTS.MD" "agents.MD"; do
+        if [ -f "$REPO_ROOT/$candidate" ]; then
+            section_entries+=("$candidate")
+            found_variant=true
+            break
+        fi
+    done
+    [ "$found_variant" = false ] && print_info "No AGENTS/agents file found at project root."
 
-    add_first_existing_variant_to_gitignore "$gitignore_path" "AGENTS.md" "agents.md" "AGENTS.MD" "agents.MD" \
-        || print_info "No AGENTS/agents file found at project root."
-    add_first_existing_variant_to_gitignore "$gitignore_path" "GEMINI.md" "gemini.md" "GEMINI.MD" "gemini.MD" \
-        || print_info "No GEMINI/gemini file found at project root."
-    add_first_existing_variant_to_gitignore "$gitignore_path" "CLAUDE.md" "claude.md" "CLAUDE.MD" "claude.MD" \
-        || print_info "No CLAUDE/claude file found at project root."
+    found_variant=false
+    for candidate in "GEMINI.md" "gemini.md" "GEMINI.MD" "gemini.MD"; do
+        if [ -f "$REPO_ROOT/$candidate" ]; then
+            section_entries+=("$candidate")
+            found_variant=true
+            break
+        fi
+    done
+    [ "$found_variant" = false ] && print_info "No GEMINI/gemini file found at project root."
+
+    found_variant=false
+    for candidate in "CLAUDE.md" "claude.md" "CLAUDE.MD" "claude.MD"; do
+        if [ -f "$REPO_ROOT/$candidate" ]; then
+            section_entries+=("$candidate")
+            found_variant=true
+            break
+        fi
+    done
+    [ "$found_variant" = false ] && print_info "No CLAUDE/claude file found at project root."
+
+    rebuild_gitignore_with_agent_skills_section "$gitignore_path" "${section_entries[@]}"
 }
 
 update_self() {
