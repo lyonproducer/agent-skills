@@ -13,7 +13,7 @@ This reference shows the recommended pattern for using Ionic UI controllers via 
 
 Place the service at:
 
-`src/app/core/services/ui.service.ts`
+`src/app/shared/utils/ui.service.ts`
 
 ## UI Service Template
 
@@ -26,7 +26,7 @@ Use the template from:
 ```typescript
 import { Component, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { UiService } from '@core/services/ui.service';
+import { UiService } from '@shared/utils/ui.service';
 
 @Component({
   selector: 'app-profile',

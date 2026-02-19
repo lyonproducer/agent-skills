@@ -21,8 +21,9 @@ Load this skill when:
 
 **"Scope determines structure"**
 
-- Code used by 2+ tabs/pages → MUST go in `shared/` directories
-- Code used by 1 tab/page → MUST stay local in that tab/page
+- Code used by 2+ pages or features → MUST go in `shared/ui/`
+- Component used by the same feature across some pages → MUST go in `features/<feature>/components/`
+- Code used by 1 tab/page only → MUST stay local in that tab/page folder
 - **NO EXCEPTIONS** - This rule is absolute and non-negotiable
 
 ## Screaming Architecture for Angular + Ionic
@@ -30,7 +31,8 @@ Load this skill when:
 Your structures must IMMEDIATELY communicate what the application does:
 
 - Tab/page names must describe business functionality, not technical implementation
-- Directory structure should tell the story of what the app does at first glance
+- Directory structure must separate concerns clearly: `core/` (infrastructure), `features/` (business logic), `pages/` (routing/orchestration), `shared/` (cross-cutting UI/utilities)
+- Keep routing blocks explicit in `pages/`: `start-app/`, `in-app/`, `out-app/`
 - Main tab/page components MUST have the same name as their folder
 
 ---
@@ -40,23 +42,24 @@ Your structures must IMMEDIATELY communicate what the application does:
 ```
 src/
 ├── app/
-│   ├── core/                          # Singleton services & app-wide concerns
-│   │   ├── services/                  # Core plugins Services
-│   │   │   ├── auth.service.ts
-│   │   │   ├── api.service.ts
-│   │   │   ├── push-notification.service.ts
-│   │   │   ├── network.service.ts
-│   │   │   ├── storage.service.ts
-│   │   │   └── ui.service.ts
-│   │   ├── interceptors/
+│   ├── core/                          # Infrastructure (Singletons & Global)
+│   │   ├── auth/                      # Session logic, tokens and global guards
+│   │   │   ├── guards/
+│   │   │   │   ├── auth.guard.ts      # Global auth guard
+│   │   │   │   └── public.guard.ts    # Global unauth guard
+│   │   │   └── auth.service.ts
+│   │   ├── http/                      # Interceptors and base API client
 │   │   │   ├── app-http.interceptor.ts
 │   │   │   └── crashlytics-error-handler.interceptor.ts
-│   │   └── guards/
-│   │       └── auth.guard.ts          # Global auth guard
-│   │       └── unauth.guard.ts        # Global unauth guard
+│   │   ├── storage/                   # Capacitor wrappers (Preferences/SQLite)
+│   │   │   └── storage.service.ts
+│   │   ├── device/                    # Capacitor plugin abstractions
+│   │   │   ├── network.service.ts
+│   │   │   └── push-notification.service.ts
+│   │   └── error-handler/             # Sentry, Crashlytics and Logs
 │   │
-│   ├── shared/                        # ONLY for 2+ (tabs | menu | feature)/pages usage
-│   │   ├── components/
+│   ├── shared/                        # UI Dumb Components (Presentational) & Utilities
+│   │   ├── ui/                        # ONLY for components used in 2+ features/pages
 │   │   │   ├── headers/
 │   │   │   │   ├── header-back.ts
 │   │   │   │   └── header-main.ts
@@ -64,22 +67,31 @@ src/
 │   │   │   │   └── confirmation-modal.ts
 │   │   │   └── cards/
 │   │   │       └── info-card.ts
-│   │   ├── services/
-│   │   │   └── data-sync.service.ts
-│   │   ├── guards/
-│   │   │   └── auth.guard.ts          # Shared route guards
 │   │   ├── pipes/
 │   │   │   └── date-format.pipe.ts
 │   │   ├── directives/
 │   │   │   └── auto-focus.directive.ts
-│   │   ├── signals/
-│   │   │   └── user.store.ts
+│   │   ├── utils/                     # Shared utility services (no business domain)
+│   │   │   ├── ui.service.ts          # Centralized Ionic UI controllers (alert, toast, loading)
+│   │   │   └── router.service.ts      # Router utilities
 │   │   └── constants/
 │   │       ├── database.constants.ts
 │   │       └── api.constants.ts
 │   │
-│   ├── pages/
-│   │   ├── start-app/                 # Onboarding & authentication
+│   ├── features/                      # THE HEART: Business Logic by Domain
+│   │   ├── user/
+│   │   │   ├── models/                # Interfaces/models and Use Cases
+│   │   │   ├── data/                  # Repositories and Mappers (API calls)
+│   │   │   └── state/                 # user.store.ts (Signals)
+│   │   └── payments/
+│   │       ├── models/                # payment.model.ts
+│   │       ├── data/                  # Repositories and Mappers
+│   │       ├── components/            # Smart components used by payments feature AND related pages
+│   │       │   └── payment-form.component.ts
+│   │       └── payments.service.ts    # Facade: pages only talk to this service
+│   │
+│   ├── pages/                         # Orchestrators (Smart Components & Routing)
+│   │   ├── start-app/                 # Block: Onboarding & Authentication
 │   │   │   ├── login/
 │   │   │   │   ├── login.page.ts
 │   │   │   │   ├── login.page.html
@@ -88,7 +100,7 @@ src/
 │   │   │   │   └── register.page.ts
 │   │   │   └── start-app.routes.ts
 │   │   │
-│   │   ├── in-app/                    # Logged-in experience
+│   │   ├── in-app/                    # Block: Logged-in experience
 │   │   │   ├── tabs/                  # Main tab-based navigation (tabs only usage)
 │   │   │   │   ├── home/
 │   │   │   │   │   ├── home.page.ts
@@ -100,34 +112,32 @@ src/
 │   │   │   │   ├── tabs.page.ts
 │   │   │   │   ├── tabs.page.html
 │   │   │   │   └── tabs.page.scss
-│   │   │   │   
-│   │   │   ├── menu/                  # Side menu navigation for pages (menu only usage)
+│   │   │   │
+│   │   │   ├── menu/                  # Side menu navigation (menu only usage)
 │   │   │   │   ├── dashboard/
 │   │   │   │   │   └── dashboard.page.ts
 │   │   │   │   ├── settings/
 │   │   │   │   │   └── settings.page.ts
 │   │   │   │   └── menu.routes.ts
-│   │   │   │   
-│   │   │   ├── features/               # Pages don't included on menu and tabs 
+│   │   │   │
+│   │   │   ├── features/              # Pages not included in menu or tabs
 │   │   │   │   ├── payment/
-│   │   │   │   │   ├── payment.page.ts
-│   │   │   │   │   └── components/     # payment-specific components
-│   │   │   │   │       └── payment-card.component.ts   # Used ONLY by payment page
+│   │   │   │   │   └── payment.page.ts    # Uses components from features/payments/components
 │   │   │   │   ├── withdraw/
 │   │   │   │   │   └── withdraw.page.ts
 │   │   │   │   └── features.routes.ts
 │   │   │   └── in-app.routes.ts
 │   │   │
-│   │   └── out-app/                   # Utility pages
+│   │   └── out-app/                   # Block: Utility/public pages
 │   │       ├── not-found/
 │   │       │   └── not-found.page.ts
 │   │       ├── maintenance/
-│   │       │    └── maintenance.page.ts
+│   │       │   └── maintenance.page.ts
 │   │       └── out-app.routes.ts
 │   │
-│   ├── app.component.ts
-│   ├── app.config.ts
-│   └── app.routes.ts
+│   ├── app.component.ts               # Plugin initialization (Push, DeepLinks, StatusBar)
+│   ├── app.config.ts                  # Global providers (Routes, HttpClient)
+│   └── app.routes.ts                  # Root routing (Lazy loading blocks)
 │
 └── main.ts                        # Bootstrap
 ```
@@ -142,11 +152,53 @@ Always configure these aliases in `tsconfig.json`:
     "paths": {
       "@pages/*": ["src/app/pages/*"],
       "@shared/*": ["src/app/shared/*"],
-      "@core/*": ["src/app/core/*"]
+      "@core/*": ["src/app/core/*"],
+      "@features/*": ["src/app/features/*"]
     }
   }
 }
 ```
+
+---
+
+## Feature State Pattern (Signal Store)
+
+Each feature domain that requires state management uses a signal-based store placed in `features/<domain>/state/`.
+
+```typescript
+// features/user/state/user.store.ts
+import { Injectable, signal, computed, inject } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class UserStore {
+  private readonly http = inject(HttpClient);
+
+  // Private signals for internal state
+  private readonly _state = signal<UserState>({
+    items: [],
+    loading: false,
+    error: null,
+  });
+
+  // Public readonly computed values (exposed to UI)
+  readonly items = computed(() => this._state().items);
+  readonly loading = computed(() => this._state().loading);
+  readonly error = computed(() => this._state().error);
+
+  loadItems(): void {
+    this._state.update((state) => ({ ...state, loading: true }));
+    // Implementation
+  }
+}
+```
+
+**Rules:**
+- Private `_state` signal holds the full state object
+- Public API is always `computed()` — never expose the writable signal
+- State is always updated via `.update()` spreading the previous state
+- One store per feature domain — do not share stores across unrelated features
 
 ---
 
@@ -306,7 +358,7 @@ export const TABS: ITabItem[] = [
 ```typescript
 import { Component, inject } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { MyModalComponent } from '@shared/modals/my-modal';
+import { MyModalComponent } from '@shared/ui/modals/my-modal';
 
 @Component({
   selector: 'app-page',
@@ -335,18 +387,29 @@ When analyzing component/service placement, you MUST:
 1. **Count usage**: Identify exactly how many tabs/pages use the component
 2. **Apply the Scope Rule**: 
    - 1 tab/page = local placement in that tab/page folder
-   - 2+ tabs/pages = `shared/` directories
-   - App-wide singleton = `core/services/`
+   - Component used by 2+ pages/features = `shared/ui/`
+   - Component reused inside a single feature across related pages = `features/<feature>/components/`
+   - App-wide singleton (auth, guards) = `core/auth/`
+   - Capacitor plugin abstraction = `core/device/`
+   - Utility service (no business domain) = `shared/utils/`
 3. **Document decision**: Explain WHY the placement was chosen
 
 ### Placement Examples
 
-| Component Type | Used In | Placement | Reason |
-|----------------|---------|-----------|--------|
+| Component/Service Type | Used In | Placement | Reason |
+|------------------------|---------|-----------|--------|
 | `ProductCard` | Home tab only | `pages/in-app/tabs/home/components/` | Scope Rule: 1 tab |
-| `HeaderBack` | Home, Profile, Settings | `shared/components/headers/` | Scope Rule: 3+ tabs |
-| `AuthService` | Entire app | `core/services/` | Singleton service |
-| `DateFormatPipe` | 2 tabs | `shared/pipes/` | Scope Rule: 2+ tabs |
+| `HeaderBack` | Home, Profile, Settings | `shared/ui/headers/` | Scope Rule: 3+ tabs |
+| `AuthService` | Entire app | `core/auth/` | Singleton, global auth concern |
+| `NetworkService` | Entire app | `core/device/` | Capacitor plugin abstraction |
+| `PushNotificationService` | Entire app | `core/device/` | Capacitor plugin abstraction |
+| `UiService` | Entire app | `shared/utils/` | Utility service, no business domain |
+| `RouterService` | Entire app | `shared/utils/` | Utility service, no business domain |
+| `DateFormatPipe` | 2+ tabs | `shared/pipes/` | Scope Rule: 2+ tabs |
+| `PaymentForm` | Payments feature + payment page | `features/payments/components/` | Feature-specific smart component |
+| `PaymentsService` | Pages consuming payments | `features/payments/` | Domain facade service |
+| `PaymentModel` | Payments feature | `features/payments/models/` | Domain model/interface |
+| `user.store.ts` | User feature | `features/user/state/` | Feature-specific signal store |
 
 ---
 
@@ -365,16 +428,55 @@ Before finalizing any architectural decision:
 
 ## Anti-Patterns
 
-### Don't: Use "features" Folder
+### Don't: Put Business Logic in Pages
 
 ```typescript
-// ❌ WRONG - Don't use generic "features" folder
-src/app/features/
+// ❌ WRONG - API calls and domain logic inside a page
+// pages/in-app/features/payment/payment.page.ts
+export class PaymentPage {
+  async pay() {
+    const result = await this.http.post('/api/payments', data); // Direct API call from page
+    // mapping, validation, error handling... all here
+  }
+}
 
-// ✅ CORRECT - Use tabs, menu or feature in app folder
-src/app/pages/in-app/tabs/
-src/app/pages/in-app/menu/
-src/app/pages/in-app/features/
+// ✅ CORRECT - Page delegates to a feature facade
+// features/payments/payments.service.ts  ← business logic lives here
+// pages/in-app/features/payment/payment.page.ts
+export class PaymentPage {
+  private readonly paymentsService = inject(PaymentsService);
+  async pay() {
+    await this.paymentsService.processPayment(data); // Page only orchestrates
+  }
+}
+```
+
+### Don't: Confuse `features/` (domain) with `pages/in-app/features/` (routing)
+
+```typescript
+// src/app/features/          ← Domain layer: business logic, models, state, repositories
+// src/app/pages/in-app/features/  ← Routing layer: pages NOT in tabs or menu
+
+// ❌ WRONG - Putting page-only components in the domain features folder
+src/app/features/payments/components/payment-page-header.ts  // Only used by payment.page
+
+// ✅ CORRECT - Page-only components stay local to their page
+src/app/pages/in-app/features/payment/components/payment-page-header.ts
+
+// ✅ CORRECT - Smart components reused by feature AND pages go in the feature folder
+src/app/features/payments/components/payment-form.component.ts
+```
+
+### Don't: Put Capacitor Plugin Wrappers Outside `core/device/`
+
+```typescript
+// ❌ WRONG - Capacitor logic scattered in pages or shared services
+// pages/in-app/tabs/home/home.page.ts
+const net = Network.getStatus(); // Direct plugin call in page
+
+// ✅ CORRECT - Abstract Capacitor plugins in core/device/
+// core/device/network.service.ts  ← single abstraction point
+// If you change the plugin, you only touch one file
 ```
 
 ### Don't: Violate Scope Rule
@@ -384,7 +486,7 @@ src/app/pages/in-app/features/
 pages/in-app/tabs/home/components/shared-card.ts  // Used in home, profile, settings
 
 // ✅ CORRECT
-shared/components/cards/shared-card.ts
+shared/ui/cards/shared-card.ts
 ```
 
 ### Don't: Mix Navigation Patterns
