@@ -77,6 +77,143 @@ print_info() {
     echo -e "${BLUE}→${NC} $1"
 }
 
+line_exists_exact() {
+    local file_path="$1"
+    local needle="$2"
+    local line=""
+
+    [ ! -f "$file_path" ] && return 1
+
+    while IFS= read -r line || [ -n "$line" ]; do
+        [ "$line" = "$needle" ] && return 0
+    done < "$file_path"
+
+    return 1
+}
+
+add_gitignore_entry_if_missing() {
+    local gitignore_path="$1"
+    local entry="$2"
+
+    if line_exists_exact "$gitignore_path" "$entry"; then
+        print_info "$entry already exists in .gitignore"
+    else
+        echo "$entry" >> "$gitignore_path"
+        print_success "Added $entry to .gitignore"
+    fi
+}
+
+add_first_existing_variant_to_gitignore() {
+    local gitignore_path="$1"
+    shift
+    local candidate=""
+
+    for candidate in "$@"; do
+        if [ -f "$REPO_ROOT/$candidate" ]; then
+            add_gitignore_entry_if_missing "$gitignore_path" "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+select_yes_no_menu() {
+    local prompt="$1"
+    local options=("Yes" "No")
+    local current=0
+    local selected=0
+    local total=${#options[@]}
+    local i=0
+
+    echo -e "${BOLD}${prompt}${NC}"
+    echo -e "${CYAN}(↑/↓: Navigate, ${BOLD}Space: Toggle${NC}${CYAN}, Enter: Confirm, 1: Yes, 2: No)${NC}"
+    echo ""
+
+    tput civis
+
+    while true; do
+        for i in "${!options[@]}"; do
+            local checkbox=" "
+            local line_style="  "
+
+            [ "$i" -eq "$selected" ] && checkbox="${GREEN}✓${NC}"
+            [ "$i" -eq "$current" ] && line_style="${CYAN}❯ ${BOLD}"
+
+            echo -e "${line_style}[${checkbox}] $((i + 1)). ${options[$i]}${NC}"
+        done
+
+        IFS= read -rsn1 key
+
+        if [ "$key" = $'\x1b' ]; then
+            read -rsn2 key
+            case "$key" in
+                '[A')
+                    ((current--))
+                    [ "$current" -lt 0 ] && current=$((total - 1))
+                    ;;
+                '[B')
+                    ((current++))
+                    [ "$current" -ge "$total" ] && current=0
+                    ;;
+            esac
+        else
+            case "$key" in
+                ' ')
+                    selected=$current
+                    ;;
+                '1')
+                    current=0
+                    selected=0
+                    ;;
+                '2')
+                    current=1
+                    selected=1
+                    ;;
+                $'\n'|$'\r'|'')
+                    break
+                    ;;
+            esac
+        fi
+
+        echo -en "\033[${total}A\033[J"
+    done
+
+    tput cnorm
+    echo -en "\033[${total}A\033[J"
+
+    [ "$selected" -eq 0 ]
+}
+
+prompt_add_gitignore_entries() {
+    local gitignore_path="$REPO_ROOT/.gitignore"
+
+    if [ ! -t 0 ]; then
+        print_info "Skipping .gitignore prompt (non-interactive shell)."
+        return
+    fi
+
+    echo ""
+    if ! select_yes_no_menu "Do you want to add local setup files to .gitignore?"; then
+        print_info "Skipped .gitignore update."
+        return
+    fi
+
+    if [ ! -f "$gitignore_path" ]; then
+        print_warning ".gitignore not found in project root. Skipping update."
+        return
+    fi
+
+    add_gitignore_entry_if_missing "$gitignore_path" "/skills/"
+
+    add_first_existing_variant_to_gitignore "$gitignore_path" "AGENTS.md" "agents.md" "AGENTS.MD" "agents.MD" \
+        || print_info "No AGENTS/agents file found at project root."
+    add_first_existing_variant_to_gitignore "$gitignore_path" "GEMINI.md" "gemini.md" "GEMINI.MD" "gemini.MD" \
+        || print_info "No GEMINI/gemini file found at project root."
+    add_first_existing_variant_to_gitignore "$gitignore_path" "CLAUDE.md" "claude.md" "CLAUDE.MD" "claude.MD" \
+        || print_info "No CLAUDE/claude file found at project root."
+}
+
 update_self() {
     print_info "Updating skills and script from GitHub..."
     
@@ -851,6 +988,8 @@ main() {
         setup_antigravity
         echo ""
     fi
+
+    prompt_add_gitignore_entries
     
     echo ""
     print_success "Setup complete!"
@@ -858,7 +997,7 @@ main() {
     print_info "Next steps:"
     echo "  1. Restart your AI assistant"
     echo "  2. Verify skills are detected asking the AI assistant"
-    echo "  3. Add .agents/skills/*, ./skills/AGENTS.md, ./skills to gitignore if dont want to commit them"
+    echo "  3. Review .gitignore entries (added automatically if selected)"
     echo "  4. Start coding with AI assistance!"
     echo ""
     print_info "Documentation: https://github.com/lyonproducer/agent-skills"
