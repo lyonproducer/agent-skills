@@ -4,9 +4,9 @@ import { PushNotifications } from '@capacitor/push-notifications';
 /**
  * Push Notification Service
  *
- * Location: src/app/core/services/push-notification.service.ts
+ * Location: src/app/core/device/push-notification.service.ts
  *
- * This service MUST be placed in core/services as it's a singleton
+ * This service MUST be placed in core/device as it's a singleton
  * service used throughout the application for mobile push notifications.
  *
  * Usage:

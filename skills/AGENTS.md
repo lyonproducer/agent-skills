@@ -76,7 +76,7 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 | Optimizing images | `angular-performance` | NgOptimizedImage requirements |
 | Lazy loading components | `angular-performance` | @defer patterns and triggers |
 | Structuring Ionic project | `ionic-angular-architecture` | Scope Rule, tabs/menu structure |
-| Deciding component placement | `ionic-angular-architecture` | Scope Rule: 1 tab = local, 2+ tabs = shared |
+| Deciding component placement | `ionic-angular-architecture` | Scope Rule: local for 1 page, same-feature reuse in `features/<feature>/components/`, cross-feature/page reuse in `shared/ui/` |
 | Setting up navigation | `ionic-angular-architecture` | Tab-based vs menu-based patterns |
 | Detecting iOS/Android | `ionic-angular-capacitor` | Capacitor.getPlatform() - NEVER Ionic Platform |
 | Configuring status bar | `ionic-angular-capacitor` | iOS status bar setup in app.component |
@@ -109,7 +109,7 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 - Setting up SSR
 - User mentions: "performance", "image", "lazy", "defer", "SSR"
 
-### ionic-angular-architect
+### ionic-angular-architecture
 **Triggers when:**
 - Architecting Ionic applications
 - Organizing project structure
@@ -117,7 +117,7 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 - Setting up routing (tabs/menu)
 - User mentions: "architecture", "structure", "tabs", "menu", "scope rule", "placement"
 
-### ionic-angular-capacitor-plugins
+### ionic-angular-capacitor
 **Triggers when:**
 - Configuring Capacitor plugins
 - Detecting platform (iOS/Android/web)
@@ -167,8 +167,9 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 
 ### 4. Scope Rule (REQUIRED for Ionic)
 - 1 tab/page = local placement
-- 2+ tabs/pages = `shared/` directories
-- App-wide = `core/services/`
+- Same feature across some pages = `features/<feature>/components/`
+- 2+ tabs/pages/features = `shared/ui/`
+- App-wide infrastructure = `core/` (for example `core/auth/`, `core/device/`)
 - NO EXCEPTIONS
 
 ### 5. Mobile-First (REQUIRED for Capacitor)
@@ -189,7 +190,7 @@ skills/
 │       └── SKILL.md
 └── ionic/
     └── angular/
-        ├── architect/
+        ├── architecture/
         │   ├── SKILL.md
         │   ├── references/
         │   │   ├── capacitor-platform-detection.md
@@ -227,6 +228,7 @@ When adding new skills:
 | angular-performance | 20+ | 8+ | N/A |
 | ionic-angular-architecture| 20+ | 8+ | 6+ |
 | ionic-angular-capacitor| 20+ | 8+ | 6+ |
+| ionic-angular-migration-standalone | 12+ | 8+ |  N/A |
 
 ## Support
 
@@ -236,4 +238,4 @@ When adding new skills:
 
 ---
 
-**Remember**: These skills enforce modern Angular 20+ and Ionic 8+ best practices. Always start with `angular-core` and build up from there.
+**Remember**: These skills enforce modern Angular 20+ and Ionic 8+ best practices. Always start with `angular-core` and `ionic-angular-architecture` and build up from there.

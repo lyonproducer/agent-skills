@@ -189,7 +189,7 @@ export class UserProfile {
 ### Example 2: Deciding Component Placement
 
 ```typescript
-// AI will use ionic-angular-architectureskill
+// AI will use ionic-angular-architecture skill
 // Prompt: "Where should I place a HeaderBack component used in 3 tabs?"
 
 // AI Response: "Following the Scope Rule:
@@ -201,7 +201,7 @@ export class UserProfile {
 ### Example 3: Platform Detection
 
 ```typescript
-// AI will use ionic-angular-capacitorskill
+// AI will use ionic-angular-capacitor skill
 // Prompt: "How do I detect if app is running on iOS?"
 
 // Result: Capacitor platform detection
@@ -317,7 +317,7 @@ Skills are designed to work together. Load order:
 
 Contributions welcome! Please:
 
-1. Fork the repository
+1. Clone the repository
 2. Create a feature branch
 3. Follow skill template structure
 4. Add tests/examples

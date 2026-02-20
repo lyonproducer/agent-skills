@@ -5,7 +5,7 @@ description: >
   Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.
 metadata:
   author: Lyon Incode
-  version: "1.1"
+  version: "1.2"
 ---
 
 ## When to Use
@@ -94,7 +94,7 @@ npm install @capacitor/status-bar @capawesome/capacitor-android-edge-to-edge-sup
 
 **ALWAYS create push notifications service at:**
 
-`src/app/core/services/push-notification.service.ts`
+`src/app/core/device/push-notification.service.ts`
 
 ```typescript
 import { Injectable, inject } from '@angular/core';
@@ -182,7 +182,7 @@ npm install @capacitor/push-notifications
 ```
 
 **Key requirements:**
-- Must be in `core/services/` (singleton service)
+- Must be in `core/device/` (singleton service)
 - Must implement all 4 Capacitor push notification listeners
 - Must handle permissions properly
 - Must use modern async/await patterns

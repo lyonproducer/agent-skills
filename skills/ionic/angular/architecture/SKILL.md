@@ -5,7 +5,7 @@ description: >
   Trigger: When architecting Ionic apps, organizing project structure, or applying Scope Rule to Angular + Ionic projects.
 metadata:
   author: Lyon Incode
-  version: "1.1"
+  version: "2.0"
 ---
 
 ## When to Use
