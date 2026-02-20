@@ -259,7 +259,7 @@ import {
   effect 
 } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { ApiService } from '@core/services/api.service';
+import { ProductsService } from '@features/products/products.service';
 
 @Component({
   selector: 'app-product-list',
@@ -287,7 +287,7 @@ export class ProductListComponent {
   readonly productSelected = output<Product>();
   
   // ✅ Use inject() instead of constructor
-  private readonly apiService = inject(ApiService);
+  private readonly productsService = inject(ProductsService);
   
   // ✅ Use signals for state
   readonly products = signal<Product[]>([]);
@@ -306,7 +306,7 @@ export class ProductListComponent {
   private async loadProducts(category: string) {
     this.loading.set(true);
     try {
-      const data = await this.apiService.getProducts(category);
+      const data = await this.productsService.getProducts(category);
       this.products.set(data);
     } finally {
       this.loading.set(false);
