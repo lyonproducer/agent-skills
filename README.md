@@ -24,7 +24,7 @@ This repository provides curated skills that teach AI assistants how to work wit
 | **ionic-angular-capacitor** | Capacitor configuration, platform detection, push notifications |
 | **capacitor-plugins** | Catalog of Capawesome, Firebase, and community Capacitor plugins (vendored) |
 
-See [AGENTS.md](AGENTS.md) for detailed skill tree, triggers, and usage patterns.
+See [AGENTS.md](skills/AGENTS.md) for detailed skill tree, triggers, and usage patterns.
 
 ## 🏗️ Skills Architecture
 
@@ -364,7 +364,7 @@ Inspired by:
 
 - **Issues**: [GitHub Issues](https://github.com/lyonproducer/agent-skills/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/lyonproducer/agent-skills/discussions)
-- **Documentation**: [AGENTS.md](AGENTS.md)
+- **Documentation**: [AGENTS.md](skills/AGENTS.md)
 
 ## Resources
 
