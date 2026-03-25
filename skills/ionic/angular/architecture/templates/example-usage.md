@@ -329,80 +329,7 @@ export class ProductListComponent {
 
 ---
 
-## Example 5: Setting Up Push Notifications
-
-### User Request
-> "How do I set up push notifications for order updates in my food delivery app?"
-
-### Skill Response
-
-**Step 1**: Create the push notification service
-
-```bash
-# Location: src/app/core/device/push-notification.service.ts
-```
-
-Use the template from `templates/push-notification.service.ts` (complete implementation included).
-
-**Step 2**: Initialize in app.component.ts
-
-```typescript
-import { Component, inject } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { Platform, IonicModule } from '@ionic/angular';
-import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-import { PushNotificationService } from '@core/device/push-notification.service';
-
-@Component({
-  selector: 'app-root',
-  imports: [IonicModule],
-  templateUrl: 'app.component.html'
-})
-export class AppComponent {
-  private readonly platform = inject(Platform);
-  private readonly pushService = inject(PushNotificationService);
-
-  constructor() {
-    this.platform.ready().then(async () => {
-      // 🚨 REQUIRED: iOS configuration
-      if (Capacitor.getPlatform() === 'ios') {
-        await StatusBar.setOverlaysWebView({ overlay: true });
-        await StatusBar.setStyle({ style: Style.Dark });
-        await EdgeToEdge.disable();
-      }
-
-      // Only register push notifications on native platforms
-      if (Capacitor.isNativePlatform()) {
-        await this.pushService.addListeners();
-        
-        // Request permission after user logs in
-        // await this.pushService.registerNotifications();
-      }
-    });
-  }
-}
-```
-
-**Step 3**: Request permissions after user authentication
-
-```typescript
-// In your auth service or login component
-async onLoginSuccess() {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      await this.pushService.registerNotifications();
-      console.log('Push notifications enabled');
-    } catch (error) {
-      console.log('User declined push notifications');
-    }
-  }
-}
-```
-
----
-
-## Example 6: Migrating from platform.is() to Capacitor
+## Example 5: Migrating from platform.is() to Capacitor
 
 ### User Request
 > "My app uses platform.is() everywhere. How do I migrate to Capacitor?"
@@ -453,7 +380,7 @@ export class MyComponent {
 
 ---
 
-## Example 7: Centralized UI Controllers (UiService)
+## Example 6: Centralized UI Controllers (UiService)
 
 ### User Request
 > "I need a consistent way to show loading, toast, and alert across the app."
@@ -551,7 +478,7 @@ These examples demonstrate:
 2. **Component Placement** - Based on usage count
 3. **Platform Detection** - Using Capacitor correctly
 4. **Modern Patterns** - Angular 20 signals and standalone
-5. **Push Notifications** - Proper mobile integration
+5. **Push Notifications** - See `ionic-angular-capacitor` skill → `references/push-notifications-angular.md`
 6. **Migration Path** - From legacy to modern code
 7. **UI Controllers** - Centralized Ionic UI interactions
 
