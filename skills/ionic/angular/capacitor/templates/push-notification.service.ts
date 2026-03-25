@@ -1,10 +1,12 @@
+/* eslint-disable */
 import { Injectable } from '@angular/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 
 /**
- * Push Notification Service
+ * Push Notification Service (skill template)
  *
- * Location: src/app/core/device/push-notification.service.ts
+ * Skill path: skills/ionic/angular/capacitor/templates/push-notification.service.ts
+ * Copy to app: src/app/core/device/push-notification.service.ts
  *
  * This service MUST be placed in core/device as it's a singleton
  * service used throughout the application for mobile push notifications.

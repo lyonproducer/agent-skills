@@ -25,6 +25,7 @@ When working on Angular + Ionic projects, AI assistants automatically load relev
 | `ionic-angular-architecture` | Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns | [SKILL.md](.agents/skills/ionic/angular/architecture/SKILL.md) |
 | `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](.agents/skills/ionic/angular/capacitor/SKILL.md) |
 | `ionic-angular-migration-standalone` | Migration guide for converting Ionic Angular apps to Standalone architecture | [SKILL.md](.agents/skills/ionic/angular/migration-standalone/SKILL.md) |
+| `capacitor-plugins` | Catalog of Capacitor community and Capawesome plugins with usage references (vendored from capawesome-team/skills) | [SKILL.md](.agents/skills/ionic/capacitor/capacitor-plugins/SKILL.md) |
 
 ## Skill Tree & Dependencies
 
@@ -56,12 +57,18 @@ Angular + Ionic Project
 │   ├── Routing patterns
 │   └── Component placement decisions
 │
-└── ionic-angular-capacitor (When configuring mobile features)
-    ├── Platform detection (Capacitor.getPlatform())
-    ├── iOS status bar configuration
-    ├── Push notifications service
-    ├── Ionic Storage setup
-    └── Capacitor plugin integration
+├── ionic-angular-capacitor (When configuring mobile features)
+│   ├── Platform detection (Capacitor.getPlatform())
+│   ├── iOS status bar configuration
+│   ├── Push notifications service
+│   ├── Ionic Storage setup
+│   └── Capacitor plugin integration
+│
+└── capacitor-plugins (When choosing or installing a third-party/community plugin)
+    ├── Plugin catalog with usage references
+    ├── Capawesome plugins
+    ├── Firebase plugins
+    └── Community plugins
 ```
 
 ## Auto-Invoke Skills
@@ -82,6 +89,8 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 | Configuring status bar | `ionic-angular-capacitor` | iOS status bar setup in app.component |
 | Setting up push notifications | `ionic-angular-capacitor` | Push notification service structure |
 | Configuring storage | `ionic-angular-capacitor` | Ionic Storage setup in main.ts |
+| Choosing a third-party/community plugin | `capacitor-plugins` | Full plugin catalog with references |
+| Installing a Capawesome or Firebase plugin | `capacitor-plugins` | Usage guide and API reference per plugin |
 
 ## Trigger Patterns
 
@@ -134,6 +143,13 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 - Updating to provideIonicAngular
 - Registering ionicons
 - User mentions: "migration", "standalone", "NgModule", "IonicModule", "migrate to standalone"
+
+### capacitor-plugins
+**Triggers when:**
+- Asking which plugin to use for a specific feature
+- Installing or configuring Capawesome, Firebase, or community Capacitor plugins
+- Looking up API usage for a specific plugin
+- User mentions: "capawesome", "firebase plugin", "community plugin", "which plugin", "barcode", "biometrics", "live update", "in-app review"
 
 ## How Skills Work
 
@@ -189,22 +205,41 @@ skills/
 │   └── performance/
 │       └── SKILL.md
 └── ionic/
-    └── angular/
-        ├── architecture/
-        │   ├── SKILL.md
-        │   ├── references/
-        │   │   ├── capacitor-platform-detection.md
-        │   │   ├── project-structure.md
-        │   │   └── ui-interaction-pattern.md
-        │   └── templates/
-        │       ├── app-component-initial.ts
-        │       ├── example-usage.md
-        │       ├── push-notification.service.ts
-        │       └── ui.service.ts
-        ├── capacitor/
-        │   └── SKILL.md
-        └── migration-standalone/
-            └── SKILL.md
+    ├── angular/
+    │   ├── architecture/
+    │   │   ├── SKILL.md
+    │   │   ├── references/
+    │   │   │   ├── capacitor-platform-detection.md
+    │   │   │   ├── project-structure.md
+    │   │   │   └── ui-interaction-pattern.md
+    │   │   └── templates/
+    │   │       ├── app-component-initial.ts
+    │   │       ├── example-usage.md
+    │   │       └── ui.service.ts
+    │   ├── capacitor/
+    │   │   ├── SKILL.md
+    │   │   ├── templates/
+    │   │   │   └── push-notification.service.ts
+    │   │   └── references/
+    │   │       ├── push-notifications-angular.md
+    │   │       ├── status-bar-ios.md
+    │   │       ├── ionic-storage.md
+    │   │       ├── capacitor-config.md
+    │   │       ├── plugin-workflow-camera.md
+    │   │       ├── network-service.md
+    │   │       ├── geolocation-service.md
+    │   │       ├── keyboard-service.md
+    │   │       ├── android-edge-to-edge.md
+    │   │       ├── social-login-capgo.md
+    │   │       ├── firebase-crashlytics-service.md
+    │   │       └── firebase-analytics-service.md
+    │   └── migration-standalone/
+    │       └── SKILL.md
+    └── capacitor/
+        └── capacitor-plugins/        # vendored from capawesome-team/skills
+            ├── SKILL.md
+            └── references/
+                └── *.md
 ```
 
 ## Installation
@@ -228,13 +263,15 @@ When adding new skills:
 | angular-performance | 20+ | 8+ | N/A |
 | ionic-angular-architecture| 20+ | 8+ | 6+ |
 | ionic-angular-capacitor| 20+ | 8+ | 6+ |
-| ionic-angular-migration-standalone | 12+ | 8+ |  N/A |
+| ionic-angular-migration-standalone | 12+ | 8+ | N/A |
+| capacitor-plugins | N/A | N/A | 6+ |
 
 ## Support
 
 - [Angular Documentation](https://angular.dev)
 - [Ionic Documentation](https://ionicframework.com/docs)
 - [Capacitor Documentation](https://capacitorjs.com/docs)
+- [Capacitor Cap Awesome Plugins Documentation](https://capawesome.io/plugins/)
 
 ---
 

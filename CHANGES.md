@@ -4,6 +4,56 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ Capacitor Skill Refactor + capawesome-plugins Link — March 24, 2026
+
+## Summary
+
+Refactored `skills/ionic/angular/capacitor/SKILL.md` from a 759-line monolithic file into a slim index with 12 markdown references under `references/` plus `templates/push-notification.service.ts`. Added the vendored `capawesome-capacitor-plugins` skill and updated all documentation to reflect the new structure.
+
+## Changes
+
+### New: `skills/ionic/angular/capacitor/references/` (12 `.md` files)
+Each reference file contains a single topic extracted from the old SKILL.md:
+- `push-notifications-angular.md` — unified push guide (service + app.component + opt-in flow)
+- `status-bar-ios.md` — iOS status bar configuration
+- `ionic-storage.md` — Ionic Storage setup and StorageService
+- `capacitor-config.md` — `capacitor.config.ts` template
+- `plugin-workflow-camera.md` — plugin installation workflow + Camera example
+- `network-service.md` — NetworkService with signals
+- `geolocation-service.md` — GeolocationService with permissions
+- `keyboard-service.md` — KeyboardService
+- `android-edge-to-edge.md` — EdgeToEdge Android SDK 35 helper
+- `social-login-capgo.md` — Social Login (Capgo)
+- `firebase-crashlytics-service.md` — CrashlyticsService
+- `firebase-analytics-service.md` — AnalyticsService
+
+### Modified: `skills/ionic/angular/capacitor/SKILL.md`
+- Reduced from 759 lines to a slim index with short Critical Rules and links to references.
+- Bumped version from `1.2` to `1.3`.
+
+### New: `skills/ionic/angular/capacitor/templates/push-notification.service.ts`
+- Moved from `architecture/templates/` (via capacitor `references/`); `references/` stays Markdown-only.
+
+### Deleted: `skills/ionic/angular/architecture/templates/push-notification.service.ts`
+- Superseded by `skills/ionic/angular/capacitor/templates/push-notification.service.ts`.
+
+### Modified: `skills/ionic/angular/architecture/templates/example-usage.md`
+- Example 5 (Push Notifications) replaced with a short pointer to the capacitor skill references.
+
+### New: `skills/ionic/capacitor/capacitor-plugins/` (vendored)
+- Cloned via sparse git checkout from [capawesome-team/skills](https://github.com/capawesome-team/skills/tree/main/skills/capacitor-plugins).
+- Contains `SKILL.md` and 147 plugin reference files.
+
+### Modified: `skills/AGENTS.md`
+- Added `capacitor-plugins` to Available Skills table, Skill Tree, Auto-Invoke table, Trigger Patterns, Skill Structure diagram, and Version Compatibility table.
+- Updated Skill Structure diagram to reflect new `references/` folders.
+
+### Modified: `README.md`
+- Added `capacitor-plugins` to Available Skills table.
+- Updated Skills Architecture diagram to show new folder layout.
+
+---
+
 # ✅ .agents/skills Architecture Implementation - February 5, 2026
 
 ## Resumen

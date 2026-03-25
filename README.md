@@ -22,6 +22,7 @@ This repository provides curated skills that teach AI assistants how to work wit
 | **angular-performance** | Performance optimization with NgOptimizedImage, @defer, SSR |
 | **ionic-angular-architecture** | Project architecture with Scope Rule and routing patterns |
 | **ionic-angular-capacitor** | Capacitor configuration, platform detection, push notifications |
+| **capacitor-plugins** | Catalog of Capawesome, Firebase, and community Capacitor plugins (vendored) |
 
 See [AGENTS.md](AGENTS.md) for detailed skill tree, triggers, and usage patterns.
 
@@ -47,22 +48,44 @@ Root
     │       └── SKILL.md
     │
     └── ionic/
-        └── angular/
-            ├── architecture/              [335 lines]
-            │   ├── SKILL.md
-            │   ├── references/
-            │   │   ├── capacitor-platform-detection.md
-            │   │   └── project-structure.md
-            │   └── templates/
-            │       ├── app-component-initial.ts
-            │       ├── example-usage.md
-            │       └── push-notification.service.ts
-            │
-            ├── capacitor/                 [398 lines]
-            │   └── SKILL.md
-            │
-            └── migration-standalone/      [285 lines] ⭐ NEW
-                └── SKILL.md
+        ├── angular/
+        │   ├── architecture/
+        │   │   ├── SKILL.md
+        │   │   ├── references/
+        │   │   │   ├── capacitor-platform-detection.md
+        │   │   │   ├── project-structure.md
+        │   │   │   └── ui-interaction-pattern.md
+        │   │   └── templates/
+        │   │       ├── app-component-initial.ts
+        │   │       ├── example-usage.md
+        │   │       └── ui.service.ts
+        │   │
+        │   ├── capacitor/
+        │   │   ├── SKILL.md
+        │   │   ├── templates/
+        │   │   │   └── push-notification.service.ts
+        │   │   └── references/
+        │   │       ├── push-notifications-angular.md
+        │   │       ├── status-bar-ios.md
+        │   │       ├── ionic-storage.md
+        │   │       ├── capacitor-config.md
+        │   │       ├── network-service.md
+        │   │       ├── geolocation-service.md
+        │   │       ├── keyboard-service.md
+        │   │       ├── android-edge-to-edge.md
+        │   │       ├── social-login-capgo.md
+        │   │       ├── firebase-crashlytics-service.md
+        │   │       ├── firebase-analytics-service.md
+        │   │       └── plugin-workflow-camera.md
+        │   │
+        │   └── migration-standalone/
+        │       └── SKILL.md
+        │
+        └── capacitor/
+            └── capacitor-plugins/         ← vendored from capawesome-team/skills
+                ├── SKILL.md
+                └── references/
+                    └── *.md               (147 plugin reference files)
 ```
 
 **💡 Pro Tip**: Clone only `skills/` folder for a lightweight setup without docs!

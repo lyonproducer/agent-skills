@@ -5,7 +5,7 @@ description: >
   Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.
 metadata:
   author: Lyon Incode
-  version: "1.2"
+  version: "1.3"
 ---
 
 ## When to Use
@@ -27,58 +27,36 @@ Load this skill when:
 // ✅ CORRECT
 import { Capacitor } from '@capacitor/core';
 
-if (Capacitor.getPlatform() === 'ios') {
-  // iOS-specific code
-}
-
-if (Capacitor.getPlatform() === 'android') {
-  // Android-specific code
-}
-
-if (Capacitor.getPlatform() === 'web') {
-  // Web-specific code
-}
+if (Capacitor.getPlatform() === 'ios') { }
+if (Capacitor.getPlatform() === 'android') { }
+if (Capacitor.getPlatform() === 'web') { }
+if (Capacitor.isNativePlatform()) { } // iOS or Android (not web)
 
 // ❌ WRONG - Never use Ionic's platform.is()
 import { Platform } from '@ionic/angular';
 if (this.platform.is('ios')) { } // DON'T DO THIS
 ```
 
-**Supported platform values:**
-- `'ios'` - iOS devices
-- `'android'` - Android devices
-- `'web'` - Web browsers
+**Supported values:** `'ios'`, `'android'`, `'web'`
 
-**Why:** Capacitor.getPlatform() is the official, reliable way to detect platforms. Ionic's Platform service is deprecated for this use case and can return incorrect results.
+**Why:** `Capacitor.getPlatform()` is the official, reliable method. Ionic's `Platform` service can return inconsistent results and is not recommended for Capacitor apps.
 
 ---
 
 ## Critical Rule 2: iOS Status Bar Configuration
 
-**ALWAYS include this iOS configuration in `app.component.ts`:**
+**ALWAYS include in `app.component.ts` inside `platform.ready()`.**
+
+Full guide: [`references/status-bar-ios.md`](references/status-bar-ios.md)
 
 ```typescript
-import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-
-export class AppComponent {
-  private readonly platform = inject(Platform);
-
-  constructor() {
-    this.platform.ready().then(async () => {
-      // iOS Status Bar Configuration
-      if (Capacitor.getPlatform() === 'ios') {
-        await StatusBar.setOverlaysWebView({ overlay: true });
-        await StatusBar.setStyle({ style: Style.Dark });
-        await EdgeToEdge.disable();
-      }
-    });
-  }
+if (Capacitor.getPlatform() === 'ios') {
+  await StatusBar.setOverlaysWebView({ overlay: true });
+  await StatusBar.setStyle({ style: Style.Dark });
+  await EdgeToEdge.disable();
 }
 ```
 
-**Required packages:**
 ```bash
 npm install @capacitor/status-bar @capawesome/capacitor-android-edge-to-edge-support
 ```
@@ -92,222 +70,30 @@ npm install @capacitor/status-bar @capawesome/capacitor-android-edge-to-edge-sup
 
 ## Critical Rule 3: Push Notifications Service
 
-**ALWAYS create push notifications service at:**
+**Service location:** `src/app/core/device/push-notification.service.ts`
 
-`src/app/core/device/push-notification.service.ts`
+Full guide + app.component setup + opt-in flow: [`references/push-notifications-angular.md`](references/push-notifications-angular.md)
 
-```typescript
-import { Injectable, inject } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import {
-  PushNotifications,
-  Token,
-  PushNotificationSchema,
-  ActionPerformed,
-} from '@capacitor/push-notifications';
+Copyable service template: [`templates/push-notification.service.ts`](templates/push-notification.service.ts)
 
-@Injectable({
-  providedIn: 'root',
-})
-export class PushNotificationService {
-  private readonly platform = inject(Platform);
-
-  async initialize(): Promise<void> {
-    if (Capacitor.getPlatform() === 'web') {
-      console.log('Push notifications not available on web');
-      return;
-    }
-
-    // Request permission
-    const permission = await PushNotifications.requestPermissions();
-    
-    if (permission.receive === 'granted') {
-      await PushNotifications.register();
-    }
-
-    // Setup listeners
-    this.setupListeners();
-  }
-
-  private setupListeners(): void {
-    // 1. Registration success
-    PushNotifications.addListener('registration', (token: Token) => {
-      console.log('Push registration success:', token.value);
-      // Send token to your backend
-    });
-
-    // 2. Registration error
-    PushNotifications.addListener('registrationError', (error: any) => {
-      console.error('Push registration error:', error);
-    });
-
-    // 3. Notification received (app in foreground)
-    PushNotifications.addListener(
-      'pushNotificationReceived',
-      (notification: PushNotificationSchema) => {
-        console.log('Push received:', notification);
-        // Handle notification in foreground
-      }
-    );
-
-    // 4. Notification action performed (user tapped)
-    PushNotifications.addListener(
-      'pushNotificationActionPerformed',
-      (notification: ActionPerformed) => {
-        console.log('Push action performed:', notification);
-        // Handle user interaction
-      }
-    );
-  }
-}
-```
-
-**Initialize in app.component.ts:**
-
-```typescript
-export class AppComponent {
-  private readonly pushService = inject(PushNotificationService);
-
-  constructor() {
-    this.platform.ready().then(async () => {
-      await this.pushService.initialize();
-    });
-  }
-}
-```
-
-**Required packages:**
 ```bash
 npm install @capacitor/push-notifications
 ```
 
-**Key requirements:**
-- Must be in `core/device/` (singleton service)
+Key requirements:
+- Must be in `core/device/` (singleton Capacitor plugin abstraction)
 - Must implement all 4 Capacitor push notification listeners
-- Must handle permissions properly
-- Must use modern async/await patterns
+- Call `addListeners()` on every native app start (in `app.component.ts`)
+- Call `registerNotifications()` only after user opt-in — never on app start
 
 ---
 
 ## Critical Rule 4: Ionic Storage Configuration
 
-**ALWAYS configure Ionic Storage in `main.ts`:**
+**ALWAYS configure in `main.ts`.** Full guide + constants + `StorageService`: [`references/ionic-storage.md`](references/ionic-storage.md)
 
-```typescript
-import { provideIonicAngular } from '@ionic/angular/standalone';
-import { IonicStorageModule } from '@ionic/storage-angular';
-import { importProvidersFrom } from '@angular/core';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideIonicAngular({
-      innerHTMLTemplatesEnabled: true,
-      sanitizerEnabled: true,
-    }),
-    importProvidersFrom(
-      IonicStorageModule.forRoot({
-        name: DB_INDEX_NAME,
-        storeName: DB_STORE_NAME,
-      })
-    ),
-  ],
-});
-```
-
-**Create database constants in `src/app/shared/constants/database.constants.ts`:**
-
-```typescript
-export const DB_INDEX_NAME = '__myapp_db';
-export const DB_STORE_NAME = '__myapp_store';
-export const DB_TOKEN_NAME = '__myapp_token';
-```
-
-**Usage in services:**
-
-```typescript
-import { Storage } from '@ionic/storage-angular';
-import { inject, Injectable } from '@angular/core';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class StorageService {
-  private readonly storage = inject(Storage);
-  private initialized = false;
-
-  async init(): Promise<void> {
-    if (!this.initialized) {
-      await this.storage.create();
-      this.initialized = true;
-    }
-  }
-
-  async set(key: string, value: any): Promise<void> {
-    await this.init();
-    await this.storage.set(key, value);
-  }
-
-  async get<T>(key: string): Promise<T | null> {
-    await this.init();
-    return await this.storage.get(key);
-  }
-
-  async remove(key: string): Promise<void> {
-    await this.init();
-    await this.storage.remove(key);
-  }
-
-  async clear(): Promise<void> {
-    await this.init();
-    await this.storage.clear();
-  }
-}
-```
-
-**Required packages:**
 ```bash
 npm install @ionic/storage-angular
-```
-
-**Why these settings:**
-- `innerHTMLTemplatesEnabled: true` - Allows modifying innerHTML CSS
-- `sanitizerEnabled: true` - Keeps security enabled while allowing CSS modifications
-- These settings enable better control over Ionic component styling
-
----
-
-## Capacitor Configuration File
-
-**`capacitor.config.ts` example:**
-
-```typescript
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.example.app',
-  appName: 'MyApp',
-  webDir: 'www',
-  server: {
-    androidScheme: 'https'
-  },
-  plugins: {
-    PushNotifications: {
-      presentationOptions: ['badge', 'sound', 'alert']
-    },
-    StatusBar: {
-      style: 'dark',
-      backgroundColor: '#000000'
-    },
-    Keyboard: {
-      resizeOnFullScreen: false
-    },
-    EdgeToEdge: {
-      backgroundColor: "#000000",
-    },
-  }
-};
-
-export default config;
 ```
 
 ---
@@ -322,386 +108,42 @@ export default config;
 | `@capacitor/network` | Network status | `npm install @capacitor/network` |
 | `@capacitor/device` | Device info | `npm install @capacitor/device` |
 | `@capacitor/splash-screen` | Splash screen control | `npm install @capacitor/splash-screen` |
-| `@capawesome/capacitor-android-edge-to-edge-support` | Fix Android SDK 35 status bar overlay | `npm install @capawesome/capacitor-android-edge-to-edge-support` |
 | `@capacitor/keyboard` | Configure app keyboard behavior | `npm install @capacitor/keyboard` |
-| `@capgo/capacitor-social-login` | Social login (recommended, updated) | `npm install @capgo/capacitor-social-login` |
+| `@capawesome/capacitor-android-edge-to-edge-support` | Fix Android SDK 35 status bar overlay | `npm install @capawesome/capacitor-android-edge-to-edge-support` |
+| `@capgo/capacitor-social-login` | Social login (recommended, actively maintained) | `npm install @capgo/capacitor-social-login` |
 | `@capacitor-firebase/crashlytics` | Crash analytics with Firebase | `npm install @capacitor-firebase/crashlytics` |
 | `@capacitor-firebase/analytics` | App analytics with Firebase | `npm install @capacitor-firebase/analytics` |
+
+For community and third-party plugins, see the [capawesome-team capacitor-plugins skill](../../../ionic/capacitor/capacitor-plugins/SKILL.md).
+
+---
+
+## Reference Services Index
+
+| Topic | Reference |
+|-------|-----------|
+| Push notifications (Angular) | [`references/push-notifications-angular.md`](references/push-notifications-angular.md) |
+| Push notification service template | [`templates/push-notification.service.ts`](templates/push-notification.service.ts) |
+| iOS Status Bar | [`references/status-bar-ios.md`](references/status-bar-ios.md) |
+| Ionic Storage | [`references/ionic-storage.md`](references/ionic-storage.md) |
+| Capacitor Config | [`references/capacitor-config.md`](references/capacitor-config.md) |
+| Camera (plugin workflow) | [`references/plugin-workflow-camera.md`](references/plugin-workflow-camera.md) |
+| Network Service | [`references/network-service.md`](references/network-service.md) |
+| Geolocation Service | [`references/geolocation-service.md`](references/geolocation-service.md) |
+| Firebase Crashlytics | [`references/firebase-crashlytics-service.md`](references/firebase-crashlytics-service.md) |
+| Firebase Analytics | [`references/firebase-analytics-service.md`](references/firebase-analytics-service.md) |
+| Social Login (Capgo) | [`references/social-login-capgo.md`](references/social-login-capgo.md) |
+| Keyboard Service | [`references/keyboard-service.md`](references/keyboard-service.md) |
+| Android Edge-to-Edge | [`references/android-edge-to-edge.md`](references/android-edge-to-edge.md) |
 
 ---
 
 ## Plugin Installation Workflow
 
-1. Install npm package: `npm install @capacitor/[plugin-name]`
-2. Sync native projects: `npx cap sync`
-3. Add platform-specific permissions in native projects
-4. Import and use in Angular services
-
-**Example with Camera:**
-
-```typescript
-import { Camera, CameraResultType } from '@capacitor/camera';
-
-export class PhotoService {
-  async takePhoto(): Promise<string> {
-    const image = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: false,
-      resultType: CameraResultType.DataUrl
-    });
-    
-    return image.dataUrl!;
-  }
-}
-```
-
----
-
-## Reference Services (Angular Core Patterns)
-
-### Crashlytics (Firebase)
-
-```typescript
-import { Injectable } from '@angular/core';
-import { FirebaseCrashlytics } from '@capacitor-firebase/crashlytics';
-import { Capacitor } from '@capacitor/core';
-import * as StackTrace from 'stacktrace-js';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class CrashlyticsService {
-  async crash(message: string = 'Test Crash') {
-    await FirebaseCrashlytics.crash({ message });
-  }
-
-  async setCustomKey(
-    key: string,
-    value: string | number | boolean,
-    type: 'string' | 'long' | 'double' | 'boolean'
-  ) {
-    await FirebaseCrashlytics.setCustomKey({
-      key,
-      value,
-      type,
-    });
-  }
-
-  async setUserId(userId: string) {
-    await FirebaseCrashlytics.setUserId({
-      userId,
-    });
-  }
-
-  async log(message: string) {
-    await FirebaseCrashlytics.log({
-      message,
-    });
-  }
-
-  async setEnabled(enabled: boolean) {
-    await FirebaseCrashlytics.setEnabled({
-      enabled,
-    });
-  }
-
-  async isEnabled(): Promise<boolean> {
-    const { enabled } = await FirebaseCrashlytics.isEnabled();
-    return enabled;
-  }
-
-  async didCrashOnPreviousExecution(): Promise<boolean> {
-    const { crashed } = await FirebaseCrashlytics.didCrashOnPreviousExecution();
-    return crashed;
-  }
-
-  async sendUnsentReports() {
-    await FirebaseCrashlytics.sendUnsentReports();
-  }
-
-  async deleteUnsentReports() {
-    await FirebaseCrashlytics.deleteUnsentReports();
-  }
-
-  async recordException(message: string) {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await FirebaseCrashlytics.recordException({
-      message,
-    });
-  }
-
-  async recordExceptionWithStacktrace(error: Error, message: string = 'Non-fatal error') {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    const stacktrace = await StackTrace.fromError(error);
-    await FirebaseCrashlytics.recordException({
-      message,
-      stacktrace,
-    });
-  }
-}
-```
-
-**Required packages:**
-```bash
-npm install @capacitor-firebase/crashlytics stacktrace-js
-```
-
-### Analytics (Firebase)
-
-```typescript
-import { Injectable } from '@angular/core';
-import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
-import { Capacitor } from '@capacitor/core';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class AnalyticsService {
-  async logEvent(name: string, params?: Record<string, string | number>) {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await FirebaseAnalytics.logEvent({
-      name,
-      params,
-    });
-  }
-
-  async setUserId(userId: string) {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await FirebaseAnalytics.setUserId({
-      userId,
-    });
-  }
-}
-```
-
-**Required packages:**
-```bash
-npm install @capacitor-firebase/analytics
-```
-
-### Social Login (Capgo)
-
-```typescript
-import { Injectable } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import { SocialLogin, LoginProvider } from '@capgo/capacitor-social-login';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class SocialLoginService {
-  async signInWithGoogle() {
-    if (Capacitor.getPlatform() === 'web') {
-      return null;
-    }
-    return await SocialLogin.login({
-      provider: LoginProvider.GOOGLE,
-    });
-  }
-
-  async signOut() {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await SocialLogin.logout();
-  }
-}
-```
-
-**Required packages:**
-```bash
-npm install @capgo/capacitor-social-login
-```
-
-### Keyboard Configuration
-
-```typescript
-import { Injectable } from '@angular/core';
-import { Keyboard, KeyboardResize } from '@capacitor/keyboard';
-import { Capacitor } from '@capacitor/core';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class KeyboardService {
-  async setResizeMode(mode: KeyboardResize = KeyboardResize.Body) {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await Keyboard.setResizeMode({ mode });
-  }
-
-  async hide(): Promise<void> {
-    if (Capacitor.getPlatform() === 'web') {
-      return;
-    }
-    await Keyboard.hide();
-  }
-}
-```
-
-**Required packages:**
-```bash
-npm install @capacitor/keyboard
-```
-
-### Android Edge-to-Edge Support (SDK 35 Overlay)
-
-```typescript
-import { Capacitor } from '@capacitor/core';
-import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
-
-export async function disableAndroidEdgeToEdge(): Promise<void> {
-  if (Capacitor.getPlatform() !== 'android') {
-    return;
-  }
-  await EdgeToEdge.disable();
-}
-```
-
-**Why:** Helps avoid status bar overlay issues on Android SDK 35. Verify behavior on SDK 36 and Capacitor 8/9.
-
-### Geolocation (with permissions)
-
-```typescript
-import { Injectable, inject, signal } from '@angular/core';
-import { Geolocation, Position, PositionOptions } from '@capacitor/geolocation';
-import { AlertController } from '@ionic/angular';
-
-@Injectable({
-  providedIn: 'root',
-})
-export class GeolocationService {
-  private readonly alertController = inject(AlertController);
-  readonly position = signal<Position | null>(null);
-
-  async getCurrentPosition() {
-    try {
-      const coordinates = await Geolocation.getCurrentPosition();
-      this.position.set(coordinates);
-      console.log('Current position:', coordinates);
-    } catch (error) {
-      console.error('Error getting location:', error);
-    }
-  }
-
-  async initGeolocation(): Promise<void> {
-    try {
-      const result = await Geolocation.checkPermissions();
-      if (result.location === 'denied') {
-        console.log('Location disabled in device settings');
-        await this.showAlertPermissions();
-        return;
-      }
-
-      const permission = await this.requestGeolocationPermission();
-      if (permission === 'granted') {
-        this.getCurrentPosition();
-        this.watchPosition();
-      } else {
-        console.log('Location permission denied', permission);
-      }
-    } catch (error) {
-      console.error('Error checking geolocation permissions:', error);
-    }
-  }
-
-  async requestGeolocationPermission() {
-    try {
-      const result = await Geolocation.requestPermissions();
-      return result.location;
-    } catch (error) {
-      console.error('Error requesting geolocation permissions:', error);
-      return 'denied';
-    }
-  }
-
-  watchPosition() {
-    const options: PositionOptions = {
-      enableHighAccuracy: true,
-      minimumUpdateInterval: 5000,
-      maximumAge: 0,
-    };
-
-    Geolocation.watchPosition(options, (position?: Position | null) => {
-      if (position) {
-        this.position.set(position);
-      }
-    });
-  }
-
-  private async showAlertPermissions(): Promise<void> {
-    const alert = await this.alertController.create({
-      header: 'Location permissions denied',
-      message: 'To use this feature, enable location permissions in your device settings.',
-      buttons: ['OK'],
-    });
-    await alert.present();
-  }
-}
-```
-
-### Network Status
-
-```typescript
-import { Injectable, inject, signal } from '@angular/core';
-import { ConnectionStatus, Network } from '@capacitor/network';
-import { ToastController } from '@ionic/angular';
-
-export enum NetworkStatus {
-  offline = 0,
-  online = 1,
-}
-
-@Injectable({
-  providedIn: 'root',
-})
-export class NetworkService {
-  private readonly toastController = inject(ToastController);
-  readonly status = signal<NetworkStatus>(NetworkStatus.offline);
-
-  async initializeNetworkEvents() {
-    const current = await this.logCurrentNetworkStatus();
-    this.setNetwork(current);
-
-    Network.addListener('networkStatusChange', (networkStatus: ConnectionStatus) => {
-      this.setNetwork(networkStatus);
-    });
-  }
-
-  setNetwork(networkStatus: ConnectionStatus) {
-    const status = networkStatus.connected ? NetworkStatus.online : NetworkStatus.offline;
-    this.status.set(status);
-  }
-
-  logCurrentNetworkStatus() {
-    return Network.getStatus();
-  }
-
-  async updateNetworkStatus(status: NetworkStatus) {
-    const connection = status === NetworkStatus.offline ? 'offline' : 'online';
-    try {
-      const toast = await this.toastController.create({
-        color: status === NetworkStatus.offline ? 'danger' : 'success',
-        message: `Currently ${connection}`,
-        duration: 3000,
-        position: 'top',
-      });
-      toast.present();
-    } catch (error) {
-      console.error('Error showing network toast', error);
-    }
-  }
-}
-```
+1. `npm install @capacitor/<plugin-name>`
+2. `npx cap sync`
+3. Add platform permissions (iOS `Info.plist` / Android `AndroidManifest.xml`)
+4. Create or update a service in `core/device/` or the relevant `features/<domain>/data/`
 
 ---
 
@@ -712,18 +154,15 @@ export class NetworkService {
 ```typescript
 // ❌ WRONG
 import { Platform } from '@ionic/angular';
-
 constructor(private platform: Platform) {
-  if (this.platform.is('ios')) {
-    // Don't do this
-  }
+  if (this.platform.is('ios')) { } // inconsistent, avoid
 }
 ```
 
-### Don't: Forget Platform Check
+### Don't: Forget Platform Check Before Native Calls
 
 ```typescript
-// ❌ WRONG - Will fail on web
+// ❌ WRONG - Will throw on web
 await StatusBar.setStyle({ style: Style.Dark });
 
 // ✅ CORRECT
@@ -735,16 +174,14 @@ if (Capacitor.getPlatform() !== 'web') {
 ### Don't: Initialize Storage Synchronously
 
 ```typescript
-// ❌ WRONG
+// ❌ WRONG - Storage not ready
 constructor(private storage: Storage) {
-  this.storage.get('key'); // Storage not initialized!
+  this.storage.get('key');
 }
 
-// ✅ CORRECT
-async ngOnInit() {
-  await this.storage.create();
-  const value = await this.storage.get('key');
-}
+// ✅ CORRECT - await init() before every call (see references/ionic-storage.md)
+await this.init();
+const value = await this.storage.get('key');
 ```
 
 ---
@@ -756,3 +193,4 @@ async ngOnInit() {
 - [Ionic Storage](https://github.com/ionic-team/ionic-storage)
 - [Status Bar Plugin](https://capacitorjs.com/docs/apis/status-bar)
 - [Push Notifications Plugin](https://capacitorjs.com/docs/apis/push-notifications)
+- [capawesome-team capacitor-plugins skill](https://github.com/capawesome-team/skills/tree/main/skills/capacitor-plugins) — local copy at `skills/ionic/capacitor/capacitor-plugins/SKILL.md`
