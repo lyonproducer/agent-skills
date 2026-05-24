@@ -146,6 +146,34 @@ print_info() {
     echo -e "${BLUE}→${NC} $1"
 }
 
+has_tty_input() {
+    [ -r "/dev/tty" ] && [ -w "/dev/tty" ]
+}
+
+read_key() {
+    if has_tty_input; then
+        IFS= read -rsn1 REPLY_KEY < /dev/tty
+    else
+        IFS= read -rsn1 REPLY_KEY
+    fi
+}
+
+read_arrow_sequence() {
+    if has_tty_input; then
+        read -rsn2 REPLY_KEY < /dev/tty
+    else
+        read -rsn2 REPLY_KEY
+    fi
+}
+
+read_line() {
+    if has_tty_input; then
+        read -r REPLY_LINE < /dev/tty
+    else
+        read -r REPLY_LINE
+    fi
+}
+
 line_exists_exact() {
     local file_path="$1"
     local needle="$2"
@@ -249,10 +277,12 @@ select_yes_no_menu() {
             echo -e "${line_style}[${checkbox}] $((i + 1)). ${options[$i]}${NC}"
         done
 
-        IFS= read -rsn1 key
+        read_key
+        key="$REPLY_KEY"
 
         if [ "$key" = $'\x1b' ]; then
-            read -rsn2 key
+            read_arrow_sequence
+            key="$REPLY_KEY"
             case "$key" in
                 '[A')
                     ((current--))
@@ -297,7 +327,7 @@ prompt_add_gitignore_entries() {
     local candidate=""
     local found_variant=false
 
-    if [ ! -t 0 ]; then
+    if ! has_tty_input; then
         print_info "Skipping .gitignore prompt (non-interactive shell)."
         return
     fi
@@ -417,11 +447,13 @@ show_assistants_menu() {
         echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
         
         # Read key without timeout issues
-        IFS= read -rsn1 key
+        read_key
+        key="$REPLY_KEY"
         
         # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
         if [ "$key" = $'\x1b' ]; then
-            read -rsn2 key
+            read_arrow_sequence
+            key="$REPLY_KEY"
             case $key in
                 '[A') # Up arrow
                     ((current--))
@@ -496,7 +528,8 @@ show_skills_menu() {
         echo ""
         echo -n "Choose option (c/r): "
         
-        read -r reinstall_choice
+        read_line
+        reinstall_choice="$REPLY_LINE"
         echo ""
         
         if [ "$reinstall_choice" = "r" ] || [ "$reinstall_choice" = "R" ]; then
@@ -556,11 +589,13 @@ show_skills_menu() {
         echo -e "${YELLOW}Shortcuts: ${NC}a (all) | n (none)"
         
         # Read key without timeout issues
-        IFS= read -rsn1 key
+        read_key
+        key="$REPLY_KEY"
         
         # Handle arrow keys (they send 3 bytes: ESC, [, A/B)
         if [ "$key" = $'\x1b' ]; then
-            read -rsn2 key
+            read_arrow_sequence
+            key="$REPLY_KEY"
             case $key in
                 '[A') # Up arrow
                     ((current--))
@@ -1029,6 +1064,13 @@ main() {
 
     # Interactive mode if no flags provided
     if [ "$SETUP_CLAUDE" = false ] && [ "$SETUP_CODEX" = false ] && [ "$SETUP_COPILOT" = false ] && [ "$SETUP_KILOCODE" = false ] && [ "$SETUP_CURSOR" = false ] && [ "$SETUP_ANTIGRAVITY" = false ] && [ "$SETUP_OPENCODE" = false ]; then
+        if ! has_tty_input; then
+            print_error "No interactive terminal detected."
+            print_info "Use flags with curl mode, for example:"
+            echo "  curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/dev/skills/setup.sh | bash -s -- --all"
+            exit 1
+        fi
+
         show_assistants_menu
         echo ""
         
