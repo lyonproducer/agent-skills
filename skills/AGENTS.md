@@ -2,7 +2,7 @@
 
 > **Single Source of Truth** - This file is the master reference for all AI assistants working with Angular 20+ and Ionic 8+ projects.
 
-This repository provides AI agent skills for Cursor, Claude Code, and other AI assistants. Skills provide on-demand context and patterns for modern Angular + Ionic development.
+This repository provides AI agent skills for Cursor, OpenCode, Claude Code, and other AI assistants. Skills provide on-demand context and patterns for modern Angular + Ionic development.
 
 ## Quick Start
 

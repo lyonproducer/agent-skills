@@ -134,18 +134,22 @@ cd skills
 # Configure specific assistants
 ./setup.sh --claude --codex --kilocode
 
-# Cursor-only install (current project, .cursor/skills)
-./setup.sh --cursor                
+# Cursor-only install (uses .agents/skills natively)
+./setup.sh --cursor
+
+# OpenCode install (.opencode/skills symlink)
+./setup.sh --opencode
 
 # Check installation status
 ./setup.sh --status
 ```
 
 **What it does:**
-- Creates symlinks from `.claude/skills`, `.gemini/skills`, `.codex/skills`, `.kilocode/skills`, `.agent/skills` → `.agents/skills/`
-- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, `AGENTS.md` root folder
+- Installs selected skills to `.agents/skills/` (single source of truth)
+- Creates symlinks from `.opencode/skills`, `.claude/skills`, `.codex/skills`, `.kilocode/skills`, `.agent/skills` → `.agents/skills/`
+- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, and project root
 - Copies `AGENTS.md` to `.github/copilot-instructions.md` for Copilot
-- Installs selected skills (project-specific in `.cursor/skills/`, cursor example)
+- Cursor reads `.agents/skills/` natively (no `.cursor/skills` symlink)
 
 ### Option 2: Using npx skills - AGENTS.MD
 
@@ -159,17 +163,17 @@ npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angula
 npx skills add https://github.com/lyonproducer/agent-skills
 ```
 
-## Cursor Skill Locations
+## Assistant Skill Locations
 
 | Location | Use Case | Supported By |
 |----------|----------|--------------|
-| `.cursor/skills/` | cursor Code assistand | `.cursor` + symlink |
+| `.agents/skills/` | Central install + native discovery | Cursor, OpenCode, agentskills.io |
+| `.opencode/skills/` | OpenCode project-local symlink | OpenCode + symlink |
 | `.claude/skills/` | Claude Code assistant | Claude + symlink |
-| `.gemini/skills/` | Gemini CLI assistant | Gemini + symlink |
 | `.codex/skills/` | Codex (OpenAI) assistant | Codex + symlink |
 | `.kilocode/skills/` | Kilocode assistant | Kilocode + symlink |
 | `.github/copilot-instructions.md` | GitHub Copilot | Copilot + copy |
-| `.agent/skills` | Antigravity | Gemini + symlink | 
+| `.agent/skills/` | Antigravity | Antigravity + symlink | 
 
 **Note**: Skills are now project-specific only for better team collaboration and version control.
 
@@ -319,10 +323,10 @@ npx skills create my-new-skill
 
 ### Skills Not Loading
 
-1. Check installation path: `~/.cursor/skills/` or `<project>/.cursor/skills/`
+1. Check installation path: `<project>/.agents/skills/` (or assistant symlink such as `.opencode/skills/`)
 2. Verify SKILL.md files exist
-3. Restart Cursor
-4. Check YAML frontmatter is valid
+3. Restart your AI assistant
+4. Check YAML frontmatter is valid (descriptions act as OpenCode triggers)
 
 ### AI Not Following Patterns
 

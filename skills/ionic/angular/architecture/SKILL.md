@@ -1,8 +1,10 @@
 ---
 name: ionic-angular-architecture
 description: >
-  Ionic + Angular architecture: Scope Rule, Screaming Architecture, project structure, routing patterns.
-  Trigger: When architecting Ionic apps, organizing project structure, or applying Scope Rule to Angular + Ionic projects.
+  USE ONLY when architecting Ionic + Angular apps, organizing tabs/menu/project structure,
+  applying Scope Rule, or setting up Ionic routing patterns. IGNORE for Capacitor plugin config
+  (use ionic-angular-capacitor), Standalone migration (use ionic-angular-migration-standalone),
+  or Angular-only projects without Ionic.
 metadata:
   author: Lyon Incode
   version: "2.0"

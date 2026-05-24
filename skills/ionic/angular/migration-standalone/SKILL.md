@@ -1,8 +1,9 @@
 ---
 name: ionic-angular-migration-standalone
 description: >
-  Guide for migrating Ionic Angular apps to Standalone architecture. Covers both scenarios: apps already using Angular Standalone and apps still using NgModules.
-  Trigger: When migrating Ionic apps to Standalone, removing IonicModule, or converting NgModule-based Ionic apps.
+  USE ONLY when migrating Ionic Angular apps to Standalone: removing IonicModule, using provideIonicAngular,
+  converting NgModule pages, or registering ionicons. IGNORE for greenfield apps already Standalone,
+  general Angular patterns (use angular-core), or Capacitor plugin setup (use ionic-angular-capacitor).
 metadata:
   author: Lyon Incode
   version: "1.0"

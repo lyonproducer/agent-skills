@@ -1,8 +1,9 @@
 ---
 name: angular-performance
 description: >
-  Angular performance: NgOptimizedImage, @defer, lazy loading, SSR.
-  Trigger: When optimizing Angular app performance, images, or lazy loading.
+  USE ONLY when optimizing Angular performance: NgOptimizedImage, @defer lazy loading,
+  route lazy loading, SSR, or hydration. IGNORE for general component patterns (use angular-core),
+  form implementation (use angular-forms), or Ionic/Capacitor setup.
 metadata:
   author: gentleman-programming
   version: "1.0"

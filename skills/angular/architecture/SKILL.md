@@ -1,8 +1,9 @@
 ---
 name: angular-architecture
 description: >
-  Angular architecture: Scope Rule, project structure, file naming, style guide.
-  Trigger: When structuring Angular projects or deciding where to place components.
+  USE ONLY when structuring Angular projects, applying Scope Rule, deciding component placement,
+  or following Angular style guide conventions. IGNORE for Ionic-specific architecture
+  (use ionic-angular-architecture), Capacitor mobile features, or standalone component syntax (use angular-core).
 metadata:
   author: gentleman-programming
   version: "1.0"

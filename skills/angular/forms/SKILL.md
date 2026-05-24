@@ -1,8 +1,9 @@
 ---
 name: angular-forms
 description: >
-  Angular forms: Signal Forms (experimental) and Reactive Forms.
-  Trigger: When working with forms, validation, or form state in Angular.
+  USE ONLY when implementing Angular forms, validation, form state, Signal Forms (experimental),
+  or Reactive Forms with FormBuilder. IGNORE for general component creation (use angular-core),
+  Ionic project structure (use ionic-angular-architecture), or non-form UI work.
 metadata:
   author: gentleman-programming
   version: "1.0"

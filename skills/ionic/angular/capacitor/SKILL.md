@@ -1,8 +1,10 @@
 ---
 name: ionic-angular-capacitor
 description: >
-  Capacitor mobile plugins configuration: platform detection, status bar, push notifications, storage.
-  Trigger: When configuring Capacitor plugins, iOS/Android platform detection, push notifications, or mobile-specific features.
+  USE ONLY when configuring Capacitor platform detection (Capacitor.getPlatform()), iOS status bar,
+  push notifications, Ionic Storage in main.ts, or first-party Capacitor wiring patterns.
+  IGNORE for third-party plugin selection (use capacitor-plugins), Ionic routing/structure
+  (use ionic-angular-architecture), or Standalone migration (use ionic-angular-migration-standalone).
 metadata:
   author: Lyon Incode
   version: "1.3"

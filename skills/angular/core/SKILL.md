@@ -1,8 +1,10 @@
 ---
 name: angular-core
 description: >
-  Angular core patterns: standalone components, signals, inject, control flow, zoneless.
-  Trigger: When creating Angular components, using signals, or setting up zoneless.
+  USE ONLY when creating Angular components, implementing signals/computed()/effect(),
+  setting up inject() DI, native control flow (@if/@for/@switch), or configuring zoneless Angular.
+  IGNORE for forms (use angular-forms), Ionic architecture (use ionic-angular-architecture),
+  performance optimization (use angular-performance), or general TypeScript debugging.
 metadata:
   author: gentleman-programming
   version: "1.0"
