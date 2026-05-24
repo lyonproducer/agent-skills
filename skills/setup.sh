@@ -110,6 +110,8 @@ SETUP_OPENCODE=false
 
 # Selected skills (for interactive mode) - using simple array approach
 SELECTED_SKILLS_LIST=()
+# Tracks if user explicitly went through interactive skills selection.
+SKILLS_SELECTION_DECIDED=false
 
 # Available skills (path relative to skills/)
 AVAILABLE_SKILLS=(
@@ -148,6 +150,22 @@ print_info() {
 
 has_tty_input() {
     [ -r "/dev/tty" ] && [ -w "/dev/tty" ]
+}
+
+ensure_interactive_input() {
+    # Already interactive stdin.
+    if [ -t 0 ]; then
+        return 0
+    fi
+
+    # Try to bind stdin to the user's terminal (works for curl|bash in a real terminal).
+    if has_tty_input; then
+        if exec < /dev/tty 2>/dev/null; then
+            return 0
+        fi
+    fi
+
+    return 1
 }
 
 read_key() {
@@ -509,6 +527,8 @@ show_assistants_menu() {
 }
 
 show_skills_menu() {
+    SKILLS_SELECTION_DECIDED=true
+
     # Detect already installed skills
     local installed=($(get_installed_skills))
     local available_to_install=($(get_available_skills_to_install))
@@ -996,12 +1016,6 @@ show_usage() {
 main() {
     print_header
     check_skills_dir
-
-    # In curl|bash mode, stdin is usually a pipe.
-    # Rebind stdin to the terminal so interactive menus can read key presses.
-    if [ ! -t 0 ] && has_tty_input; then
-        exec < /dev/tty
-    fi
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -1070,7 +1084,7 @@ main() {
 
     # Interactive mode if no flags provided
     if [ "$SETUP_CLAUDE" = false ] && [ "$SETUP_CODEX" = false ] && [ "$SETUP_COPILOT" = false ] && [ "$SETUP_KILOCODE" = false ] && [ "$SETUP_CURSOR" = false ] && [ "$SETUP_ANTIGRAVITY" = false ] && [ "$SETUP_OPENCODE" = false ]; then
-        if ! has_tty_input; then
+        if ! ensure_interactive_input; then
             print_error "No interactive terminal detected."
             print_info "Use flags with curl mode, for example:"
             echo "  curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/dev/skills/setup.sh | bash -s -- --all"
@@ -1129,10 +1143,15 @@ main() {
     [ "$SETUP_CLAUDE" = true ] || [ "$SETUP_CODEX" = true ] || \
     [ "$SETUP_COPILOT" = true ] || [ "$SETUP_KILOCODE" = true ] || [ "$SETUP_CURSOR" = true ] || [ "$SETUP_ANTIGRAVITY" = true ] || [ "$SETUP_OPENCODE" = true ] && any_selected=true
     
-    if [ "$any_selected" = true ] && [ ${#SELECTED_SKILLS_LIST[@]} -gt 0 ]; then
-        print_info "Installing skills to .agents/skills/..."
-        install_skills_to_agents
-        echo ""
+    if [ "$any_selected" = true ]; then
+        if [ "$SKILLS_SELECTION_DECIDED" = true ] && [ ${#SELECTED_SKILLS_LIST[@]} -eq 0 ]; then
+            print_warning "Skipping skill install because no skills were selected."
+            echo ""
+        else
+            print_info "Installing skills to .agents/skills/..."
+            install_skills_to_agents
+            echo ""
+        fi
     fi
 
     # Now setup symlinks for each selected assistant
