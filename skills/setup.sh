@@ -996,6 +996,12 @@ show_usage() {
 main() {
     print_header
     check_skills_dir
+
+    # In curl|bash mode, stdin is usually a pipe.
+    # Rebind stdin to the terminal so interactive menus can read key presses.
+    if [ ! -t 0 ] && has_tty_input; then
+        exec < /dev/tty
+    fi
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
