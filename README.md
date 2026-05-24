@@ -92,7 +92,21 @@ Root
 
 ## Quick Start
 
-### Option 1: clone and execute setup with npx degit 
+### Option 0: One-command install (curl | bash)
+
+Run from your Angular project root (`angular.json` must exist):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash
+```
+
+**Behavior:**
+- Downloads skills to a temporary directory
+- Runs the same interactive installer
+- Removes the temporary files automatically
+- Removes local `./skills` folder at the end (if present)
+
+### Option 1: Clone and execute setup with npx degit 
 
 Clone only the `skills/` folder without extra documentation files:
 

@@ -17,9 +17,78 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="${AGENT_SKILLS_PROJECT_ROOT:-$PWD}"
 SKILLS_DIR="$SCRIPT_DIR"
 AGENTS_SKILLS=".agents/skills"
+DEFAULT_REPO_REF="${AGENT_SKILLS_REF:-main}"
+IS_CURL_MODE="${AGENT_SKILLS_CURL_MODE:-0}"
+
+require_cmd() {
+    local command_name="$1"
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+        echo "Error: required command '$command_name' is not installed." >&2
+        exit 1
+    fi
+}
+
+has_local_skills_layout() {
+    [ -d "$SCRIPT_DIR/angular/core" ] && \
+    [ -d "$SCRIPT_DIR/angular/forms" ] && \
+    [ -d "$SCRIPT_DIR/angular/performance" ] && \
+    [ -d "$SCRIPT_DIR/ionic/angular/architecture" ] && \
+    [ -d "$SCRIPT_DIR/ionic/angular/capacitor" ] && \
+    [ -d "$SCRIPT_DIR/ionic/angular/migration-standalone" ]
+}
+
+bootstrap_from_remote() {
+    local ref="$DEFAULT_REPO_REF"
+    local project_root="${AGENT_SKILLS_PROJECT_ROOT:-$PWD}"
+    local temp_dir=""
+    local archive_url=""
+    local archive_file=""
+    local extracted_setup=""
+    local candidate_setup=""
+
+    require_cmd "curl"
+    require_cmd "tar"
+    require_cmd "mktemp"
+
+    temp_dir="$(mktemp -d)"
+    trap 'rm -rf "$temp_dir"' EXIT
+
+    archive_url="https://github.com/lyonproducer/agent-skills/archive/refs/heads/${ref}.tar.gz"
+    archive_file="$temp_dir/agent-skills.tar.gz"
+
+    echo "Downloading agent-skills (${ref})..."
+    curl -fsSL "$archive_url" -o "$archive_file"
+    tar -xzf "$archive_file" -C "$temp_dir"
+
+    for candidate_setup in "$temp_dir"/agent-skills-*/skills/setup.sh; do
+        if [ -f "$candidate_setup" ]; then
+            extracted_setup="$candidate_setup"
+            break
+        fi
+    done
+
+    if [ -z "$extracted_setup" ]; then
+        echo "Error: could not locate extracted skills/setup.sh in downloaded archive." >&2
+        exit 1
+    fi
+
+    chmod +x "$extracted_setup"
+
+    AGENT_SKILLS_CURL_MODE=1 \
+    AGENT_SKILLS_PROJECT_ROOT="$project_root" \
+    AGENT_SKILLS_REF="$ref" \
+    "$extracted_setup" "$@"
+
+    exit $?
+}
+
+# When executed via curl|bash there is no local skills tree.
+if ! has_local_skills_layout; then
+    bootstrap_from_remote "$@"
+fi
 
 # Colors for output
 RED='\033[0;31m'
@@ -275,6 +344,22 @@ prompt_add_gitignore_entries() {
     [ "$found_variant" = false ] && print_info "No CLAUDE/claude file found at project root."
 
     rebuild_gitignore_with_agent_skills_section "$gitignore_path" "${section_entries[@]}"
+}
+
+cleanup_local_skills_folder_if_curl_mode() {
+    local skills_path="$REPO_ROOT/skills"
+
+    [ "$IS_CURL_MODE" != "1" ] && return
+
+    if [ -d "$skills_path" ]; then
+        # Safety guard: only remove ./skills under the chosen project root.
+        if [ "$skills_path" = "/" ] || [ "$skills_path" = "." ]; then
+            print_warning "Refusing to delete unsafe path: $skills_path"
+            return
+        fi
+        rm -rf "$skills_path"
+        print_success "Removed local ./skills folder after curl setup"
+    fi
 }
 
 update_self() {
@@ -1041,6 +1126,7 @@ main() {
     fi
 
     prompt_add_gitignore_entries
+    cleanup_local_skills_folder_if_curl_mode
     
     echo ""
     print_success "Setup complete!"
