@@ -160,6 +160,7 @@ cd skills
 
 **What it does:**
 - Installs selected skills to `.agents/skills/` (single source of truth)
+- Uses a flat skill folder layout in `.agents/skills/` (example: `angular-core`, `ionic-angular-capacitor`)
 - Creates symlinks from `.opencode/skills`, `.claude/skills`, `.codex/skills`, `.kilocode/skills`, `.agent/skills` → `.agents/skills/`
 - Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, and project root
 - Copies `AGENTS.md` to `.github/copilot-instructions.md` for Copilot

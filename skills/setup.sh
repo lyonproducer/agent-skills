@@ -621,13 +621,23 @@ get_installed_skills() {
     if [ -d "$AGENTS_SKILLS" ]; then
         # Iterate only over the official skills defined
         for skill in "${AVAILABLE_SKILLS[@]}"; do
-            # Check if the directory exists and has files (like AGENTS.md or instructions)
-            if [ -d "$AGENTS_SKILLS/$skill" ] && [ -n "$(ls -A "$AGENTS_SKILLS/$skill" 2>/dev/null)" ]; then
+            local skill_dir_name
+            skill_dir_name="$(skill_to_dir_name "$skill")"
+            # Flat install layout: .agents/skills/angular-core
+            if [ -d "$AGENTS_SKILLS/$skill_dir_name" ] && [ -n "$(ls -A "$AGENTS_SKILLS/$skill_dir_name" 2>/dev/null)" ]; then
+                installed+=("$skill")
+            # Backward compatibility: legacy nested layout .agents/skills/angular/core
+            elif [ -d "$AGENTS_SKILLS/$skill" ] && [ -n "$(ls -A "$AGENTS_SKILLS/$skill" 2>/dev/null)" ]; then
                 installed+=("$skill")
             fi
         done
     fi
     printf '%s\n' "${installed[@]}"
+}
+
+skill_to_dir_name() {
+    local skill="$1"
+    echo "${skill//\//-}"
 }
 
 # Get available skills to install (filter out already installed)
@@ -748,27 +758,22 @@ install_skills_to_agents() {
     local count=0
     for skill in "${skills_to_install[@]}"; do
         if [ -d "$SKILLS_DIR/$skill" ]; then
-
-            # Extract skill name for flat installation
-            # local skill_name=$(basename "$skill")
-            # local target_path="$AGENTS_SKILLS/$skill_name"
-
-            # Create target path
-            local target_path="$AGENTS_SKILLS/$skill"
-            local target_parent=$(dirname "$target_path")
-
-            # Create parent directory if it doesn't exist
-            if [ ! -d "$target_parent" ]; then
-                mkdir -p "$target_parent"
-            fi
+            local skill_dir_name
+            skill_dir_name="$(skill_to_dir_name "$skill")"
+            local target_path="$AGENTS_SKILLS/$skill_dir_name"
+            local legacy_nested_path="$AGENTS_SKILLS/$skill"
 
             # Remove existing if present
             if [ -d "$target_path" ]; then
                 rm -rf "$target_path"
             fi
+            # Remove legacy nested path if present from older installer versions
+            if [ -d "$legacy_nested_path" ]; then
+                rm -rf "$legacy_nested_path"
+            fi
             
             cp -r "$SKILLS_DIR/$skill" "$target_path"
-            print_success "Installed: $skill"
+            print_success "Installed: $skill -> $skill_dir_name"
             ((count++))
         else
             print_warning "Skipped: $skill (not found)"
