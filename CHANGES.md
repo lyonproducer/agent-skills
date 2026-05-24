@@ -4,6 +4,26 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ v2.0.0 Setup/Installer Update — May 24, 2026
+
+## Summary (Compact)
+- Added one-command installer support via `curl | bash` (bootstrap download + re-exec).
+- Improved interactive menus in pipe execution by reading input from terminal (`/dev/tty`) fallback.
+- Fixed non-interactive flags (`--all`, `--cursor`, etc.) so skills install consistently in scripted mode.
+- Standardized installed skills to flat layout under `.agents/skills/` (e.g., `angular-core`, `ionic-angular-capacitor`).
+- Kept backward detection support for legacy nested layout.
+- Updated `README.md` with:
+  - macOS/Linux-only note for script-based installer (`setup.sh`),
+  - non-interactive flag examples,
+  - Windows recommendation to use Option 2 (`npx skills`).
+- Released and tagged: `v2.0.0`.
+
+## Files Updated
+- `skills/setup.sh`
+- `README.md`
+
+---
+
 # ✅ Capacitor Skill Refactor + capawesome-plugins Link — March 24, 2026
 
 ## Summary
