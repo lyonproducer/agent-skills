@@ -94,6 +94,8 @@ Root
 
 ### Option 0: One-command install (curl | bash)
 
+Supported OS: **macOS and Linux only**.
+
 Run from your Angular project root (`angular.json` must exist):
 
 ```bash
@@ -105,6 +107,19 @@ curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skil
 - Runs the same interactive installer
 - Removes the temporary files automatically
 - Removes local `./skills` folder at the end (if present)
+
+**With flags (non-interactive):**
+```bash
+# Install and configure all assistants
+curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --all
+
+# Configure specific assistants
+curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --claude --codex
+
+# Cursor only + check status
+curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --cursor
+curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --status
+```
 
 ### Option 1: Clone and execute setup with npx degit 
 
@@ -167,6 +182,8 @@ cd skills
 - Cursor reads `.agents/skills/` natively (no `.cursor/skills` symlink)
 
 ### Option 2: Using npx skills - AGENTS.MD
+
+This option is the recommended method for **Windows**.
 
 ```bash
 # Install individual skills
