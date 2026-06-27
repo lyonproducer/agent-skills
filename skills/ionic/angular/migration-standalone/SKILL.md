@@ -1,15 +1,13 @@
 ---
 name: ionic-angular-migration-standalone
-description: >
-  USE ONLY when migrating Ionic Angular apps to Standalone: removing IonicModule, using provideIonicAngular,
-  converting NgModule pages, or registering ionicons. IGNORE for greenfield apps already Standalone,
-  general Angular patterns (use angular-core), or Capacitor plugin setup (use ionic-angular-capacitor).
+description: "USE ONLY when migrating Ionic Angular apps to Standalone: removing IonicModule, using provideIonicAngular, converting NgModule pages, or registering ionicons. IGNORE for greenfield apps already Standalone, general Angular patterns (use angular-core), or Capacitor plugin setup (use ionic-angular-capacitor)."
+license: MIT
 metadata:
   author: Lyon Incode
-  version: "1.0"
+  version: "1.1"
 ---
 
-## When to Use
+## Activation Contract
 
 Load this skill when:
 - Migrating Ionic Angular app to Standalone architecture
@@ -18,340 +16,45 @@ Load this skill when:
 - Updating imports from `@ionic/angular` to `@ionic/angular/standalone`
 - Setting up ionicons registration in Standalone components
 
----
-
-## 🚨 Important Migration Note
-
-The migration to Ionic Standalone components must be done **all at once**, not gradually. Module-based and Standalone approaches use different build systems that cannot coexist.
-
-## 🛠 Automated Migration Tool
-
-Ionic provides an automated utility to facilitate this process. **Try this first** before manual changes:
-
-```bash
-npx @ionic/angular-standalone-codemods
-```
-
-If you prefer manual migration or need to understand the changes, follow the instructions below.
-
----
-
-## 🚀 Scenario 1: Angular Apps Already Standalone
-
-Follow these steps if your Angular app already uses `standalone: true` but you want to update Ionic UI components to Standalone.
-
-### 1. Update Dependencies
-
-Ensure you have the latest versions:
-
-```bash
-npm install @ionic/angular@latest
-npm install ionicons@latest
-```
-
-### 2. Update Bootstrapping (`main.ts`)
-
-Remove `IonicModule` and use `provideIonicAngular`.
-
-**Before:**
-
-```typescript
-import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular'; // ❌ Remove
-import { AppComponent } from './app/app.component';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    importProvidersFrom(IonicModule.forRoot({})), // ❌ Remove
-  ],
-});
-```
-
-**After:**
-
-```typescript
-import { bootstrapApplication } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
-import { provideIonicAngular, IonicRouteStrategy } from '@ionic/angular/standalone'; // ✅ New import
-import { AppComponent } from './app/app.component';
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular({ 
-      mode: 'ios',
-      innerHTMLTemplatesEnabled: true,
-      sanitizerEnabled: true,
-    }), // ✅ New configuration
-  ],
-});
-```
-
----
-
-## 📦 Scenario 2: NgModule-Based Applications
-
-Follow these steps if your app still uses `AppModule` and you want to adopt Ionic Standalone UI components without migrating the entire app to Angular Standalone yet.
-
-### 1. Configure `app.module.ts`
-
-Remove `IonicModule.forRoot()` from `imports` and add `provideIonicAngular()` to `providers`.
-
-**app.module.ts:**
-
-```typescript
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { RouteReuseStrategy } from '@angular/router';
-// Change import to 'standalone'
-import { provideIonicAngular, IonicRouteStrategy } from '@ionic/angular/standalone';
-
-import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
-
-@NgModule({
-  declarations: [AppComponent],
-  imports: [
-    BrowserModule,
-    AppRoutingModule
-    // ❌ Remove IonicModule.forRoot()
-  ],
-  providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideIonicAngular({ 
-      mode: 'ios',
-      innerHTMLTemplatesEnabled: true,
-      sanitizerEnabled: true,
-    }) // ✅ Add provider
-  ],
-  bootstrap: [AppComponent],
-})
-export class AppModule {}
-```
-
-### 2. Import Individual Components
-
-Instead of importing `IonicModule` in each page module, import specific components from `@ionic/angular/standalone`.
-
-**home.module.ts:**
-
-```typescript
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-// ✅ Import only what you need from standalone
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar,
-  IonButton,
-  IonCard,
-  IonCardContent,
-} from '@ionic/angular/standalone';
-
-import { HomePage } from './home.page';
-import { HomePageRoutingModule } from './home-routing.module';
-
-@NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    HomePageRoutingModule,
-    // ✅ Add components to imports
-    IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    IonButton,
-    IonCard,
-    IonCardContent,
-  ],
-  declarations: [HomePage]
-})
-export class HomePageModule {}
-```
-
----
-
-## 🔄 Common Changes (For Both Scenarios)
-
-### 1. Update All Imports
-
-Search throughout your project and replace any imports from `@ionic/angular` with `@ionic/angular/standalone`.
-
-```typescript
-// ❌ Before
-import { Platform } from '@ionic/angular';
-import { ModalController } from '@ionic/angular';
-import { ToastController } from '@ionic/angular';
-
-// ✅ After
-import { Platform } from '@ionic/angular/standalone';
-import { ModalController } from '@ionic/angular/standalone';
-import { ToastController } from '@ionic/angular/standalone';
-```
-
-### 2. Icon Registration
-
-In Standalone, icons are not loaded automatically. You must register them manually.
-
-**Option A: In Component (Recommended)**
-
-```typescript
-import { Component } from '@angular/core';
-import { IonIcon } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import { home, person, settings, notifications } from 'ionicons/icons';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  imports: [IonIcon],
-})
-export class HomePage {
-  constructor() {
-    // Register icons used in this component
-    addIcons({ home, person, settings, notifications });
-  }
-}
-```
-
-**Option B: Globally (app.component.ts)**
-
-Register common icons in `AppComponent` constructor to use them anywhere:
-
-```typescript
-import { Component } from '@angular/core';
-import { addIcons } from 'ionicons';
-import { 
-  home, 
-  person, 
-  settings, 
-  notifications,
-  add,
-  close,
-  menu,
-  search,
-} from 'ionicons/icons';
-
-@Component({
-  selector: 'app-root',
-  templateUrl: 'app.component.html',
-})
-export class AppComponent {
-  constructor() {
-    addIcons({
-      home,
-      person,
-      settings,
-      notifications,
-      add,
-      close,
-      menu,
-      search,
-    });
-  }
-}
-```
-
-### 3. Routing and Links
-
-If using `routerLink` in Ionic components, import `IonRouterLink`.
-
-```typescript
-import { IonButton, IonRouterLink } from '@ionic/angular/standalone';
-import { RouterLink } from '@angular/router';
-
-@Component({
-  selector: 'app-home',
-  imports: [
-    IonButton,
-    IonRouterLink, // Required for Ionic components
-    RouterLink,    // Required for Angular base behavior
-  ],
-})
-export class HomePage {}
-```
-
-**In template:**
-
-```html
-<ion-button routerLink="/profile">View Profile</ion-button>
-```
-
-### 4. Common Ionic Component Imports
-
-Here's a reference list of commonly used Ionic components:
-
-```typescript
-// Layout
-import { 
-  IonContent, 
-  IonHeader, 
-  IonFooter, 
-  IonToolbar, 
-  IonTitle 
-} from '@ionic/angular/standalone';
-
-// Navigation
-import { 
-  IonTabs, 
-  IonTabBar, 
-  IonTabButton, 
-  IonRouterOutlet,
-  IonMenu,
-  IonMenuButton,
-} from '@ionic/angular/standalone';
-
-// UI Components
-import { 
-  IonButton, 
-  IonCard, 
-  IonCardHeader, 
-  IonCardTitle, 
-  IonCardContent,
-  IonList,
-  IonItem,
-  IonLabel,
-  IonInput,
-  IonTextarea,
-  IonIcon,
-} from '@ionic/angular/standalone';
-
-// Controllers (Injectable Services)
-import { 
-  ModalController, 
-  ToastController, 
-  AlertController,
-  LoadingController,
-  ActionSheetController,
-} from '@ionic/angular/standalone';
-```
-
----
-
-## 🧪 Testing Configuration (Jest)
-
-If using Jest, update `transformIgnorePatterns` to include Ionic ES modules:
-
-**jest.config.js:**
-
-```javascript
-module.exports = {
-  transformIgnorePatterns: [
-    'node_modules/(?!(@ionic/angular|@ionic/core|ionicons|@stencil/core|@angular/*)/)'
-  ]
-};
-```
-
----
-
-## ✅ Migration Checklist
-
-Use this checklist to track your migration progress:
+## Hard Rules
+
+1. **All at once**: Migration to Ionic Standalone MUST be done in a single pass. Module-based and Standalone approaches use different build systems that cannot coexist.
+2. **Automated tool first**: Try `npx @ionic/angular-standalone-codemods` before manual changes.
+3. **Bootstrap switch**: Replace `importProvidersFrom(IonicModule.forRoot({}))` with `provideIonicAngular({ mode: 'ios', innerHTMLTemplatesEnabled: true, sanitizerEnabled: true })`.
+4. **Import path**: Every Ionic import MUST come from `@ionic/angular/standalone`, never `@ionic/angular`.
+5. **Icon registration**: Icons are NOT auto-loaded in Standalone. Call `addIcons({...})` per component (preferred) or globally in `AppComponent`.
+6. **RouterLink**: Import BOTH `IonRouterLink` (Ionic) and `RouterLink` (Angular) when using `routerLink` on Ionic components.
+
+## Decision Gates
+
+| Situation | Action |
+| --- | --- |
+| App already uses Angular `standalone: true` | Follow Scenario 1 — update bootstrap + imports + icon registration. See [`references/migration-scenarios.md`](references/migration-scenarios.md) |
+| App still uses `AppModule` (NgModule) | Follow Scenario 2 — keep NgModule, swap `IonicModule` for `provideIonicAngular`, import individual Ionic components per page. See [`references/migration-scenarios.md`](references/migration-scenarios.md) |
+| User wants fastest path | Run `npx @ionic/angular-standalone-codemods` first; fall back to manual only if codemod fails |
+| Icons render as empty squares | Register with `addIcons()` — see [`references/troubleshooting.md`](references/troubleshooting.md) Issue 1 |
+| `routerLink` binding error | Import `IonRouterLink` + `RouterLink` — see [`references/troubleshooting.md`](references/troubleshooting.md) Issue 2 |
+| Modal/Toast/Alert controllers fail | Import from `@ionic/angular/standalone` — see [`references/troubleshooting.md`](references/troubleshooting.md) Issue 3 |
+| Build errors after migration | Clear `node_modules`, run `npx ionic build --clean`, verify all imports are from `/standalone` — see [`references/troubleshooting.md`](references/troubleshooting.md) Issue 4 |
+
+## Execution Steps
+
+1. Run `npx @ionic/angular-standalone-codemods` first. If it succeeds, skip to step 6.
+2. Update dependencies:
+   ```bash
+   npm install @ionic/angular@latest
+   npm install ionicons@latest
+   ```
+3. Update bootstrap (`main.ts` or `app.module.ts`) — replace `IonicModule` with `provideIonicAngular`. See [`references/migration-scenarios.md`](references/migration-scenarios.md).
+4. Search-and-replace all `@ionic/angular` imports → `@ionic/angular/standalone`.
+5. Import individual Ionic components per page/component (no more `IonicModule`).
+6. Register icons with `addIcons({...})` — per component (preferred) or globally in `AppComponent`.
+7. Import `IonRouterLink` + `RouterLink` wherever `routerLink` is used on Ionic components.
+8. If using Jest, update `transformIgnorePatterns` — see [`references/migration-scenarios.md`](references/migration-scenarios.md) "Testing Configuration".
+9. Run `npx cap sync`.
+10. Test all pages, modals, toasts, alerts, routing.
+
+## Migration Checklist
 
 - [ ] Update `@ionic/angular` and `ionicons` to latest versions
 - [ ] Update `main.ts` or `app.module.ts` (depending on scenario)
@@ -364,112 +67,20 @@ Use this checklist to track your migration progress:
 - [ ] Verify modals, toasts, and alerts still work
 - [ ] Check routing and navigation functionality
 
----
+## Output Contract
 
-## 🐛 Common Issues & Solutions
+After applying this skill, the agent MUST return:
+- The scenario chosen (1: already Standalone, or 2: NgModule-based) and why.
+- The exact files modified (`main.ts` / `app.module.ts`, page modules, components).
+- The `npm install` commands executed.
+- Confirmation that `npx cap sync` was run.
+- Confirmation that all `@ionic/angular` imports were replaced with `@ionic/angular/standalone`.
+- A list of any remaining manual steps (e.g., deleting old `.module.ts` files, registering additional icons).
 
-### Issue: Icons Not Showing
+## References
 
-**Problem:** Icons display as empty squares.
-
-**Solution:** Register icons with `addIcons()`:
-
-```typescript
-import { addIcons } from 'ionicons';
-import { home } from 'ionicons/icons';
-
-addIcons({ home });
-```
-
-### Issue: "Can't bind to 'routerLink'"
-
-**Problem:** `routerLink` not working on Ionic components.
-
-**Solution:** Import both `IonRouterLink` and `RouterLink`:
-
-```typescript
-imports: [IonButton, IonRouterLink, RouterLink]
-```
-
-### Issue: Modal/Toast/Alert Not Working
-
-**Problem:** Controllers not found or throwing errors.
-
-**Solution:** Import from standalone:
-
-```typescript
-import { ModalController } from '@ionic/angular/standalone';
-```
-
-### Issue: Build Errors After Migration
-
-**Problem:** Module not found or import errors.
-
-**Solution:** 
-1. Clear node_modules: `rm -rf node_modules && npm install`
-2. Clear build cache: `npx ionic build --clean`
-3. Check all imports are from `/standalone`
-
----
-
-## 📋 Example: Complete Page Migration
-
-**Before (NgModule):**
-
-```typescript
-// home.module.ts
-import { IonicModule } from '@ionic/angular';
-
-@NgModule({
-  imports: [CommonModule, FormsModule, IonicModule],
-  declarations: [HomePage]
-})
-export class HomePageModule {}
-```
-
-**After (Standalone):**
-
-```typescript
-// home.page.ts
-import { Component } from '@angular/core';
-import { 
-  IonContent, 
-  IonHeader, 
-  IonTitle, 
-  IonToolbar,
-  IonButton,
-} from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import { add } from 'ionicons/icons';
-
-@Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  imports: [
-    IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    IonButton,
-  ],
-})
-export class HomePage {
-  constructor() {
-    addIcons({ add });
-  }
-}
-
-// home.module.ts and home-routing.module.ts can be deleted
-```
-
----
-
-## 📚 Resources
-
+- [Migration scenarios (before/after code)](references/migration-scenarios.md)
+- [Troubleshooting common issues](references/troubleshooting.md)
 - [Ionic Standalone Migration Guide](https://ionicframework.com/docs/angular/standalone)
 - [Angular Standalone Components](https://angular.dev/guide/components/importing)
 - [Ionicons Documentation](https://ionic.io/ionicons)
-
----
-
-**Remember**: Migration to Standalone must be done all at once. Plan accordingly and test thoroughly after migration.

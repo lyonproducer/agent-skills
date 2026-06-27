@@ -1,16 +1,19 @@
 # Angular + Ionic AI Agent Skills
 
-Professional AI agent skills for building modern Angular 20+ and Ionic 8+ applications with Cursor, Claude Code, and other AI assistants.
+Professional AI agent skills for building modern Angular 20+ and Ionic 8+ applications with Cursor, Claude Code, Codex, Copilot, and other AI assistants. Skills enforce standalone components, signals, zoneless, Feature-Driven Slicing, and the Facade pattern so AI assistants produce first-time-correct code.
 
-## Overview
+## Quick path
 
-This repository provides curated skills that teach AI assistants how to work with Angular and Ionic following modern best practices:
+1. From your Angular project root (`angular.json` must exist), run:
 
-- ✅ **Angular 20+**: Standalone components, signals, zoneless
-- ✅ **Ionic 8+**: Tab & menu navigation, mobile-first architecture
-- ✅ **Capacitor 6+**: Platform detection, push notifications, native plugins
-- ✅ **Architecture**: Scope Rule, Screaming Architecture, Feature-Driven Slicing & Facade pattern
-- ✅ **Performance**: NgOptimizedImage, @defer, lazy loading
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash
+   ```
+
+2. Restart your AI assistant.
+3. Verify: ask the assistant "What Angular skills are available?" — it should list the installed skills.
+
+Supported OS for the curl path: **macOS and Linux**. Windows users see [Alternative methods](#alternative-install-methods) below.
 
 ## Available Skills
 
@@ -18,7 +21,7 @@ This repository provides curated skills that teach AI assistants how to work wit
 |-------|-------------|
 | **angular-developer** | Official Angular guidelines (vendored from angular/skills): scaffolding, signals, forms, DI, routing, SSR, ARIA, testing, CLI |
 | **angular-architecture** | Scope Rule, project structure, file naming |
-| **angular-core** | Foundation: standalone components, signals, inject(), control flow |
+| **angular-core** | Foundation: standalone components, signals, inject(), control flow, zoneless |
 | **angular-forms** | Signal Forms (experimental) and Reactive Forms patterns |
 | **angular-performance** | Performance optimization with NgOptimizedImage, @defer, SSR |
 | **ionic-angular-architecture** | Project architecture: Scope Rule, Feature-Driven Slicing, Facade pattern, routing |
@@ -26,184 +29,52 @@ This repository provides curated skills that teach AI assistants how to work wit
 | **ionic-angular-migration-standalone** | Migration guide for Ionic Angular Standalone architecture |
 | **capacitor-plugins** | Catalog of Capawesome, Firebase, and community Capacitor plugins (vendored) |
 
-See [AGENTS.md](skills/AGENTS.md) for detailed skill tree, triggers, and usage patterns.
+See [skills/AGENTS.md](skills/AGENTS.md) for the full skill tree, triggers, auto-invoke table, and loading priority.
 
-## 🏗️ Skills Architecture
+## Alternative install methods
 
-```
-Root
-├── README.md          ← Installation guide (full repo)
-├── CHANGES.md         ← Change log
-├── LICENSE            ← License file
-├── .gitignore         ← Git exclusions
-│
-└── skills/            ← Clone this folder only! 📦
-    ├── AGENTS.md      ← Skill tree & triggers
-    ├── setup.sh       ← Installation script
-    │
-    ├── angular/
-    │   ├── developer/                     ← vendored from angular/skills (official)
-    │   │   ├── SKILL.md
-    │   │   └── references/
-    │   │       └── *.md
-    │   ├── architecture/
-    │   │   └── SKILL.md
-    │   ├── core/                          [207 lines]
-    │   │   └── SKILL.md
-    │   ├── forms/                         [125 lines]
-    │   │   └── SKILL.md
-    │   └── performance/                   [134 lines]
-    │       └── SKILL.md
-    │
-    └── ionic/
-        ├── angular/
-        │   ├── architecture/
-        │   │   ├── SKILL.md
-        │   │   ├── references/
-        │   │   │   ├── capacitor-platform-detection.md
-        │   │   │   ├── project-structure.md
-        │   │   │   └── ui-interaction-pattern.md
-        │   │   └── templates/
-        │   │       ├── app-component-initial.ts
-        │   │       ├── example-usage.md
-        │   │       └── ui.service.ts
-        │   │
-        │   ├── capacitor/
-        │   │   ├── SKILL.md
-        │   │   ├── templates/
-        │   │   │   └── push-notification.service.ts
-        │   │   └── references/
-        │   │       ├── push-notifications-angular.md
-        │   │       ├── status-bar-ios.md
-        │   │       ├── ionic-storage.md
-        │   │       ├── capacitor-config.md
-        │   │       ├── network-service.md
-        │   │       ├── geolocation-service.md
-        │   │       ├── keyboard-service.md
-        │   │       ├── android-edge-to-edge.md
-        │   │       ├── social-login-capgo.md
-        │   │       ├── firebase-crashlytics-service.md
-        │   │       ├── firebase-analytics-service.md
-        │   │       └── plugin-workflow-camera.md
-        │   │
-        │   └── migration-standalone/
-        │       └── SKILL.md
-        │
-        └── capacitor/
-            └── capacitor-plugins/         ← vendored from capawesome-team/skills
-                ├── SKILL.md
-                └── references/
-                    └── *.md               (147 plugin reference files)
-```
+### npx degit (macOS/Linux, lightweight)
 
-**💡 Pro Tip**: Clone only `skills/` folder for a lightweight setup without docs!
-
-## Quick Start
-
-### Option 0: One-command install (curl | bash)
-
-Supported OS: **macOS and Linux only**.
-
-Run from your Angular project root (`angular.json` must exist):
+Clone only the `skills/` folder without extra docs:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash
+# One line from main branch
+npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh && ./skills/setup.sh
+
+# Or from dev branch
+npx degit lyonproducer/agent-skills/skills#dev skills && chmod +x ./skills/setup.sh && ./skills/setup.sh
 ```
 
-**Behavior:**
-- Downloads skills to a temporary directory
-- Runs the same interactive installer
-- Removes the temporary files automatically
-- Removes local `./skills` folder at the end (if present)
+You get just `skills/` with `setup.sh` and `AGENTS.md` — no README, CHANGES, or LICENSE.
 
-**With flags (non-interactive):**
-```bash
-# Install and configure all assistants
-curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --all
-
-# Configure specific assistants
-curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --claude --codex
-
-# Cursor only + check status
-curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --cursor
-curl -fsSL https://raw.githubusercontent.com/lyonproducer/agent-skills/main/skills/setup.sh | bash -s -- --status
-```
-
-### Option 1: Clone and execute setup with npx degit 
-
-Clone only the `skills/` folder without extra documentation files:
-
-```bash
-# Method 1: Using degit one line command
-
-# One line command from dev branch
-npx degit lyonproducer/agent-skills/skills#dev skills && chmod +x ./skills/setup.sh && ./skills/setup.sh   
-
-# One line command from main branch
-npx degit lyonproducer/agent-skills/skills skills && chmod +x ./skills/setup.sh && ./skills/setup.sh   
-
-# Method 2: Step By step commands
-
-# 2.1: clone skills folder to root project
-npx degit lyonproducer/agent-skills/skills skills
-
-# 2.2: Set permissions to excecute bash
-chmod +x ./skills/setup.sh
-
-# 2.3: Execute bash code
-./skills/setup.sh 
-```
-
-**What you get:**
-- ✅ Just `skills/` folder with all skills
-- ✅ `setup.sh` script included
-- ✅ `AGENTS.md` for AI assistants
-- ❌ No extra docs (README, CHANGES, LICENSE, etc.)
-
-**Command-Line Mode:**
-```bash
-# From skills/ directory
-cd skills
-
-# Configure all assistants with all skills
-./setup.sh --all
-
-# Configure specific assistants
-./setup.sh --claude --codex --kilocode
-
-# Cursor-only install (uses .agents/skills natively)
-./setup.sh --cursor
-
-# OpenCode install (.opencode/skills symlink)
-./setup.sh --opencode
-
-# Check installation status
-./setup.sh --status
-```
-
-**What it does:**
-- Installs selected skills to `.agents/skills/` (single source of truth)
-- Uses a flat skill folder layout in `.agents/skills/` (example: `angular-core`, `ionic-angular-capacitor`)
-- Creates symlinks from `.opencode/skills`, `.claude/skills`, `.codex/skills`, `.kilocode/skills`, `.agent/skills` → `.agents/skills/`
-- Copies `AGENTS.md` to `CLAUDE.md`, `GEMINI.md`, and project root
-- Copies `AGENTS.md` to `.github/copilot-instructions.md` for Copilot
-- Cursor reads `.agents/skills/` natively (no `.cursor/skills` symlink)
-
-### Option 2: Using npx skills - AGENTS.MD
-
-This option is the recommended method for **Windows**.
+### npx skills (Windows recommended)
 
 ```bash
 # Install individual skills
 npx skills add https://github.com/lyonproducer/agent-skills --skill angular-core
 npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angular-architecture
-npx skills add https://github.com/lyonproducer/agent-skills --skill ionic-angular-capacitor
 
-# Or install all Angular + Ionic skills
+# Or install all skills
 npx skills add https://github.com/lyonproducer/agent-skills
 ```
 
-## Assistant Skill Locations
+### Non-interactive flags
+
+```bash
+# Configure all assistants
+./skills/setup.sh --all
+
+# Configure specific assistants
+./skills/setup.sh --claude --codex --kilocode
+
+# Cursor-only (uses .agents/skills natively)
+./skills/setup.sh --cursor
+
+# Check installation status
+./skills/setup.sh --status
+```
+
+## How it works
 
 | Location | Use Case | Supported By |
 |----------|----------|--------------|
@@ -213,213 +84,76 @@ npx skills add https://github.com/lyonproducer/agent-skills
 | `.codex/skills/` | Codex (OpenAI) assistant | Codex + symlink |
 | `.kilocode/skills/` | Kilocode assistant | Kilocode + symlink |
 | `.github/copilot-instructions.md` | GitHub Copilot | Copilot + copy |
-| `.agent/skills/` | Antigravity | Antigravity + symlink | 
+| `.agent/skills/` | Antigravity | Antigravity + symlink |
 
-**Note**: Skills are now project-specific only for better team collaboration and version control.
+Skills install to `.agents/skills/` (single source of truth, flat layout: `angular-core`, `ionic-angular-capacitor`, etc.). Assistant-specific folders symlink to it. `AGENTS.md` is copied to `CLAUDE.md`, `GEMINI.md`, project root, and `.github/copilot-instructions.md` as needed. Cursor reads `.agents/skills/` natively.
 
-## Verification
+## Verification checklist
 
-After installation, verify skills are detected:
+After installation, confirm:
 
-1. Open Cursor
-2. Start a new chat
-3. Type: "What Angular skills are available?"
-4. AI should list the installed skills
+- [ ] `.agents/skills/` exists and contains skill folders (e.g., `angular-core/`, `ionic-angular-architecture/`)
+- [ ] `SKILL.md` files exist inside each skill folder
+- [ ] AI assistant restarted after install
+- [ ] Assistant lists the installed skills when asked "What Angular skills are available?"
+- [ ] YAML frontmatter in each `SKILL.md` is valid (descriptions act as OpenCode triggers)
 
-## Usage Examples
+## Key concepts at a glance
 
-### Example 1: Creating a Component
-
-```typescript
-// AI will automatically use angular-core skill
-// Prompt: "Create a user profile component"
-
-// Result: Standalone component with signals, inject(), OnPush
-import { Component, signal, inject } from '@angular/core';
-
-@Component({
-  selector: 'app-user-profile',
-  imports: [IonicModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (user()) {
-      <ion-card>{{ user()?.name }}</ion-card>
-    }
-  `
-})
-export class UserProfile {
-  private readonly userService = inject(UserService);
-  readonly user = signal<User | null>(null);
-}
-```
-
-### Example 2: Deciding Component Placement
-
-```typescript
-// AI will use ionic-angular-architecture skill
-// Prompt: "Where should I place a HeaderBack component used in 3 tabs?"
-
-// AI Response: "Following the Scope Rule:
-// - Used in 3 tabs = 2+ usage
-// - Placement: src/app/shared/ui/headers/header-back.ts
-// - Reason: Components used in 2+ pages/features go in shared/ui"
-```
-
-### Example 3: Platform Detection
-
-```typescript
-// AI will use ionic-angular-capacitor skill
-// Prompt: "How do I detect if app is running on iOS?"
-
-// Result: Capacitor platform detection
-import { Capacitor } from '@capacitor/core';
-
-if (Capacitor.getPlatform() === 'ios') {
-  // iOS-specific code
-}
-```
-
-
-## Key Concepts
-
-### 1. The Scope Rule (Ionic Architecture)
-
-**"Scope determines structure"**
-
-- Used in 1 tab/page → Local placement
-- Used in same feature across some pages → `features/<feature>/components/`
-- Used in 2+ tabs/pages/features → `shared/ui/`
-- Used app-wide infrastructure → `core/` (for example `core/auth/`, `core/device/`)
-
-### 2. Feature-Driven Slicing & Facade (Ionic `features/`)
-
-Each domain under `features/<feature-name>/` splits responsibilities into:
-
-```
-features/payments/
-├── models/          # Domain interfaces and models
-├── store/           # Signal store (coordinated by Facade)
-├── services/        # facade, http, storage, sync (as needed)
-├── utils/           # Pure mappers (NO @Injectable)
-└── components/      # Smart components reused by feature + pages
-```
-
-**Rules:**
-- Pages inject ONLY `*-facade.service.ts` — never http/storage/sync directly
-- Facade → Store + Sync + Storage; Sync → HTTP; HTTP → Mapper (pure functions)
-- All services use `inject()`, not constructor injection
-
-See [ionic-angular-architecture SKILL.md](skills/ionic/angular/architecture/SKILL.md) for full patterns and code examples.
-
-### 3. Modern Angular Patterns
-
-```typescript
-// ✅ DO: Signals, inject(), native control flow
-readonly count = signal(0);
-private readonly http = inject(HttpClient);
-
-@if (loading()) {
-  <ion-spinner />
-}
-
-// ❌ DON'T: Lifecycle hooks, constructor injection, structural directives
-ngOnInit() { }
-constructor(private http: HttpClient) { }
-*ngIf="loading"
-```
-
-### 4. Capacitor Over Ionic Platform
-
-```typescript
-// ✅ DO: Use Capacitor
-import { Capacitor } from '@capacitor/core';
-if (Capacitor.getPlatform() === 'ios') { }
-
-// ❌ DON'T: Use Ionic Platform
-import { Platform } from '@ionic/angular';
-if (this.platform.is('ios')) { }
-```
+| Concept | Rule | Source skill |
+|---------|------|--------------|
+| Scope Rule | 1 page → local; same feature across pages → `features/<feature>/components/`; 2+ features → `shared/ui/` | [ionic-angular-architecture](skills/ionic/angular/architecture/SKILL.md) |
+| Feature-Driven Slicing | `features/<feature>/` splits into `models/`, `store/`, `services/`, `utils/`, `components/` | [ionic-angular-architecture](skills/ionic/angular/architecture/SKILL.md) |
+| Facade pattern | Pages inject ONLY `*-facade.service.ts` — never `*-http`, `*-storage`, `*-sync` | [ionic-angular-architecture](skills/ionic/angular/architecture/SKILL.md) |
+| Modern Angular | Standalone, signals, `inject()`, native control flow, zoneless, NO lifecycle hooks | [angular-core](skills/angular/core/SKILL.md) |
+| Capacitor over Ionic Platform | Use `Capacitor.getPlatform()`, never `Platform.is()` | [ionic-angular-capacitor](skills/ionic/angular/capacitor/SKILL.md) |
 
 ## Requirements
 
-- **Cursor**: Latest version
+- **Cursor** (or other supported AI assistant): latest version
 - **Angular**: 20+
 - **Ionic**: 8+ (for Ionic skills)
 - **Capacitor**: 6+ (for Capacitor skills)
 
-## Updating Skills
-
-To update to the latest version:
+## Updating skills
 
 ```bash
-# From skills/ directory
 cd skills
-
-# Update skills
 ./setup.sh --update
-```
-
-## Skill Development
-
-Want to create your own skills? See the [skill-creator](https://github.com/anthropics/skills) guide.
-
-```markdown
-### Creating a New Skill
-
-#### Option 1: Using Official Skill-Creator (Recommended)
-Install and use the official Anthropic skill-creator:
-
-```bash
-# Install skill-creator tool
-npx skills add https://github.com/anthropics/skills --skill skill-creator
-
-# Create your new skill (interactive)
-npx skills create my-new-skill
-
-# Follow the generated structure and guidelines
 ```
 
 ## Troubleshooting
 
-### Skills Not Loading
+| Problem | Fix |
+|---------|-----|
+| Skills not loading | Check `.agents/skills/` exists with `SKILL.md` files; restart assistant; verify YAML frontmatter is valid |
+| AI not following patterns | Reference the skill explicitly: "Following angular-core skill..."; check triggers in `AGENTS.md`; load `angular-core` first |
+| Conflicting patterns | Load order: `angular-core` (foundation) → specific skill (`angular-forms`, `ionic-angular-architecture`, etc.) |
 
-1. Check installation path: `<project>/.agents/skills/` (or assistant symlink such as `.opencode/skills/`)
-2. Verify SKILL.md files exist
-3. Restart your AI assistant
-4. Check YAML frontmatter is valid (descriptions act as OpenCode triggers)
+## Skill development
 
-### AI Not Following Patterns
+Want to create your own skills? Use the official [skill-creator](https://github.com/anthropics/skills) guide:
 
-1. Ensure you're referencing the skill explicitly: "Following angular-core skill..."
-2. Check skill triggers in AGENTS.md
-3. Load `angular-core` first for foundation
-
-### Conflicting Patterns
-
-Skills are designed to work together. Load order:
-1. `angular-core` (foundation)
-2. Specific skill (`angular-forms`, `ionic-angular-architecture`, etc.)
+```bash
+npx skills add https://github.com/anthropics/skills --skill skill-creator
+npx skills create my-new-skill
+```
 
 ## Contributing
 
-Contributions welcome! Please:
-
 1. Clone the repository
 2. Create a feature branch
-3. Follow skill template structure
-4. Add tests/examples
-5. Update AGENTS.md
-6. Submit a pull request
+3. Follow the skill template structure (frontmatter, Activation Contract, Hard Rules, Decision Gates, Execution Steps, Output Contract, References)
+4. Update `skills/AGENTS.md` with triggers and skill tree
+5. Submit a pull request
 
 ## License
 
-Apache 2.0 - See [LICENSE](LICENSE) for details.
+MIT — See [LICENSE](LICENSE) for details.
 
 ## Credits
 
-Created by [Lyon Incode](https://github.com/lyonproducer)
-
-Inspired by:
+Created by [Lyon Incode](https://github.com/lyonproducer). Inspired by:
 - [Vercel AI SDK Skills](https://github.com/vercel/ai-sdk-skills)
 - [Anthropic Skills](https://github.com/anthropics/skills)
 - [Gentleman.Dots](https://github.com/gentleman-dots)
@@ -428,15 +162,8 @@ Inspired by:
 
 - **Issues**: [GitHub Issues](https://github.com/lyonproducer/agent-skills/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/lyonproducer/agent-skills/discussions)
-- **Documentation**: [AGENTS.md](skills/AGENTS.md)
+- **Full skill tree & triggers**: [skills/AGENTS.md](skills/AGENTS.md)
 
-## Resources
+## Next step
 
-- [Angular Documentation](https://angular.dev)
-- [Ionic Documentation](https://ionicframework.com/docs)
-- [Capacitor Documentation](https://capacitorjs.com/docs)
-- [Cursor Documentation](https://cursor.sh/docs)
-
----
-
-**Built with ❤️ for the Ionic + Angular community**
+Read [skills/AGENTS.md](skills/AGENTS.md) for the complete skill tree, auto-invoke table, and loading priority. Then check [CHANGES.md](CHANGES.md) for the latest updates.

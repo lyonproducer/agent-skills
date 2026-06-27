@@ -1,10 +1,7 @@
 ---
 name: capacitor-plugins
-description: >
-  USE ONLY when choosing, installing, or configuring third-party Capacitor plugins
-  (Capawesome, Firebase, community, MLKit, RevenueCat). IGNORE for Capacitor version migrations,
-  Live Updates setup, non-Capacitor mobile frameworks, or first-party Ionic Storage/status bar patterns
-  (use ionic-angular-capacitor).
+description: "USE ONLY when choosing, installing, or configuring third-party Capacitor plugins (Capawesome, Firebase, community, MLKit, RevenueCat). IGNORE for Capacitor version migrations, Live Updates setup, non-Capacitor mobile frameworks, or first-party Ionic Storage/status bar patterns (use ionic-angular-capacitor)."
+license: MIT
 metadata:
   author: capawesome-team
   source: https://github.com/capawesome-team/skills/tree/main/skills/capacitor-plugins

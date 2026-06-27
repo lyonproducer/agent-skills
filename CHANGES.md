@@ -4,6 +4,102 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ Skill Improver Audit Fixes — June 27, 2026
+
+## Summary
+
+Applied the `skill-improver` skill to audit and refactor the 4 skills authored in this repo (not vendored ones). All issues from the audit report (CRITICAL, HIGH, MEDIUM, LOW) were addressed. Skills now follow the LLM-first structure: frontmatter, Activation Contract, Hard Rules, Decision Gates, Execution Steps, Output Contract, References.
+
+## Modified: `skills/ionic/angular/architecture/SKILL.md` (v2.0 → v3.0, 785 → ~280 lines)
+
+**CRITICAL fixes:**
+- Removed duplicate `### Tab-Based Navigation` header (was at lines 415 and 469)
+- Added missing `UserState` interface import/definition in store example
+
+**HIGH fixes:**
+- Added `license: MIT` to frontmatter
+- Converted `description: >` (folded block) to quoted one-line
+- Bumped version `2.0` → `3.0` (major: Feature-Driven Slicing + LLM-first restructure)
+
+**MEDIUM fixes:**
+- Renamed `When to Use` → `Activation Contract`
+- Consolidated scattered rules into `Hard Rules` section
+- Converted Decision Framework + scenarios into `Decision Gates` table
+- Added `Output Contract` section
+- Renamed `Resources` → `References`
+- Renamed generic `Code Example` → referenced `facade-pattern-example.md`
+
+**Body budget:**
+- Extracted Facade code examples (mapper, http, store, facade, page, user domain) to `references/facade-pattern-example.md`
+- Extracted routing patterns (root, in-app, tabs, modal) to `references/routing-patterns.md`
+- Removed `Feature State Pattern` duplication (now lives once in `facade-pattern-example.md`)
+- SKILL.md is now a slim index with rules + decision gates + execution steps
+
+## Modified: `skills/ionic/angular/capacitor/SKILL.md` (v1.3 → v1.4, 199 → ~210 lines)
+
+**CRITICAL fix:**
+- Updated obsolete path `features/<domain>/data/` → `features/<domain>/services/`
+
+**HIGH fixes:**
+- Added `license: MIT`
+- Converted `description: >` to quoted one-line
+
+**MEDIUM fixes:**
+- Renamed `When to Use` → `Activation Contract`
+- Consolidated `Critical Rule 1-4` into `Hard Rules`
+- Added `Decision Gates` table
+- Added `Output Contract`
+- Renamed `Resources` → `References`
+
+## Modified: `skills/ionic/angular/migration-standalone/SKILL.md` (v1.0 → v1.1, 476 → ~110 lines)
+
+**HIGH fixes:**
+- Added `license: MIT`
+- Converted `description: >` to quoted one-line
+
+**MEDIUM fixes:**
+- Removed ALL emojis from headers (🚨🛠🚀📦🔄🧪✅🐛📋📚)
+- Renamed `When to Use` → `Activation Contract`
+- Consolidated migration rules into `Hard Rules`
+- Converted scenarios + issues into `Decision Gates` table
+- Added `Output Contract`
+- Renamed `📚 Resources` → `References`
+- Numbered troubleshooting issues (`### Issue 1`, `### Issue 2`, ...)
+
+**Body budget:**
+- Extracted Scenario 1, Scenario 2, common changes, testing config, and complete page example to `references/migration-scenarios.md`
+- Extracted 4 common issues to `references/troubleshooting.md`
+- SKILL.md is now a slim index with rules + decision gates + execution steps + checklist
+
+## Modified: `skills/ionic/capacitor/capacitor-plugins/SKILL.md` (vendored, frontmatter only)
+
+**HIGH fixes (frontmatter only — body preserved to minimize divergence from upstream):**
+- Added `license: MIT`
+- Converted `description: >` to quoted one-line
+
+> Note: This skill is vendored from `capawesome-team/skills`. Only frontmatter was touched; body structure preserved to keep sync with upstream as clean as possible.
+
+## New reference files
+
+- `skills/ionic/angular/architecture/references/facade-pattern-example.md` — full Facade code (mapper, http, store, facade, page, user domain)
+- `skills/ionic/angular/architecture/references/routing-patterns.md` — tabs, menu, modal routing code
+- `skills/ionic/angular/migration-standalone/references/migration-scenarios.md` — Scenario 1, Scenario 2, common changes, testing, complete page example
+- `skills/ionic/angular/migration-standalone/references/troubleshooting.md` — 4 common migration issues
+
+## Files Updated
+
+- `skills/ionic/angular/architecture/SKILL.md`
+- `skills/ionic/angular/architecture/references/facade-pattern-example.md` (new)
+- `skills/ionic/angular/architecture/references/routing-patterns.md` (new)
+- `skills/ionic/angular/capacitor/SKILL.md`
+- `skills/ionic/angular/migration-standalone/SKILL.md`
+- `skills/ionic/angular/migration-standalone/references/migration-scenarios.md` (new)
+- `skills/ionic/angular/migration-standalone/references/troubleshooting.md` (new)
+- `skills/ionic/capacitor/capacitor-plugins/SKILL.md`
+- `CHANGES.md`
+
+---
+
 # ✅ angular-developer + Ionic Facade Architecture — June 26, 2026
 
 ## Summary
