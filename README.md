@@ -9,19 +9,21 @@ This repository provides curated skills that teach AI assistants how to work wit
 - ✅ **Angular 20+**: Standalone components, signals, zoneless
 - ✅ **Ionic 8+**: Tab & menu navigation, mobile-first architecture
 - ✅ **Capacitor 6+**: Platform detection, push notifications, native plugins
-- ✅ **Architecture**: Scope Rule, Screaming Architecture principles
+- ✅ **Architecture**: Scope Rule, Screaming Architecture, Feature-Driven Slicing & Facade pattern
 - ✅ **Performance**: NgOptimizedImage, @defer, lazy loading
 
 ## Available Skills
 
 | Skill | Description |
 |-------|-------------|
+| **angular-developer** | Official Angular guidelines (vendored from angular/skills): scaffolding, signals, forms, DI, routing, SSR, ARIA, testing, CLI |
 | **angular-architecture** | Scope Rule, project structure, file naming |
 | **angular-core** | Foundation: standalone components, signals, inject(), control flow |
 | **angular-forms** | Signal Forms (experimental) and Reactive Forms patterns |
 | **angular-performance** | Performance optimization with NgOptimizedImage, @defer, SSR |
-| **ionic-angular-architecture** | Project architecture with Scope Rule and routing patterns |
+| **ionic-angular-architecture** | Project architecture: Scope Rule, Feature-Driven Slicing, Facade pattern, routing |
 | **ionic-angular-capacitor** | Capacitor configuration, platform detection, push notifications |
+| **ionic-angular-migration-standalone** | Migration guide for Ionic Angular Standalone architecture |
 | **capacitor-plugins** | Catalog of Capawesome, Firebase, and community Capacitor plugins (vendored) |
 
 See [AGENTS.md](skills/AGENTS.md) for detailed skill tree, triggers, and usage patterns.
@@ -40,6 +42,12 @@ Root
     ├── setup.sh       ← Installation script
     │
     ├── angular/
+    │   ├── developer/                     ← vendored from angular/skills (official)
+    │   │   ├── SKILL.md
+    │   │   └── references/
+    │   │       └── *.md
+    │   ├── architecture/
+    │   │   └── SKILL.md
     │   ├── core/                          [207 lines]
     │   │   └── SKILL.md
     │   ├── forms/                         [125 lines]
@@ -283,7 +291,27 @@ if (Capacitor.getPlatform() === 'ios') {
 - Used in 2+ tabs/pages/features → `shared/ui/`
 - Used app-wide infrastructure → `core/` (for example `core/auth/`, `core/device/`)
 
-### 2. Modern Angular Patterns
+### 2. Feature-Driven Slicing & Facade (Ionic `features/`)
+
+Each domain under `features/<feature-name>/` splits responsibilities into:
+
+```
+features/payments/
+├── models/          # Domain interfaces and models
+├── store/           # Signal store (coordinated by Facade)
+├── services/        # facade, http, storage, sync (as needed)
+├── utils/           # Pure mappers (NO @Injectable)
+└── components/      # Smart components reused by feature + pages
+```
+
+**Rules:**
+- Pages inject ONLY `*-facade.service.ts` — never http/storage/sync directly
+- Facade → Store + Sync + Storage; Sync → HTTP; HTTP → Mapper (pure functions)
+- All services use `inject()`, not constructor injection
+
+See [ionic-angular-architecture SKILL.md](skills/ionic/angular/architecture/SKILL.md) for full patterns and code examples.
+
+### 3. Modern Angular Patterns
 
 ```typescript
 // ✅ DO: Signals, inject(), native control flow
@@ -300,7 +328,7 @@ constructor(private http: HttpClient) { }
 *ngIf="loading"
 ```
 
-### 3. Capacitor Over Ionic Platform
+### 4. Capacitor Over Ionic Platform
 
 ```typescript
 // ✅ DO: Use Capacitor

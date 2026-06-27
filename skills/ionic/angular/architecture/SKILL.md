@@ -80,17 +80,30 @@ src/
 │   │       ├── database.constants.ts
 │   │       └── api.constants.ts
 │   │
-│   ├── features/                      # THE HEART: Business Logic by Domain
+│   ├── features/                      # THE HEART: Business Logic by Domain (Feature-Driven Slicing)
 │   │   ├── user/
-│   │   │   ├── models/                # Interfaces/models and Use Cases
-│   │   │   ├── data/                  # Repositories and Mappers (API calls)
-│   │   │   └── state/                 # user.store.ts (Signals)
+│   │   │   ├── models/                # Interfaces, models, and Use Cases
+│   │   │   ├── store/                 # user.store.ts (Signals) — coordinated by Facade
+│   │   │   ├── services/              # Feature-sliced services (Facade pattern)
+│   │   │   │   ├── user-facade.service.ts   # Single contact point for @pages/* (exposes asReadonly())
+│   │   │   │   ├── user-http.service.ts     # REST/GraphQL calls (if applicable)
+│   │   │   │   ├── user-storage.service.ts  # Local cache persistence (if applicable)
+│   │   │   │   └── user-sync.service.ts     # Periodic sync/offline queue (if applicable)
+│   │   │   ├── utils/                 # Pure functions reused only within the feature
+│   │   │   │   └── user.mapper.ts     # DTOs → domain models (NO @Injectable)
+│   │   │   └── components/            # Smart components (feature + related pages)
 │   │   └── payments/
 │   │       ├── models/                # payment.model.ts
-│   │       ├── data/                  # Repositories and Mappers
-│   │       ├── components/            # Smart components used by payments feature AND related pages
-│   │       │   └── payment-form.component.ts
-│   │       └── payments.service.ts    # Facade: pages only talk to this service
+│   │       ├── store/                 # payments.store.ts
+│   │       ├── services/
+│   │       │   ├── payments-facade.service.ts
+│   │       │   ├── payments-http.service.ts
+│   │       │   ├── payments-storage.service.ts
+│   │       │   └── payments-sync.service.ts
+│   │       ├── utils/
+│   │       │   └── payments.mapper.ts
+│   │       └── components/
+│   │           └── payment-form.component.ts
 │   │
 │   ├── pages/                         # Orchestrators (Smart Components & Routing)
 │   │   ├── start-app/                 # Block: Onboarding & Authentication
@@ -163,20 +176,179 @@ Always configure these aliases in `tsconfig.json`:
 
 ---
 
-## Feature State Pattern (Signal Store)
+## Feature-Driven Slicing & State Management Facade
 
-Each feature domain that requires state management uses a signal-based store placed in `features/<domain>/state/`.
+When building or refactoring any complex domain inside `src/app/features/[feature-name]/`, you MUST split technical responsibilities into the following ecosystem of injectable services and pure utilities.
+
+### Naming Convention & Feature Files
+
+- `services/[feature-name]-facade.service.ts`: Single contact point for pages (`@pages/*`). Exposes consolidated state via Angular Signals (`asReadonly()`). Centralizes calls to sub-services.
+- `services/[feature-name]-sync.service.ts`: Encapsulates periodic sync flows, offline operations, and background task queues (if applicable).
+- `services/[feature-name]-storage.service.ts`: Manages local cache persistence (save, remove, load) using typed unique keys (if applicable).
+- `services/[feature-name]-http.service.ts`: Strictly hosts REST/GraphQL calls mapped from system URI constants (if applicable).
+- `utils/[feature-name].mapper.ts`: Pure TypeScript functions to transform network responses (DTOs) into valid domain models. **NEVER use `@Injectable()` in this file.**
+
+Create only the services the feature actually needs (`http`, `storage`, `sync` are optional).
+
+### Critical Dependency Inversion Rules
+
+1. **UI Isolation:** Pages and components are FORBIDDEN from injecting infrastructure services (`http`, `storage`, `sync`). Communication is exclusively through the Facade.
+2. **Flow Direction:** Facade coordinates Store, Sync, and Storage. Sync consumes HTTP. HTTP uses Mapper functions statically.
+3. **Modern Injection:** ALL services MUST use Angular's `inject()` function — never constructor parameter injection.
+
+### Dependency Flow
+
+```mermaid
+flowchart TD
+    Pages["@pages/* (Pages & UI Components)"]
+    Facade["Facade Service"]
+    Store["Store (Signals)"]
+    Sync["Sync Service"]
+    Storage["Storage Service"]
+    HTTP["HTTP Service"]
+    Mapper["Mapper (pure utils)"]
+    Pages --> Facade
+    Facade --> Store
+    Facade --> Sync
+    Facade --> Storage
+    Sync --> HTTP
+    HTTP --> Mapper
+```
+
+### Code Example
 
 ```typescript
-// features/user/state/user.store.ts
-import { Injectable, signal, computed, inject } from '@angular/core';
+// features/payments/utils/payments.mapper.ts — pure functions, NO @Injectable()
+import { PaymentDto } from '../models/payment.dto';
+import { PaymentModel } from '../models/payment.model';
+
+export function mapPaymentDtoToModel(dto: PaymentDto): PaymentModel {
+  return {
+    id: dto.id,
+    amount: dto.amount,
+    status: dto.status,
+  };
+}
+```
+
+```typescript
+// features/payments/services/payments-http.service.ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { PAYMENTS_API } from '@shared/constants/api.constants';
+import { mapPaymentDtoToModel } from '../utils/payments.mapper';
+import { PaymentModel } from '../models/payment.model';
+
+@Injectable({ providedIn: 'root' })
+export class PaymentsHttpService {
+  private readonly http = inject(HttpClient);
+
+  async fetchPayments(): Promise<PaymentModel[]> {
+    const dtos = await firstValueFrom(this.http.get(PAYMENTS_API.LIST));
+    return dtos.map(mapPaymentDtoToModel);
+  }
+}
+```
+
+```typescript
+// features/payments/store/payments.store.ts
+import { Injectable, signal, computed } from '@angular/core';
+import { PaymentModel } from '../models/payment.model';
+
+@Injectable({ providedIn: 'root' })
+export class PaymentsStore {
+  private readonly _items = signal<PaymentModel[]>([]);
+  private readonly _loading = signal(false);
+
+  readonly items = computed(() => this._items());
+  readonly loading = computed(() => this._loading());
+
+  setItems(items: PaymentModel[]): void {
+    this._items.set(items);
+  }
+
+  setLoading(loading: boolean): void {
+    this._loading.set(loading);
+  }
+}
+```
+
+```typescript
+// features/payments/services/payments-facade.service.ts
+import { Injectable, inject } from '@angular/core';
+import { PaymentsStore } from '../store/payments.store';
+import { PaymentsHttpService } from './payments-http.service';
+import { PaymentsStorageService } from './payments-storage.service';
+
+@Injectable({ providedIn: 'root' })
+export class PaymentsFacade {
+  private readonly store = inject(PaymentsStore);
+  private readonly http = inject(PaymentsHttpService);
+  private readonly storage = inject(PaymentsStorageService);
+
+  // Expose consolidated state as readonly signals
+  readonly items = this.store.items;
+  readonly loading = this.store.loading;
+
+  async loadPayments(): Promise<void> {
+    this.store.setLoading(true);
+    try {
+      const cached = await this.storage.load();
+      if (cached.length) {
+        this.store.setItems(cached);
+      }
+      const items = await this.http.fetchPayments();
+      this.store.setItems(items);
+      await this.storage.save(items);
+    } finally {
+      this.store.setLoading(false);
+    }
+  }
+}
+```
+
+```typescript
+// pages/in-app/features/payment/payment.page.ts — ONLY injects the Facade
+import { Component, inject } from '@angular/core';
+import { PaymentsFacade } from '@features/payments/services/payments-facade.service';
+
+@Component({
+  selector: 'app-payment',
+  template: `
+    @if (facade.loading()) {
+      <ion-spinner />
+    } @else {
+      @for (item of facade.items(); track item.id) {
+        <payment-form [payment]="item" />
+      }
+    }
+  `,
+})
+export class PaymentPage {
+  readonly facade = inject(PaymentsFacade);
+
+  constructor() {
+    this.facade.loadPayments();
+  }
+}
+```
+
+---
+
+## Feature State Pattern (Signal Store)
+
+Each feature domain that requires state management uses a signal-based store placed in `features/<domain>/store/`. The store is **coordinated exclusively by the Facade** — pages and components MUST NOT inject the store directly.
+
+```typescript
+// features/user/store/user.store.ts
+import { Injectable, signal, computed } from '@angular/core';
+import { UserModel } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserStore {
-  private readonly http = inject(HttpClient);
-
   // Private signals for internal state
   private readonly _state = signal<UserState>({
     items: [],
@@ -184,14 +356,47 @@ export class UserStore {
     error: null,
   });
 
-  // Public readonly computed values (exposed to UI)
+  // Public readonly computed values (exposed to Facade only)
   readonly items = computed(() => this._state().items);
   readonly loading = computed(() => this._state().loading);
   readonly error = computed(() => this._state().error);
 
-  loadItems(): void {
-    this._state.update((state) => ({ ...state, loading: true }));
-    // Implementation
+  setItems(items: UserModel[]): void {
+    this._state.update((state) => ({ ...state, items }));
+  }
+
+  setLoading(loading: boolean): void {
+    this._state.update((state) => ({ ...state, loading }));
+  }
+}
+```
+
+The Facade re-exposes store state to pages via readonly signals:
+
+```typescript
+// features/user/services/user-facade.service.ts
+import { Injectable, inject } from '@angular/core';
+import { UserStore } from '../store/user.store';
+import { UserHttpService } from './user-http.service';
+
+@Injectable({ providedIn: 'root' })
+export class UserFacade {
+  private readonly store = inject(UserStore);
+  private readonly http = inject(UserHttpService);
+
+  // Re-expose store state — pages read these, never the store directly
+  readonly items = this.store.items;
+  readonly loading = this.store.loading;
+  readonly error = this.store.error;
+
+  async loadItems(): Promise<void> {
+    this.store.setLoading(true);
+    try {
+      const items = await this.http.fetchUsers();
+      this.store.setItems(items);
+    } finally {
+      this.store.setLoading(false);
+    }
   }
 }
 ```
@@ -199,8 +404,9 @@ export class UserStore {
 **Rules:**
 - Private `_state` signal holds the full state object
 - Public API is always `computed()` — never expose the writable signal
-- State is always updated via `.update()` spreading the previous state
+- State is always updated via `.update()` or dedicated setter methods spreading the previous state
 - One store per feature domain — do not share stores across unrelated features
+- Store is injected ONLY by the Facade — pages inject `UserFacade`, never `UserStore`
 
 ---
 
@@ -409,9 +615,13 @@ When analyzing component/service placement, you MUST:
 | `RouterService` | Entire app | `shared/utils/` | Utility service, no business domain |
 | `DateFormatPipe` | 2+ tabs | `shared/pipes/` | Scope Rule: 2+ tabs |
 | `PaymentForm` | Payments feature + payment page | `features/payments/components/` | Feature-specific smart component |
-| `PaymentsService` | Pages consuming payments | `features/payments/` | Domain facade service |
+| `PaymentsFacade` | Pages consuming payments | `features/payments/services/` | Single contact point for pages |
+| `PaymentsHttpService` | Payments feature (internal) | `features/payments/services/` | REST/GraphQL calls — injected by Facade/Sync only |
+| `PaymentsStorageService` | Payments feature (internal) | `features/payments/services/` | Local cache persistence — injected by Facade only |
+| `PaymentsSyncService` | Payments feature (internal) | `features/payments/services/` | Offline sync queue — injected by Facade only |
+| `payments.mapper.ts` | Payments feature (internal) | `features/payments/utils/` | Pure DTO→domain mapping, no `@Injectable()` |
 | `PaymentModel` | Payments feature | `features/payments/models/` | Domain model/interface |
-| `user.store.ts` | User feature | `features/user/state/` | Feature-specific signal store |
+| `user.store.ts` | User feature (internal) | `features/user/store/` | Feature signal store — coordinated by Facade |
 
 ---
 
@@ -425,6 +635,8 @@ Before finalizing any architectural decision:
 4. ✅ **Lazy loading**: All routes using `loadComponent()` or `loadChildren()`?
 5. ✅ **Type safety**: No `any` types?
 6. ✅ **File naming**: No `.component`, `.service`, `.module` suffixes?
+7. ✅ **Facade isolation**: Pages/components only inject the Facade (never `*-http`, `*-storage`, `*-sync`)?
+8. ✅ **Mapper purity**: `utils/*.mapper.ts` files are pure functions with no `@Injectable()`?
 
 ---
 
@@ -442,21 +654,64 @@ export class PaymentPage {
   }
 }
 
-// ✅ CORRECT - Page delegates to a feature facade
-// features/payments/payments.service.ts  ← business logic lives here
+// ✅ CORRECT - Page delegates to the feature Facade
+// features/payments/services/payments-facade.service.ts  ← business logic lives here
 // pages/in-app/features/payment/payment.page.ts
 export class PaymentPage {
-  private readonly paymentsService = inject(PaymentsService);
+  private readonly paymentsFacade = inject(PaymentsFacade);
   async pay() {
-    await this.paymentsService.processPayment(data); // Page only orchestrates
+    await this.paymentsFacade.processPayment(data); // Page only orchestrates
   }
+}
+```
+
+### Don't: UI Injecting Infrastructure Services
+
+```typescript
+// ❌ WRONG - Page injects HTTP/Storage/Sync directly
+// pages/in-app/features/payment/payment.page.ts
+export class PaymentPage {
+  private readonly httpService = inject(PaymentsHttpService);
+  private readonly storageService = inject(PaymentsStorageService);
+
+  async loadPayments() {
+    const items = await this.httpService.fetchPayments();
+    await this.storageService.save(items);
+  }
+}
+
+// ✅ CORRECT - Page injects ONLY the Facade
+export class PaymentPage {
+  private readonly paymentsFacade = inject(PaymentsFacade);
+
+  async loadPayments() {
+    await this.paymentsFacade.loadPayments();
+  }
+}
+```
+
+### Don't: Make Mappers `@Injectable()`
+
+```typescript
+// ❌ WRONG - Mapper as an injectable service
+@Injectable({ providedIn: 'root' })
+export class PaymentsMapper {
+  mapDtoToModel(dto: PaymentDto): PaymentModel {
+    return { id: dto.id, amount: dto.amount };
+  }
+}
+
+// ✅ CORRECT - Pure function in utils/
+// features/payments/utils/payments.mapper.ts
+export function mapPaymentDtoToModel(dto: PaymentDto): PaymentModel {
+  return { id: dto.id, amount: dto.amount };
 }
 ```
 
 ### Don't: Confuse `features/` (domain) with `pages/in-app/features/` (routing)
 
 ```typescript
-// src/app/features/          ← Domain layer: business logic, models, state, repositories
+// src/app/features/          ← Domain layer: models, store, services, utils, components
 // src/app/pages/in-app/features/  ← Routing layer: pages NOT in tabs or menu
 
 // ❌ WRONG - Putting page-only components in the domain features folder
@@ -467,6 +722,11 @@ src/app/pages/in-app/features/payment/components/payment-page-header.ts
 
 // ✅ CORRECT - Smart components reused by feature AND pages go in the feature folder
 src/app/features/payments/components/payment-form.component.ts
+
+// ✅ CORRECT - Feature-sliced services live under services/
+src/app/features/payments/services/payments-facade.service.ts
+src/app/features/payments/services/payments-http.service.ts
+src/app/features/payments/utils/payments.mapper.ts
 ```
 
 ### Don't: Put Capacitor Plugin Wrappers Outside `core/device/`

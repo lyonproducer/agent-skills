@@ -4,6 +4,73 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ angular-developer + Ionic Facade Architecture — June 26, 2026
+
+## Summary
+
+- Vendored the official **`angular-developer`** skill from [angular/skills](https://github.com/angular/skills) into `skills/angular/developer/` (SKILL.md + 37 reference docs).
+- Refactored **`ionic-angular-architecture`** to adopt **Feature-Driven Slicing & State Management Facade** inside `features/`.
+- Updated global documentation (`AGENTS.md`, `README.md`, `setup.sh`) to reflect both changes.
+
+## New: `skills/angular/developer/` (vendored)
+
+- Cloned from `angular/skills/angular-developer` (official Google LLC, MIT).
+- Covers: project scaffolding (`ng new`), components, signals, `linkedSignal`, `resource`, forms, DI, routing, SSR, ARIA, animations, Tailwind, testing, CLI, migrations.
+- Installed as `angular-developer` via flat layout in `.agents/skills/`.
+
+## Modified: `skills/setup.sh`
+
+- Added `angular/developer` to `AVAILABLE_SKILLS` (first in list).
+- Added `angular/developer` to `has_local_skills_layout()` detection.
+
+## Modified: `skills/ionic/angular/architecture/SKILL.md` (v2.0 → Feature-Driven Slicing)
+
+**`features/` folder structure replaced** — old `data/`, `state/`, single `*.service.ts` replaced with:
+
+| Folder | Purpose |
+|--------|---------|
+| `models/` | Domain interfaces and models |
+| `store/` | Signal store (coordinated by Facade) |
+| `services/` | `*-facade`, `*-http`, `*-storage`, `*-sync` (as applicable) |
+| `utils/` | Pure mappers (`*.mapper.ts`, NO `@Injectable()`) |
+| `components/` | Smart components reused by feature + pages |
+
+**New section added:** Feature-Driven Slicing & State Management Facade
+- Naming conventions for all 5 service/utility types
+- 3 critical dependency inversion rules (UI isolation, flow direction, modern injection)
+- Mermaid dependency flow diagram
+- Full code examples: mapper, http, store, facade, page
+
+**Updated sections:**
+- Feature State Pattern: `state/` → `store/`, store coordinated exclusively by Facade
+- Placement Examples: added Facade, Http, Storage, Sync, Mapper rows
+- Anti-Patterns: Facade-only injection, no `@Injectable()` mappers, updated paths
+- Quality Checklist: Facade isolation + Mapper purity checks
+
+## Modified: `skills/AGENTS.md`
+
+- Added overlap note and loading priority for `angular-developer` vs `angular-core`/`angular-forms`.
+- Updated `ionic-angular-architecture` description, skill tree, auto-invoke table, and trigger patterns for Facade pattern.
+- Added Core Principle #6: Feature Facade rules for `features/`.
+
+## Modified: `README.md`
+
+- Added `angular-developer` and `ionic-angular-migration-standalone` to Available Skills table.
+- Updated `ionic-angular-architecture` description.
+- Added `angular/developer/` to Skills Architecture diagram.
+- Added Key Concepts section: Feature-Driven Slicing & Facade.
+
+## Files Updated
+
+- `skills/angular/developer/` (new — 38 files)
+- `skills/setup.sh`
+- `skills/ionic/angular/architecture/SKILL.md`
+- `skills/AGENTS.md`
+- `README.md`
+- `CHANGES.md`
+
+---
+
 # ✅ v2.0.0 Setup/Installer Update — May 24, 2026
 
 ## Summary (Compact)

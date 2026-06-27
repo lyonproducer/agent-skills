@@ -33,6 +33,7 @@ require_cmd() {
 
 has_local_skills_layout() {
     [ -d "$SCRIPT_DIR/angular/core" ] && \
+    [ -d "$SCRIPT_DIR/angular/developer" ] && \
     [ -d "$SCRIPT_DIR/angular/forms" ] && \
     [ -d "$SCRIPT_DIR/angular/performance" ] && \
     [ -d "$SCRIPT_DIR/ionic/angular/architecture" ] && \
@@ -115,6 +116,7 @@ SKILLS_SELECTION_DECIDED=false
 
 # Available skills (path relative to skills/)
 AVAILABLE_SKILLS=(
+    "angular/developer"
     "angular/architecture"
     "angular/core"
     "angular/forms"
@@ -122,6 +124,7 @@ AVAILABLE_SKILLS=(
     "ionic/angular/architecture"
     "ionic/angular/capacitor"
     "ionic/angular/migration-standalone"
+    "ionic/capacitor/capacitor-plugins"
 )
 
 # Helper functions
