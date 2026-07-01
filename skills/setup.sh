@@ -896,6 +896,7 @@ setup_opencode() {
 
     ln -s "../$AGENTS_SKILLS" "$target"
     print_success ".opencode/skills -> .agents/skills/"
+    copy_agents_md "AGENTS.md"
     print_success "OpenCode uses SKILL.md descriptions as triggers"
 }
 
