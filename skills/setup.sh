@@ -125,6 +125,10 @@ AVAILABLE_SKILLS=(
     "ionic/angular/capacitor"
     "ionic/angular/migration-standalone"
     "ionic/capacitor/capacitor-plugins"
+    "ionic/capacitor/capacitor-uiscene-migrator"
+    "ionic/capacitor/capacitor-plugin-generator"
+    "ionic/capacitor/cordova-plugin-migrator"
+    "ionic/capacitor/build-actions-generator"
 )
 
 # Helper functions

@@ -31,6 +31,10 @@ When working on Angular + Ionic projects, AI assistants automatically load relev
 | `ionic-angular-capacitor` | Capacitor mobile plugins: platform detection, status bar, push notifications, storage configuration | [SKILL.md](.agents/skills/ionic-angular-capacitor/SKILL.md) |
 | `ionic-angular-migration-standalone` | Migration guide for converting Ionic Angular apps to Standalone architecture | [SKILL.md](.agents/skills/ionic-angular-migration-standalone/SKILL.md) |
 | `capacitor-plugins` | Catalog of Capacitor community and Capawesome plugins with usage references (vendored from capawesome-team/skills) | [SKILL.md](.agents/skills/ionic-capacitor-capacitor-plugins/SKILL.md) |
+| `capacitor-uiscene-migrator` | Capacitor 8.4 → 8.5 iOS UIScene migration (SceneDelegate, Xcode lifecycle, custom openURL) (vendored from ionic-team) | [SKILL.md](.agents/skills/ionic-capacitor-capacitor-uiscene-migrator/SKILL.md) |
+| `capacitor-plugin-generator` | Scaffold and generate new Capacitor plugins (Swift, Kotlin/Java, TypeScript bridge) (vendored from ionic-team) | [SKILL.md](.agents/skills/ionic-capacitor-capacitor-plugin-generator/SKILL.md) |
+| `cordova-plugin-migrator` | End-to-end Cordova to Capacitor plugin migration orchestrator (vendored from ionic-team) | [SKILL.md](.agents/skills/ionic-capacitor-cordova-plugin-migrator/SKILL.md) |
+| `build-actions-generator` | OutSystems Developer Cloud (ODC) build action JSON generator for Capacitor plugins (vendored from ionic-team) | [SKILL.md](.agents/skills/ionic-capacitor-build-actions-generator/SKILL.md) |
 
 ## Skill Tree & Dependencies
 
@@ -83,11 +87,30 @@ Angular + Ionic Project
 │   ├── Ionic Storage setup
 │   └── Capacitor plugin integration
 │
-└── capacitor-plugins (When choosing or installing a third-party/community plugin)
-    ├── Plugin catalog with usage references
-    ├── Capawesome plugins
-    ├── Firebase plugins
-    └── Community plugins
+├── capacitor-plugins (When choosing or installing a third-party/community plugin)
+│   ├── Plugin catalog with usage references
+│   ├── Capawesome plugins
+│   ├── Firebase plugins
+│   └── Community plugins
+│
+├── capacitor-uiscene-migrator (When migrating iOS to Capacitor 8.5 UIScene lifecycle)
+│   ├── Audit app and plugin lifecycle
+│   ├── UISceneDelegate templates & surgical merges
+│   └── Xcode / UIKit client compatibility
+│
+├── capacitor-plugin-generator (When creating a custom Capacitor plugin)
+│   ├── Native iOS (Swift) & Android (Kotlin) scaffolding
+│   ├── TypeScript bridge & API contracts
+│   └── Testing strategies
+│
+├── cordova-plugin-migrator (When migrating legacy Cordova plugins to Capacitor)
+│   ├── Plugin analysis & feasibility
+│   ├── API mappings & hooks migration
+│   └── Plan generation & MIGRATION.md consolidation
+│
+└── build-actions-generator (When configuring OutSystems ODC mobile builds)
+    ├── buildAction.json generation
+    └── Platform actions for iOS and Android
 ```
 
 ## Auto-Invoke Skills
@@ -122,6 +145,10 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 | Configuring storage | `ionic-angular-capacitor` | Ionic Storage setup in main.ts |
 | Choosing a third-party/community plugin | `capacitor-plugins` | Full plugin catalog with references |
 | Installing a Capawesome or Firebase plugin | `capacitor-plugins` | Usage guide and API reference per plugin |
+| Migrating Capacitor iOS app to 8.5 UIScene | `capacitor-uiscene-migrator` | Solves UISceneDelegate, Xcode build failures, UIKit warnings |
+| Creating or scaffolding a Capacitor plugin | `capacitor-plugin-generator` | Native Swift/Kotlin + TS bridge scaffolding standards |
+| Converting a Cordova plugin to Capacitor | `cordova-plugin-migrator` | Automated analysis, mappings, and migration orchestration |
+| Configuring ODC mobile build actions | `build-actions-generator` | Generates valid `buildAction.json` for OutSystems Developer Cloud |
 
 ## Trigger Patterns
 
@@ -202,6 +229,34 @@ When performing these actions, **ALWAYS** invoke the corresponding skill FIRST:
 - Installing or configuring Capawesome, Firebase, or community Capacitor plugins
 - Looking up API usage for a specific plugin
 - User mentions: "capawesome", "firebase plugin", "community plugin", "which plugin", "barcode", "biometrics", "live update", "in-app review"
+
+### capacitor-uiscene-migrator
+**Triggers when:**
+- Migrating a Capacitor 8.x iOS app to the UIScene lifecycle (8.4 → 8.5)
+- Resolving "CLIENT OF UIKIT REQUIRES UPDATE" or Xcode scene delegate build failures
+- Auditing plugins or apps for SceneDelegate compatibility
+- Finishing a migration `npx cap migrate` reported as partial or skipped
+- User mentions: "UIScene", "SceneDelegate", "Capacitor 8.5", "Xcode 27", "migrate to UIScene", "CLIENT OF UIKIT REQUIRES UPDATE", "adopt scene lifecycle"
+
+### capacitor-plugin-generator
+**Triggers when:**
+- Creating a new Capacitor plugin from scratch
+- Scaffolding native iOS (Swift) or Android (Kotlin) code for a plugin
+- Designing plugin TypeScript API contracts and bridges
+- User mentions: "generate Capacitor plugin", "create Capacitor plugin", "plugin scaffold", "build native plugin", "turn plugin plan into Capacitor code"
+
+### cordova-plugin-migrator
+**Triggers when:**
+- Migrating an existing Cordova plugin to Capacitor
+- Assessing migration feasibility or effort of a Cordova plugin
+- Mapping Cordova APIs and hooks to Capacitor architecture
+- User mentions: "migrate cordova plugin", "convert cordova to capacitor", "cordova plugin migration", "assess migration feasibility"
+
+### build-actions-generator
+**Triggers when:**
+- Generating `buildAction.json` for OutSystems Developer Cloud (ODC) Mobile Libraries
+- Configuring Gradle or plist build actions for ODC mobile builds
+- User mentions: "buildAction.json", "ODC build action", "OutSystems build action", "ODC plugin"
 
 ## How Skills Work
 
@@ -304,10 +359,21 @@ skills/
     │   └── migration-standalone/
     │       └── SKILL.md
     └── capacitor/
-        └── capacitor-plugins/        # vendored from capawesome-team/skills
+        ├── capacitor-plugins/        # vendored from capawesome-team/skills
+        │   ├── SKILL.md
+        │   └── references/
+        ├── capacitor-uiscene-migrator/ # vendored from ionic-team/capacitor-skills
+        │   ├── SKILL.md
+        │   └── references/
+        ├── capacitor-plugin-generator/ # vendored from ionic-team/capacitor-skills
+        │   ├── SKILL.md
+        │   └── references/
+        ├── cordova-plugin-migrator/    # vendored from ionic-team/capacitor-skills
+        │   ├── SKILL.md
+        │   └── references/
+        └── build-actions-generator/    # vendored from ionic-team/capacitor-skills
             ├── SKILL.md
             └── references/
-                └── *.md
 ```
 
 ## Installation
@@ -334,6 +400,10 @@ When adding new skills:
 | ionic-angular-capacitor| 20+ | 8+ | 6+ |
 | ionic-angular-migration-standalone | 12+ | 8+ | N/A |
 | capacitor-plugins | N/A | N/A | 6+ |
+| capacitor-uiscene-migrator | N/A | N/A | 8.4 → 8.5 |
+| capacitor-plugin-generator | N/A | N/A | 6+ |
+| cordova-plugin-migrator | N/A | N/A | 6+ |
+| build-actions-generator | N/A | N/A | 6+ (ODC MABS 12+) |
 
 ## Support
 

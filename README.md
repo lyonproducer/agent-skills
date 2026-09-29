@@ -28,6 +28,10 @@ Supported OS for the curl path: **macOS and Linux**. Windows users see [Alternat
 | **ionic-angular-capacitor** | Capacitor configuration, platform detection, push notifications |
 | **ionic-angular-migration-standalone** | Migration guide for Ionic Angular Standalone architecture |
 | **capacitor-plugins** | Catalog of Capawesome, Firebase, and community Capacitor plugins (vendored) |
+| **capacitor-uiscene-migrator** | Capacitor 8.4 → 8.5 iOS UIScene lifecycle migration (vendored from ionic-team) |
+| **capacitor-plugin-generator** | Scaffolding and generating custom Capacitor plugins (vendored from ionic-team) |
+| **cordova-plugin-migrator** | End-to-end Cordova to Capacitor plugin migration orchestrator (vendored from ionic-team) |
+| **build-actions-generator** | ODC build actions generator for Capacitor mobile plugins (vendored from ionic-team) |
 
 See [skills/AGENTS.md](skills/AGENTS.md) for the full skill tree, triggers, auto-invoke table, and loading priority.
 

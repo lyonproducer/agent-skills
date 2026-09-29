@@ -4,6 +4,35 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ Official Ionic Team Capacitor Skills Integration — September 29, 2026
+
+## Summary
+
+Vendored and integrated the official agent skills from [ionic-team/capacitor-skills](https://github.com/ionic-team/capacitor-skills) under `skills/ionic/capacitor/`. These skills provide complete coverage for the Capacitor plugin development lifecycle and modern iOS migration challenges.
+
+## Added Skills
+
+1. **`capacitor-uiscene-migrator`** (`skills/ionic/capacitor/capacitor-uiscene-migrator/`)
+   - Assists migrating Capacitor 8.4 → 8.5 iOS apps to the UIScene lifecycle.
+   - Covers what `npx cap migrate` skips or only warns about: partial migrations, hand-rolled scene delegates, and custom `application(_:open:)` bodies.
+   - Resolves Xcode build failures and "CLIENT OF UIKIT REQUIRES UPDATE" warnings.
+2. **`capacitor-plugin-generator`** (`skills/ionic/capacitor/capacitor-plugin-generator/`)
+   - Scaffolds new Capacitor plugins with native iOS (Swift) and Android (Kotlin) implementations.
+   - Generates TypeScript API contracts, web fallbacks, and bridge configurations from conversation or YAML contracts.
+3. **`cordova-plugin-migrator`** (`skills/ionic/capacitor/cordova-plugin-migrator/`)
+   - Orchestrates end-to-end Cordova plugin migration to Capacitor.
+   - Analyzes `plugin.xml`, native code, JS bridge, hooks, and produces consolidated `MIGRATION.md`.
+4. **`build-actions-generator`** (`skills/ionic/capacitor/build-actions-generator/`)
+   - Generates OutSystems Developer Cloud (ODC) `buildAction.json` files for Capacitor mobile plugins.
+
+## Installer & Documentation Updates
+
+- **`skills/setup.sh`**: Added all 4 skills to `AVAILABLE_SKILLS`.
+- **`skills/AGENTS.md`**: Updated Ionic + Capacitor skills table, ASCII dependency tree, auto-invoke rules, and trigger patterns.
+- **`README.md`**: Added new skills to the available skills overview.
+
+---
+
 # ✅ Skill Improver Audit Fixes — June 27, 2026
 
 ## Summary
