@@ -957,7 +957,7 @@ setup_codex() {
     # Create symlink to .agents/skills
     ln -s "../$AGENTS_SKILLS" "$target"
     print_success ".codex/skills -> .agents/skills/"
-    copy_agents_md
+    copy_agents_md "AGENTS.md"
     print_success "Codex uses AGENTS.md natively"
 }
 
@@ -985,7 +985,7 @@ setup_kilocode() {
     # Create symlink to .agents/skills
     ln -s "../$AGENTS_SKILLS" "$target"
     print_success ".kilocode/skills -> .agents/skills/"
-    copy_agents_md
+    copy_agents_md "AGENTS.md"
     print_success "Kilocode uses AGENTS.md natively"
 }
 
