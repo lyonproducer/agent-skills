@@ -4,6 +4,7 @@ Securely store key/value pairs such as passwords, tokens, or other sensitive inf
 
 **Package:** `@capawesome-team/capacitor-secure-preferences`
 **Platforms:** Android, iOS, Web
+**Documentation:** https://capawesome.io/docs/sdks/capacitor/secure-preferences/
 **Capawesome Insiders:** Yes (requires license key)
 
 ## Installation
@@ -113,3 +114,4 @@ await SecurePreferences.clear();
 - On Android, data is secured using the Android Keystore.
 - On iOS, data is secured using the iOS Keychain.
 - Compatible with the Biometrics and SQLite plugins.
+- To gate stored values behind biometric or device-passcode authentication, use the Vault plugin (`references/capawesome-vault.md`) instead.

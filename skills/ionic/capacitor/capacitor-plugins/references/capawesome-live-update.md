@@ -5,6 +5,7 @@ Capacitor plugin for Over-the-Air (OTA) updates. Download and apply web asset bu
 **Package:** `@capawesome/capacitor-live-update`
 
 **Platforms:** Android, iOS
+**Documentation:** https://capawesome.io/docs/sdks/capacitor/live-update/
 
 ## Installation
 
@@ -156,3 +157,29 @@ const ready = async () => {
 - Do not use Live Reload during testing; it bypasses the local file system.
 - Channel priority (lowest to highest): Capacitor config `defaultChannel`, native config, `setChannel()`, `sync()` channel parameter.
 - Capawesome Cloud forced channel assignments override all other channel settings.
+- The Live Update plugin is **not compatible with service workers**. Service workers cache web assets and intercept network requests, which prevents live updates from being applied correctly. Disable service worker registration on native platforms (Android and iOS).
+
+  **Angular:** When using `provideServiceWorker`, set `enabled` to `Capacitor.getPlatform() === 'web'`:
+
+  ```typescript
+  import { Capacitor } from '@capacitor/core';
+  import { provideServiceWorker } from '@angular/service-worker';
+
+  provideServiceWorker('ngsw-worker.js', {
+    enabled: Capacitor.getPlatform() === 'web',
+  }),
+  ```
+
+  **Other frameworks:** If the service worker cannot be disabled at registration time, unregister it on native platforms:
+
+  ```typescript
+  import { Capacitor } from '@capacitor/core';
+
+  if (Capacitor.isNativePlatform() && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+  ```

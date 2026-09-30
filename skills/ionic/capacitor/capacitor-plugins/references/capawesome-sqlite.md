@@ -4,6 +4,7 @@ Access SQLite databases with support for encryption, transactions, schema migrat
 
 **Package:** `@capawesome-team/capacitor-sqlite`
 **Platforms:** Android, iOS, Web, Electron
+**Documentation:** https://capawesome.io/docs/sdks/capacitor/sqlite/
 **Capawesome Insiders:** Yes (requires license key)
 
 ## Installation
@@ -68,21 +69,44 @@ If using Proguard, add to `android/app/proguard-rules.pro`:
 
 ### iOS
 
-#### Encryption
+#### CocoaPods
 
-For encryption with CocoaPods, add to `ios/App/Podfile` under the `target 'App'` section:
-
-```ruby
-pod 'CapawesomeTeamCapacitorSqlite/SQLCipher', :path => '../../node_modules/@capawesome-team/capacitor-sqlite'
-```
-
-If NOT using encryption, add the Plain pod instead:
+Add the `Plain` pod to `ios/App/Podfile` under the `target 'App'` section:
 
 ```ruby
 pod 'CapawesomeTeamCapacitorSqlite/Plain', :path => '../../node_modules/@capawesome-team/capacitor-sqlite'
 ```
 
-Both must be placed under `# Add your Pods here`, not in the `def capacitor_pods` section. Encryption is only supported with CocoaPods, not SPM.
+For encryption, use the `SQLCipher` pod instead:
+
+```ruby
+pod 'CapawesomeTeamCapacitorSqlite/SQLCipher', :path => '../../node_modules/@capawesome-team/capacitor-sqlite'
+```
+
+Both must be placed under `# Add your Pods here`, not in the `def capacitor_pods` section.
+
+#### Swift Package Manager
+
+No additional setup is required for SPM.
+
+For encryption, enable the `SQLCipher` package trait in `capacitor.config.json` (or `capacitor.config.ts`):
+
+```json
+{
+  "experimental": {
+    "ios": {
+      "spm": {
+        "swiftToolsVersion": "6.1",
+        "packageTraits": {
+          "@capawesome-team/capacitor-sqlite": ["SQLCipher"]
+        }
+      }
+    }
+  }
+}
+```
+
+SPM trait support requires Capacitor CLI 8.3.0+ and Xcode 16.3+ (Swift 6.1+).
 
 ### Web
 
@@ -167,5 +191,5 @@ await Sqlite.commitTransaction({ databaseId });
 - Includes a built-in key-value store via `SqliteKeyValueStore` class.
 - Supported data types: `NULL`, `INTEGER`, `REAL`, `TEXT`, `BLOB` (BLOBs not supported on Web).
 - On Web, `initialize()` must be called with a Worker before use.
-- Encryption on iOS requires CocoaPods (not SPM). Encryption is not supported on Electron or Web.
+- Encryption on iOS is supported with both CocoaPods and SPM. Encryption is not supported on Electron or Web.
 - Electron support requires Node.js 22.5.0+ (Electron 33+).
