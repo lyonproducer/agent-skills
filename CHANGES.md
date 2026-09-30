@@ -4,11 +4,13 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
-# ✅ Official Ionic Team Capacitor Skills Integration — September 29, 2026
+# ✅ v2.3.0 Official Ionic Team & Upstream Skills Integration — September 29, 2026
 
 ## Summary
 
-Vendored and integrated the official agent skills from [ionic-team/capacitor-skills](https://github.com/ionic-team/capacitor-skills) under `skills/ionic/capacitor/`. These skills provide complete coverage for the Capacitor plugin development lifecycle and modern iOS migration challenges.
+- Vendored and integrated the official agent skills from [ionic-team/capacitor-skills](https://github.com/ionic-team/capacitor-skills) under `skills/ionic/capacitor/` to cover plugin development and modern iOS 8.4 → 8.5 `UIScene` migration.
+- Synced `angular-developer` from [angular/skills](https://github.com/angular/skills) (adds HTTP client, naming conventions, custom pipes, and Signal Forms v22+ updates).
+- Synced `capacitor-plugins` from [capawesome-team/skills](https://github.com/capawesome-team/skills) (adds Singular, TikTok App Events, and comprehensive MLKit plugin references).
 
 ## Added Skills
 
