@@ -4,6 +4,18 @@ This document summarizes all changes made to reorganize the Angular + Ionic AI A
 
 ---
 
+# ✅ v2.3.1 LLM-First Skill Refactor (Capacitor Skills) — October 1, 2026
+
+## Summary
+
+Applied the `skill-improver` audit fixes to 100% refactor the 4 newly vendored Ionic Team skills to the canonical LLM-first structure (`Activation Contract`, `Hard Rules`, `Decision Gates`, `Execution Steps`, `Output Contract`, `References`):
+- Normalized frontmatter with quoted single-line `description`, `license: MIT`, and version metadata.
+- Replaced narrative sections with explicit `Activation Contract`, numbered `Hard Rules`, and compact `Decision Gates` tables.
+- Standardized `Execution Steps` and added explicit `Output Contract` deliverables per skill.
+- Fixed sibling cross-references in `capacitor-plugin-generator` and `cordova-plugin-migrator`.
+
+---
+
 # ✅ v2.3.0 Official Ionic Team & Upstream Skills Integration — September 29, 2026
 
 ## Summary

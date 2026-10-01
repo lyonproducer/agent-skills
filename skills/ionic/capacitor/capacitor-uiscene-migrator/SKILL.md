@@ -1,298 +1,122 @@
 ---
 name: capacitor-uiscene-migrator
-description: >-
-  Assists Capacitor developers migrating an iOS app or plugin from 8.4 to
-  the 8.5 UIScene lifecycle, covering what `npx cap migrate` skips or only
-  warns about: partially migrated projects, hand-rolled scene delegates,
-  and custom application(_:open:) bodies that must move by hand. Audits
-  first, reports findings, asks the developer at judgement points, merges
-  surgically instead of overwriting, and hands off to `npx cap migrate`
-  when the project matches the template shape. Branches for Capacitor
-  plugin repos, auditing Swift for lifecycle assumptions without touching
-  app-level files. Use when the user says "migrate my Capacitor app to
-  UIScene", "add SceneDelegate support", "Capacitor 8.5 migration",
-  "update to Capacitor 8.5", "adopt the scene lifecycle", "Xcode 27
-  Capacitor build failing", or mentions the "CLIENT OF UIKIT REQUIRES
-  UPDATE" warning. Do not use for Cordova-to-Capacitor migration (use
-  cordova-plugin-migrator), generating new plugins
-  (use capacitor-plugin-generator), or Capacitor 9 migrations.
+description: "USE ONLY when migrating Capacitor 8.x iOS apps or plugins to the 8.5 UIScene lifecycle, adopting SceneDelegate, fixing Xcode build failures, or resolving 'CLIENT OF UIKIT REQUIRES UPDATE'. IGNORE for Cordova migration (use cordova-plugin-migrator), plugin scaffolding (use capacitor-plugin-generator), or Android work."
+license: MIT
 metadata:
   author: ionic
   source: https://github.com/ionic-team/capacitor-skills
-license: MIT
+  version: "1.0"
 ---
 
 # Capacitor UIScene Migrator
 
-Guides a Capacitor 8.4 → 8.5 iOS migration to the UIScene lifecycle. The
-CLI migrator (`npx cap migrate`) handles projects that still match the
-Capacitor templates; this skill exists for everything else. It audits
-before editing, asks the developer where judgement is required, merges
-into existing files rather than replacing them, and delegates the
-mechanical work to the CLI whenever the project shape allows.
+Guides Capacitor 8.4 → 8.5 iOS migrations to the UIScene lifecycle. The CLI migrator (`npx cap migrate`) handles projects that still match Capacitor templates; this skill handles partial migrations, hand-rolled delegates, custom `application(_:open:)` bodies, and plugin audits.
 
-The canonical migration reference is the
-[8.4 → 8.5 migration guide](https://capacitorjs.com/docs/updating/8-5).
-Link it whenever a step is left for the developer to do manually.
+Canonical migration reference: [8.4 → 8.5 migration guide](https://capacitorjs.com/docs/updating/8-5).
 
-## When to Use This Skill
+## Activation Contract
 
-- Migrating a Capacitor 8.x iOS app to the UIScene lifecycle
-- A project where `npx cap migrate` reported a partial state and skipped
-- An app with a hand-rolled `SceneDelegate.swift` or a customized
-  `AppDelegate.swift` (deep-link routing, third-party SDK forwarding)
-- Auditing a Capacitor plugin repo for UIScene compatibility
-- Diagnosing the Xcode "CLIENT OF UIKIT REQUIRES UPDATE: This process
-  does not adopt UIScene lifecycle" warning in a Capacitor app
+**Load this skill when:**
+- Migrating a Capacitor 8.x iOS app to the UIScene lifecycle (8.4 → 8.5).
+- Resolving a project where `npx cap migrate` reported a partial state and skipped.
+- Updating an app with a hand-rolled `SceneDelegate.swift` or customized `AppDelegate.swift`.
+- Auditing a Capacitor plugin repository for UIScene compatibility.
+- Diagnosing the Xcode warning: `"CLIENT OF UIKIT REQUIRES UPDATE: This process does not adopt UIScene lifecycle"`.
 
-## When NOT to Use This Skill
+**Do NOT load this skill for:**
+- Cordova-to-Capacitor plugin migration → use `cordova-plugin-migrator`.
+- Generating a new Capacitor plugin → use `capacitor-plugin-generator`.
+- Capacitor 9+ migrations (scope is strictly 8.4 → 8.5).
+- Android lifecycle or general Capacitor debugging unrelated to the iOS scene lifecycle.
 
-- Cordova-to-Capacitor plugin migration → `cordova-plugin-migrator`
-- Generating a new Capacitor plugin → `capacitor-plugin-generator`
-- Capacitor 9 or later migrations (this skill is 8.4 → 8.5 only)
-- Android lifecycle work (UIScene is iOS only)
-- General Capacitor debugging unrelated to the scene lifecycle
+## Hard Rules
 
-## Prerequisites
+1. **Audit First, Edit Last**: Never modify a file before the developer has reviewed findings and confirmed.
+2. **Surgical Merges Only**: Never overwrite existing `SceneDelegate.swift`, `AppDelegate.swift`, or `Info.plist`. Apply surgical insertions per [`references/surgical-merges.md`](references/surgical-merges.md).
+3. **Prefer the CLI**: For eligible projects (0 of 3 signals present), delegate to `npx cap migrate` rather than hand-editing.
+4. **Plugin Safety**: On plugin repositories, never touch `Info.plist`, `AppDelegate.swift`, or project files. Plugin branches are audit and advice only.
+5. **No Version Control Mutation**: Do not run `git commit`, `git stage`, or `git push`. Leave VCS operations to the developer.
+6. **Removed APIs**: `TmpViewController` and `CapacitorBridge.tmpWindow` are removed in 8.5. Any reference is a build error and must be deleted.
+7. **Ask at Decision Points**: Ask explicitly before moving custom URL logic or cleaning legacy AppDelegate handlers.
 
-- A Capacitor 8.x project (app or plugin) with an `ios/` platform or
-  iOS sources
-- `@capacitor/cli` 8.5+ available for the `npx cap migrate` handoff
-- Xcode installed if the developer wants build verification
+## Decision Gates
 
-## What Changed in 8.5 (facts the audit relies on)
+| Situation | Signal / Condition | Action |
+| --- | --- | --- |
+| **Eligible Project** | 0 of 3 signals present | Run audit (Phase 4), confirm (Phase 5-6), hand off to `npx cap migrate` (Phase 7a) |
+| **Already Migrated** | 3 of 3 signals present | Run audit only (Phase 4), run verification checklist (Phase 9) |
+| **Partial Migration** | 1–2 of 3 signals present | Perform surgical merges for missing pieces only (Phase 7b) |
+| **Plugin Repository** | `Package.swift` or `.podspec`, no `App.xcodeproj` | Run Phase 10 audit without touching app-level files per [`references/plugin-repo-audit.md`](references/plugin-repo-audit.md) |
+| **Legacy URL Handlers** | Custom logic in `application(_:open:)` | Move custom logic into `scene(_:openURLContexts:)` alongside `SceneDelegateProxy.shared` |
+| **Existing SceneDelegate** | Custom delegate present | Present diff before applying missing Capacitor forwarders |
+| **Black Screen on Launch** | Window not configured in delegate | Add window creation in `scene(_:willConnectTo:)` from [`references/scene-delegate-template.md`](references/scene-delegate-template.md) |
 
-These determine what breaks and what does not. Do not soften them.
+## Execution Steps
 
-- Scene adoption is opt-in. An app with no `UIApplicationSceneManifest`
-  keeps the AppDelegate path, which still works on the 8.5 core. iOS
-  posts `UIScene.*` notifications even for legacy apps (compatibility
-  scene), so the bridge's JS `resume`/`pause` events fire in both modes.
-- Once the scene manifest exists, iOS stops calling
-  `application(_:open:options:)`, `application(_:continue:)`, and the
-  four foreground/background AppDelegate methods
-  (`applicationDidBecomeActive`, `applicationWillResignActive`,
-  `applicationDidEnterBackground`, `applicationWillEnterForeground`).
-  Custom code in any of those silently stops running. The
-  `UIApplication` notifications still fire; `didFinishLaunching`,
-  `applicationWillTerminate`, push token registration, and the
-  remote-notification callbacks stay on the AppDelegate.
-- `SceneDelegateProxy` re-posts the legacy `.capacitorOpenURL`,
-  `.capacitorOpenUniversalLink`, and `CDVPluginHandleOpenURL`
-  notifications with the same payload shape, so existing observers keep
-  working. Cold-start URLs are delivered after the bridge view appears,
-  so both `appUrlOpen` and `getLaunchUrl()` work on cold launch.
-- New `.capacitorSceneWillConnect`, `.capacitorSceneOpenURL`, and
-  `.capacitorSceneOpenUniversalLink` notifications carry the `UIScene`
-  as the object. They are only posted on 8.5+; plugins that also support
-  8.4 must keep using the legacy names.
-- `TmpViewController` and `CapacitorBridge.tmpWindow` were removed. Any
-  reference is a build error on 8.5.
-- The 8.5 templates create the window in code in
-  `scene(_:willConnectTo:)`; `Main.storyboard` no longer provides the
-  root view controller. Custom `CAPBridgeViewController` subclasses are
-  instantiated in the SceneDelegate, not set in the storyboard.
+### 1. Detect Repository Type
+- **App**: Contains `ios/App/App.xcodeproj` or `capacitor.config.*` with `ios/`.
+- **Plugin**: Contains `Package.swift` or `.podspec` and no `App.xcodeproj` → skip to Step 8 (Plugin Branch).
 
-## Agent Behavior
+### 2. Check Prerequisites and Versions
+- Ensure `@capacitor/ios` is 8.5+ in `package.json` (or upgrade via migration).
+- Detect CocoaPods (`ios/App/Podfile`) vs SPM (`Package.swift` or Xcode SPM reference).
 
-- Audit first, report second, edit last. Never modify a file before the
-  developer has seen the findings and confirmed.
-- Never overwrite an existing `SceneDelegate.swift`, `AppDelegate.swift`,
-  or `Info.plist` structure. Merge surgically per
-  [references/surgical-merges.md](references/surgical-merges.md).
-- Prefer the CLI. If the project classifies as eligible (Phase 3), run
-  `npx cap migrate` instead of editing files by hand.
-- Ask, do not assume, at the decision points in Phase 6. Use
-  `AskUserQuestion` where available; otherwise ask in plain text and
-  wait.
-- Do not commit, stage, or push. Leave version control to the developer.
-- On a plugin repo, never touch `Info.plist`, `AppDelegate.swift`, or
-  project files. The plugin branch is audit and advice only.
+### 3. Classify Project State (The 3 Signals)
+Check the 3 migration signals:
+1. `Info.plist` contains `UIApplicationSceneManifest`.
+2. `SceneDelegate.swift` exists in the app target directory.
+3. `AppDelegate.swift` contains `UISceneConfiguration(name:`.
 
-## Procedures
+Routes:
+- **0 of 3 (Eligible)** → Hand off to CLI (`npx cap migrate`).
+- **3 of 3 (Migrated)** → Verify only.
+- **1–2 of 3 (Partial)** → Apply surgical merges.
 
-### Phase 1: Detect Repo Type
+### 4. Audit Codebase
+Execute the scan patterns from [`references/audit-patterns.md`](references/audit-patterns.md):
+- Check for `UIApplication.shared.applicationState`.
+- Check for custom bodies in `application(_:open:)` or `application(_:continue:)`.
+- Check for references to removed APIs (`tmpWindow`, `TmpViewController`).
 
-Decide app vs. plugin before anything else.
+### 5. Present Findings and Resolve Decision Points
+Report findings grouped by: **Build blockers**, **Judgement required**, and **Informational**.
+Confirm:
+- Keep or remove dead AppDelegate handlers (`application(_:open:options:)`).
+- Approve diffs for custom `SceneDelegate` insertions.
 
-- **App**: has `ios/App/App.xcodeproj` (or `capacitor.config.*` with an
-  `ios/` platform directory).
-- **Plugin**: has a `Package.swift` or `.podspec` depending on
-  Capacitor, `CAPPlugin`/`CapacitorPlugin` subclasses in `ios/Sources`
-  or `ios/Plugin`, and no `App/App.xcodeproj`.
+### 6. Apply Changes
+- **Eligible**: Run `npx cap migrate`. If any step was skipped, fall through to surgical merges for that step.
+- **Partial**: Apply surgical merges per [`references/surgical-merges.md`](references/surgical-merges.md):
+  - Merge `UIApplicationSceneManifest` into `Info.plist`.
+  - Insert `configurationForConnecting` into `AppDelegate.swift`.
+  - Create or patch `SceneDelegate.swift` from [`references/scene-delegate-template.md`](references/scene-delegate-template.md).
+  - Register new file in `project.pbxproj` if needed.
 
-Plugin repo → skip to Phase 10
-([references/plugin-repo-audit.md](references/plugin-repo-audit.md)).
+### 7. Sync and Verify
+- Run `npx cap sync ios`.
+- Build target in Xcode if available to surface compilation issues.
+- Complete the verification checklist:
+  - App launches to WebView.
+  - Background/foreground fires JS `resume`/`pause`.
+  - Cold and warm URL schemes deliver to `appUrlOpen` and `App.getLaunchUrl()`.
 
-### Phase 2: Detect Package Manager and Versions
+### 8. Plugin Audit (Plugin Branch Only)
+- Audit Swift sources per [`references/plugin-repo-audit.md`](references/plugin-repo-audit.md).
+- Advise author to retain legacy notification names while supporting 8.4 alongside 8.5.
 
-- Pods vs. SPM: `ios/App/Podfile` → CocoaPods; `Package.swift` or an SPM
-  reference inside the Xcode project → SPM. This affects how `npx cap
-  sync ios` behaves, not the SceneDelegate content: the 8.5 templates
-  ship one SceneDelegate for both.
-- Check `@capacitor/ios` version in `package.json`. If below 8.5, the
-  dependency update is part of the migration; the CLI migrator handles
-  it, or update manually per the guide.
+## Output Contract
 
-### Phase 3: Classify the Project State
-
-Read the same three signals the CLI migrator uses:
-
-1. `Info.plist` contains `UIApplicationSceneManifest`
-2. `SceneDelegate.swift` exists on disk in the app target directory
-   (pbxproj registration is a separate concern, handled in Phase 7)
-3. `AppDelegate.swift` contains `UISceneConfiguration(name:`
-
-| Signals present | State | Route |
-|---|---|---|
-| 0 of 3 | eligible | Phases 4-6, then Phase 7a: hand off to `npx cap migrate` |
-| 3 of 3 | already migrated | Audit only (Phase 4), then verify (Phase 9) |
-| 1-2 of 3 | partial | Phases 4-6, then Phase 7b: surgical merges |
-
-Every route audits before anything runs or changes; the routes differ
-only in who applies the changes.
-
-The CLI warns and skips on partial states by design. Partial is exactly
-where this skill does its own editing.
-
-### Phase 4: Audit the Codebase
-
-Run the scans in
-[references/audit-patterns.md](references/audit-patterns.md) across the
-app's iOS sources and installed plugins (`node_modules/@capacitor*`,
-plus any local plugin paths). Collect findings for:
-
-- `UIApplication.shared.applicationState` usage
-- Custom `application(_:open:)` / `application(_:continue:)` bodies
-  beyond the `ApplicationDelegateProxy` forwarder
-- Custom code in AppDelegate lifecycle methods
-- Existing `SceneDelegate.swift` implementations and what they contain
-- References to `tmpWindow` / `TmpViewController` (build errors on 8.5)
-- Existing or partial `UIApplicationSceneManifest` entries
-- `.capacitorOpenURL` / `.capacitorOpenUniversalLink` observers
-  (informational: they keep working)
-
-### Phase 5: Present Findings and Confirm
-
-Report every finding with file and line before touching anything.
-Group as: blocks the build (tmpWindow/TmpViewController), needs a
-decision (custom delegate bodies, existing SceneDelegate), informational
-(observers, applicationState in plugins the developer does not own).
-Ask the developer to confirm proceeding.
-
-### Phase 6: Decision Points
-
-Ask, at minimum:
-
-1. **Legacy URL handlers**: keep or remove
-   `application(_:open:options:)` / `application(_:continue:)` in
-   `AppDelegate.swift`? They become dead code under scenes. Keeping them
-   is harmless; removing them is cleaner. If the body contains custom
-   logic, it must move to the SceneDelegate either way. On the eligible
-   route, apply the answer after the CLI has run.
-2. **Custom `application(_:open:)` body**: migrate it manually (the
-   developer moves the logic) or have the skill move it into
-   `scene(_:openURLContexts:)` alongside the proxy forwarder? Show the
-   body before asking. Skip this question when the body is
-   forwarder-only per the audit test.
-3. **Existing SceneDelegate**: confirm each proposed insertion
-   (missing forwarders, window setup) as a diff before applying.
-
-### Phase 7a: Eligible → CLI Handoff
-
-Verify the resolved CLI first: run `npm install` if `node_modules` is
-missing, then `npx cap --version`; the UIScene migrator needs 8.5 or
-newer. Then run `npx cap migrate` and interpret its output. It writes
-`SceneDelegate.swift`, patches `Info.plist` and `AppDelegate.swift`,
-registers the file in `project.pbxproj`, warns on the scan patterns from
-Phase 4, and links the migration guide. Confirm each step's log line;
-if the CLI skipped a step (file existed, partial state raced in),
-fall through to Phase 7b for that step only.
-
-### Phase 7b: Partial or Hand-Rolled → Surgical Merges
-
-Apply only the missing pieces, per
-[references/surgical-merges.md](references/surgical-merges.md):
-
-- Missing manifest → merge `UIApplicationSceneManifest` into
-  `Info.plist`, preserving existing keys
-- Missing `configurationForConnecting` → insert into the existing
-  `AppDelegate.swift` before the class's closing brace, displacing
-  nothing
-- Missing or incomplete `SceneDelegate.swift` → create from
-  [references/scene-delegate-template.md](references/scene-delegate-template.md),
-  or add the missing `SceneDelegateProxy.shared` forwarders to the
-  existing one, preserving all custom logic
-- New file → register in `project.pbxproj` (Xcode does this when the
-  file is added through the IDE; otherwise follow the reference)
-
-### Phase 8: Sync and Build
-
-Run `npx cap sync ios`. If Xcode is available, build the app target and
-surface any errors (most commonly leftover `tmpWindow` references).
-
-### Phase 9: Verification Checklist
-
-Walk the developer through, linking the guide for detail:
-
-- App launches to the web view
-- Background and foreground the app: JS `resume`/`pause` fire (they are
-  scoped to the app's scene now)
-- Custom URL scheme: cold launch and warm open both deliver the URL
-  (`appUrlOpen` listener and `App.getLaunchUrl()`)
-- Universal link, if the app uses them (requires an associated domain)
-
-### Phase 10: Plugin Repo Branch
-
-No app-level files to patch. Audit the plugin's Swift per
-[references/plugin-repo-audit.md](references/plugin-repo-audit.md) and
-report: lifecycle assumptions that break under scenes, APIs removed in
-8.5, and the compatibility rules for supporting 8.4 and 8.5 with one
-plugin version. Apply code changes only if the developer asks, and only
-in the plugin's own sources.
-
-## Best Practices
-
-### DO
-
-- Show diffs before applying them
-- Keep every finding tied to a file and line
-- Re-run the Phase 3 classification after edits to confirm the project
-  reads as fully migrated
-- Tell plugin authors to keep the legacy notification names while they
-  support 8.4
-
-### DON'T
-
-- Overwrite user code, ever
-- Rewrite third-party plugin code under `node_modules` (report it;
-  the fix belongs upstream)
-- Duplicate the CLI's work by hand-editing an eligible project
-- Promise universal-link behavior without an associated domain to test
-
-## Error Handling
-
-- `npx cap migrate` warns "partial state" → expected; this skill's
-  Phase 7b exists for that. Do not reset the project without asking.
-- `project.pbxproj` edits fail or the project no longer opens → revert
-  the pbxproj change and register the file through Xcode instead.
-- Build fails on `tmpWindow` / `TmpViewController` → the references
-  must be deleted; there is no 8.5 replacement (the bridge's
-  `viewController` is the presentation anchor).
-- `SceneDelegate` exists but the app shows a black screen → the
-  delegate neither creates a window nor lets a storyboard do it; add
-  the window setup from the template.
-
-## Related Skills
-
-- `cordova-plugin-migrator`: Cordova plugin to Capacitor migration
-- `capacitor-plugin-generator`: new Capacitor plugin scaffolds
+Every invocation must provide:
+1. **Classification Summary**: App vs plugin, signal count (X of 3), and migration route.
+2. **Audit Findings**: Grouped by file, line number, and severity (blocker vs decision).
+3. **Proposed Diffs**: Explicit code diffs before applying any change to `AppDelegate.swift`, `SceneDelegate.swift`, or `Info.plist`.
+4. **Verification Status**: Results of `npx cap sync ios` and build checks.
 
 ## References
 
 | File | Purpose |
-|---|---|
-| [references/scene-delegate-template.md](references/scene-delegate-template.md) | The 8.5 SceneDelegate template and custom-subclass variant |
-| [references/audit-patterns.md](references/audit-patterns.md) | Exact scan patterns with commands |
-| [references/surgical-merges.md](references/surgical-merges.md) | Merge recipes for partial and hand-rolled projects |
-| [references/plugin-repo-audit.md](references/plugin-repo-audit.md) | Plugin-author branch: audit and compatibility rules |
+| --- | --- |
+| [`references/scene-delegate-template.md`](references/scene-delegate-template.md) | Standard 8.5 SceneDelegate template and custom-subclass variant |
+| [`references/audit-patterns.md`](references/audit-patterns.md) | Grep and search patterns for lifecycle audit |
+| [`references/surgical-merges.md`](references/surgical-merges.md) | Merge recipes for Info.plist, AppDelegate, and SceneDelegate |
+| [`references/plugin-repo-audit.md`](references/plugin-repo-audit.md) | Guidelines for auditing and updating Capacitor plugins for UIScene |

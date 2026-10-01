@@ -1,249 +1,120 @@
 ---
 name: capacitor-plugin-generator
-description: >-
-  Generates new Capacitor plugin scaffolds and first-pass implementations from
-  conversational requirements or a structured YAML input contract. Use when a
-  user says "generate a Capacitor plugin", "create a Capacitor plugin scaffold",
-  "build a native plugin for iOS and Android", "turn this plugin plan into
-  Capacitor code", or "use this YAML contract to generate a plugin". Do not use
-  for analyzing Cordova source, migrating whole apps, installing existing
-  plugins, upgrading Capacitor versions, or publishing production-ready code
-  without human review.
+description: "USE ONLY when scaffolding or generating a new Capacitor plugin candidate with native iOS (Swift), Android (Kotlin/Java), and TypeScript bridge implementations from requirements or YAML contract. IGNORE for analyzing Cordova plugins (use cordova-plugin-migrator), upgrading Capacitor core, or publishing without review."
+license: MIT
 metadata:
   author: ionic
   source: https://github.com/ionic-team/capacitor-skills
-license: MIT
+  version: "1.0"
 ---
 
 # Capacitor Plugin Generator
 
-Generate a reviewable Capacitor plugin candidate from either human intent or a
-structured YAML contract. The output should follow the official Capacitor plugin
-architecture, but it is a first pass that requires human review before release.
+Generates reviewable Capacitor plugin candidates from conversational requirements or a structured YAML contract. The output follows official Capacitor plugin architecture, implementing TypeScript interfaces, web fallbacks, and native iOS (Swift) and Android (Kotlin/Java) bridges.
 
-## When to Use This Skill
+## Activation Contract
 
-✅ **Use this skill when:**
-
+**Load this skill when:**
 - Creating a new Capacitor plugin from scratch.
-- Adding native functionality (camera, sensors, storage, etc.) to a Capacitor app.
-- Designing plugin architecture and API contracts.
-- Implementing native code for iOS (Swift) or Android (Kotlin/Java).
-- Bridging native APIs to JavaScript/TypeScript.
-- Setting up plugin configuration and build systems.
-- Generating a plugin from a structured YAML contract handed off by the
-  `cordova-capacitor-plugin-migration` skill.
+- Adding native functionality (camera, sensors, biometrics, storage) to a Capacitor app.
+- Designing plugin architecture and TypeScript API contracts.
+- Implementing native code for iOS (Swift) and Android (Kotlin/Java).
+- Generating a plugin from a structured YAML plan handed off by `cordova-plugin-migrator`.
 
-❌ **Do NOT use this skill for:**
+**Do NOT load this skill for:**
+- Building standard Capacitor applications without custom native code.
+- Web-only features that do not require native bridge bindings.
+- Modifying existing Capacitor core plugins directly.
+- Analyzing Cordova plugin structure → use `cordova-plugin-migrator` first.
+- Publishing production-ready packages without human review.
 
-- Building standard Capacitor apps (use Capacitor documentation instead).
-- Web-only features that don't require native bridges.
-- Modifying existing Capacitor core plugins.
-- *Analyzing* Cordova plugin structure (use `cordova-capacitor-plugin-migration`
-  first; that skill produces the input contract this skill consumes).
-- Upgrading existing plugins to newer Capacitor versions.
-- Publishing production-ready code without human review.
+## Hard Rules
 
-## Prerequisites
+1. **Contract-First Design**: Define `src/definitions.ts` before writing any native implementation. TypeScript interfaces drive web, iOS, and Android method signatures.
+2. **Name Parity**: `registerPlugin('<PluginName>')` JavaScript name MUST match the iOS `jsName` and Android `@CapacitorPlugin(name = "<PluginName>")`.
+3. **No Invented APIs**: Use only classes and APIs present in `@capacitor/core`, `@capacitor/android`, and `@capacitor/ios`. Never invent helper classes or import paths.
+4. **Thin Bridge Pattern**: Keep plugin bridge classes thin. Split native logic into separate implementation and manager classes (two-class pattern).
+5. **Canonical Error Taxonomy**: Always reject with codes from the standard 4-code taxonomy: `UNAVAILABLE`, `PERMISSION_DENIED`, `INVALID_PARAMETER`, or `OPERATION_FAILED`.
+6. **Non-Interactive Scaffolding**: Always supply command-line flags to `npm init @capacitor/plugin` (`--name`, `--package-id`, `--android-lang`, etc.) to prevent hanging in non-TTY environments.
+7. **Event Dispatch Locality**: Never invoke `notifyListeners()` from outside classes; all events must dispatch through the `Plugin` subclass.
+8. **Dry-Run Only**: Never run a real `npm publish`. Run only `npm publish --access public --dry-run` and report verification status.
 
-| Requirement | Use |
-| --- | --- |
-| Node.js LTS and npm | Run the Capacitor plugin generator and package scripts. |
-| Xcode | Build and verify iOS output when iOS is targeted. |
-| Android Studio and Android SDK | Build and verify Android output when Android is targeted. |
-| CocoaPods and Gradle | Resolve native dependencies when required by generated code. |
-| Capacitor plugin knowledge | Review generated native bridge code before publishing. |
+## Decision Gates
 
-## Agent Behavior
+| Situation | Condition / Signal | Action |
+| --- | --- | --- |
+| **Input Format** | YAML with `plugin`, `platforms`, `api` | Parse per [`references/input-contract.md`](references/input-contract.md); skip elicitation questions |
+| **Input Format** | Conversational prompt | Elicit missing plugin identity, methods, platforms, permissions, and configuration |
+| **Web Layer** | Browser API is available | Feature-detect and bridge to browser API; throw `unavailable()` if not supported in current browser |
+| **Web Layer** | No browser API exists | Implement method stub throwing `unimplemented()` per [`references/web-guide.md`](references/web-guide.md) |
+| **Method Signature** | Single value or void result | Return `Promise<T>` |
+| **Method Signature** | Continuous stream or watcher | Return callback registration returning `Promise<PluginListenerHandle>` |
+| **Native Architecture** | Complex multi-manager subsystem | Use Facade pattern coordinating subsystems per [`references/architecture-patterns.md`](references/architecture-patterns.md) |
+| **Native Architecture** | Standard single-capability plugin | Use Two-Class Bridge pattern (`Plugin` + Implementation class) |
 
-- Detect whether the user provided conversational intent or structured YAML.
-- In conversational mode, ask only for missing plugin identity, methods,
-  platforms, events, permissions, configuration, and native dependencies.
-- In structured mode, parse `references/input-contract.md`, skip elicitation,
-  and halt if the optional migration block contains blockers or tier 3 hooks.
-- Treat migration metadata as implementation context only. Do not inspect or
-  analyze Cordova source; that belongs to the migration skill.
-- Prefer the official Capacitor plugin generator, then edit the generated
-  scaffold to implement the requested API.
-- Keep generated code contract-first: TypeScript definitions drive web, iOS,
-  Android, docs, and sample app behavior.
-- Use only Capacitor classes that exist in the installed `@capacitor/core`,
-  `@capacitor/android`, and `@capacitor/ios` packages. Do not invent helper
-  classes, utilities, or import paths. When uncertain whether an API exists,
-  read the package source rather than infer from its name.
-- When the generated TypeScript contract mirrors an existing public API
-  (Capacitor core/community, Capawesome, internal libraries, or a documented
-  JavaScript API the user is replacing), look up the actual string literal
-  values used on the wire. Do not derive them from human-friendly names.
-  Structured-mode YAML pins these values explicitly; conversational-mode
-  generation must consult the source.
-- Keep bridge files thin. Split native logic into implementation, manager,
-  permission, config, and mapper helpers when a method would otherwise become
-  a large mixed-responsibility block.
-- Choose native APIs by intended product behavior, not by demo convenience. If
-  the requested behavior requires permissions, special app settings, or manual
-  app configuration, generate the proper `checkPermissions()` /
-  `requestPermissions()` flow and document the manual setup.
-- Clearly report which verification commands were run and which need local
-  human/device validation.
-- Never publish for real from this skill. Run publish checks and `npm publish
-  --access public --dry-run` only.
+## Execution Steps
 
-## Procedures
+### 1. Determine Entry Mode
+- **Structured Mode**: Read [`references/input-contract.md`](references/input-contract.md). If input is YAML, validate schema, verify no Tier 3 blockers exist, and proceed non-interactively.
+- **Conversational Mode**: Clarify plugin identifier, target platforms, methods, events, and native dependencies.
 
-### Phase 1: Determine the Task and Entry Mode
+### 2. Scaffold Plugin Structure
+- Run the official generator non-interactively per [`references/scaffolding.md`](references/scaffolding.md):
+  ```bash
+  npm init @capacitor/plugin <dir> -- --name "<name>" --package-id "<pkg>" --android-lang "kotlin" ...
+  ```
+- Enforce name parity across TypeScript, iOS, and Android.
 
-Read `references/input-contract.md`. If the input is YAML with `plugin`,
-`platforms`, and `api`, parse it as structured mode and skip questions. If the
-input is conversational, elicit the minimum missing fields needed to create the
-same contract shape internally.
+### 3. Design TypeScript API
+- Author `src/definitions.ts` per [`references/api-design.md`](references/api-design.md).
+- Create typed options and result interfaces for every method. Use string unions over enums.
+- Document all symbols with JSDoc and `@since`.
 
-### Phase 2: Scaffold
+### 4. Implement Web Layer
+- Author `src/web.ts` extending `WebPlugin` per [`references/web-guide.md`](references/web-guide.md).
+- Wire dynamic registration in `src/index.ts`.
 
-Read `references/scaffolding.md`. Run the official Capacitor plugin generator
-with non-interactive flags when possible. Enforce name parity:
-`registerPlugin()` JavaScript name equals iOS `jsName` equals Android
-`@CapacitorPlugin(name)`.
+### 5. Implement iOS Native Layer
+- Author `ios/Sources/<PluginName>/` per [`references/ios-implementation.md`](references/ios-implementation.md).
+- Implement bridge class decorated with `@objc(<PluginName>)` and separate implementation class.
+- Configure permissions using [`references/permission-patterns.md`](references/permission-patterns.md).
 
-### Phase 3: Design the TypeScript API
+### 6. Implement Android Native Layer
+- Author `android/src/main/java/.../` per [`references/android-implementation.md`](references/android-implementation.md).
+- Annotate with `@CapacitorPlugin` and `@PluginMethod`. Place each public Java/Kotlin class in its own file.
 
-Read `references/api-design.md`. Define `src/definitions.ts` before native
-implementation. Use options/result interfaces per method, string unions instead
-of enums, listener signatures for events, and JSDoc with `@since` everywhere.
+### 7. Generate Sample App
+- Scaffold or update a sample app exercising all plugin methods, permissions, listeners, and error cases per [`references/sample-app.md`](references/sample-app.md).
 
-### Phase 4: Implement the Web Layer
+### 8. Document and Verify
+- Generate API docs from JSDoc using `npm run docgen`. Do not hand-write markdown API tables.
+- Run verify scripts: `npm run verify` (`verify:ios`, `verify:android`, `verify:web`) per [`references/testing-strategies.md`](references/testing-strategies.md).
+- Execute publish dry run: `npm publish --access public --dry-run` per [`references/publishing.md`](references/publishing.md).
 
-Read `references/web-guide.md`. Extend `WebPlugin`, feature-detect browser APIs
-before use, throw `unavailable()` when an API exists but is unavailable in the
-current browser, and throw `unimplemented()` when no web equivalent exists.
-Register the web layer through a dynamic import.
+## Output Contract
 
-### Phase 5: Define Method Signatures
-
-Read `references/api-design.md`. For every method, choose one bridge return
-type: value, void, or callback. Use callback return types only for streams or
-long-lived watchers. Keep event names identical across TypeScript, web, iOS, and
-Android.
-
-### Phase 6: Implement iOS
-
-Read `references/architecture-patterns.md` and `references/ios-implementation.md`. Use the
-Bridge pattern by default: a thin Capacitor plugin class delegates to an
-implementation class. Use a Facade only for complex plugins with multiple native
-subsystems, permission flows, or lifecycle concerns.
-
-### Phase 7: Implement Android
-
-Read `references/architecture-patterns.md` and `references/android-implementation.md`. Use the
-Bridge pattern by default: a thin `Plugin` class delegates to an implementation
-class. Use a Facade only for complex plugins with multiple managers, permission
-flows, services, activities, or lifecycle hooks.
-
-### Phase 8: Generate a Sample App
-
-Read `references/sample-app.md`. Create or update a sample app that exercises
-the entire public plugin API, including success paths, expected errors,
-permissions, configuration, and listeners.
-
-### Phase 9: Docgen and Verify
-
-Read `references/testing-strategies.md` and `references/publishing.md`.
-Generate API docs from JSDoc with `npm run docgen`; do not hand-write API docs.
-Run the relevant verify commands for targeted platforms and record any
-environment-limited checks.
-
-### Phase 10: Publish Checks
-
-Read `references/publishing.md`. Run the pre-publish checklist and dry run:
-`npm publish --access public --dry-run`. Do not publish the generated plugin
-without explicit human review outside this skill.
-
-## Best Practices
-
-### DO
-
-- ✅ Use command-line flags with `npm init @capacitor/plugin` so the
-  scaffolder runs non-interactively.
-- ✅ Detect entry mode (conversational vs structured YAML) before asking
-  questions. Skip elicitation entirely in structured mode.
-- ✅ Design the TypeScript API first (contract-first), then implement
-  web, iOS, and Android against that contract.
-- ✅ Implement the web layer for testing without devices, even when
-  most methods throw `unimplemented()`.
-- ✅ Inspect the official plugin's native dependencies when mirroring an
-  existing API; declare the same SDKs and write a thin adapter rather
-  than reimplementing.
-- ✅ Document every public symbol with JSDoc and `@since`.
-- ✅ Run `npm run fmt` before committing and `npm run verify` before
-  reporting completion.
-- ✅ Use the two-class pattern (bridge + implementation) on iOS and
-  Android for testability.
-- ✅ Match wire-format string and numeric values exactly when mirroring
-  an existing API. Look up the official `definitions.ts` rather than
-  guessing from human-friendly names.
-- ✅ Keep event names identical across TypeScript / web / iOS / Android.
-
-### DON'T
-
-- ❌ Mix concerns — keep the plugin focused on one capability.
-- ❌ Skip error handling. Reject with codes from the canonical 4-code
-  taxonomy (`UNAVAILABLE`, `PERMISSION_DENIED`, `INVALID_PARAMETER`,
-  `OPERATION_FAILED`).
-- ❌ Use callbacks instead of promises in the TypeScript surface.
-- ❌ Forget the web implementation, even for iOS/Android-only features.
-- ❌ Hard-code values that should be configurable. Use
-  `references/configuration.md` runtime plugin configuration.
-- ❌ Invent Capacitor classes, helpers, or import paths. Verify against
-  the installed `@capacitor/core`, `@capacitor/android`, and
-  `@capacitor/ios` packages.
-- ❌ Call `notifyListeners(...)` from outside the `Plugin` subclass —
-  see `references/architecture-patterns.md` "Event Dispatch Locality".
-- ❌ Publish from this skill. Run dry-run only with
-  `npm publish --access public --dry-run`.
-- ❌ Inspect or analyze Cordova source — that belongs to the sibling
-  migration skill.
-
-## Error Handling
-
-| Symptom | Fix |
-| --- | --- |
-| `npm init @capacitor/plugin` fails with `Refusing to prompt in non-TTY environment` | Pass all required flags non-interactively: `npm init @capacitor/plugin <folder> -- --name "<npm-name>" --package-id "<reverse-dns>" --class-name "<PascalCase>" --description "<one-line>" --author "<name <email>>" --license "<SPDX>" --repo "<url>" --android-lang "<kotlin\|java>"`. See `references/scaffolding.md`. |
-| `npm init @capacitor/plugin` fails with `invalid option: --android-lang undefined: Must be either 'kotlin' or 'java'` | The `--android-lang` flag is required when running non-interactively. Add `--android-lang "kotlin"` (recommended for new plugins) or `--android-lang "java"` to the command. |
-| Plugin silently fails to load | Make `registerPlugin()` name match iOS `jsName` and Android `@CapacitorPlugin(name)`. |
-| Event not received in JS | Make the event name string identical across TypeScript, web, iOS, and Android. |
-| iOS method not callable from JS | Ensure the method is marked `@objc` and listed in `pluginMethods`. |
-| Android method not callable from JS | Ensure the method is public and annotated with `@PluginMethod()`. |
-| `npm run verify:ios` fails | Run `pod install --repo-update`; then rerun the iOS verify command. |
-| `npm run verify:android` fails | Sync Gradle and check Android SDK, compile SDK, and dependency versions. |
-| Android compile error: `class X is public, should be declared in a file named X.java` | Java requires a public class to live in a file matching its name. When generating multiple Java classes per plugin, place each public class in its own file. Kotlin does not impose this rule. |
-| Android compile error: `notifyListeners(...) has protected access in Plugin` | `notifyListeners()` is `protected` on `Plugin`. Call it only from inside a class that extends `Plugin`. If another class needs to emit events, return the data to the plugin and dispatch there, or expose a public wrapper on the plugin that calls `notifyListeners()` internally. |
-| Android compile error: `cannot find symbol: class …` for a `com.getcapacitor.*` import | The import does not exist on the installed `@capacitor/android` surface. Verify imports against the package source before generating; do not infer Capacitor classes from their names. |
-| Android compile error: `<method> in <Subclass> cannot override <method> in Plugin; attempting to assign weaker access privileges; was public` | A helper on the `Plugin` subclass collides with a `public` method that `com.getcapacitor.Plugin` already defines (e.g., `hasPermission`, `getPermissionState`, `notifyListeners`). Either rename the helper or match the parent's `public` visibility. |
-| TypeScript build error: `Cannot find type definition file for '<name>'` or `Invalid module name in augmentation, module '<name>' cannot be found` | The augmented module is not installed. Add it to `devDependencies` (and to `tsconfig.json` `compilerOptions.types` if a triple-slash reference is used). Applies to any module augmentation, not just `@capacitor/cli`. |
-| TypeScript build error: `Interface 'X' incorrectly extends interface 'Y'. Property 'Z' is optional in type 'X' but required in type 'Y'` (or the symmetric error) | Do not redeclare members the built-in lib type already provides. Use the lib type directly, or augment via `declare global { interface Y { newMember?: ... } }` for genuinely new members only. Use `'name' in target` runtime guards for capability checks. |
-| `npm run docgen` produces empty output | Add JSDoc to `src/definitions.ts`; docgen reads the TypeScript contract. |
-| Web API absent in target browser | Use `unavailable()` when the API exists but is missing here; use `unimplemented()` when no web equivalent exists. |
-| Structured YAML is rejected | Validate against `references/input-contract.md`; ensure required base fields are present and blockers are empty. |
-| Generated output looks too broad | Split unrelated capabilities into separate plugins and regenerate with a smaller API surface. |
-| Generated native code reimplements logic the official plugin delegates to a native SDK | Inspect the official plugin's `.podspec` / `Package.swift` / `android/build.gradle` for native SDK dependencies. If present, declare the same SDK and write a thin adapter — see `references/api-design.md` "Native Dependency Detection". |
-
-## Related Skills
-
-- `cordova-capacitor-plugin-migration`: Analyze Cordova plugins and produce a
-  structured migration plan for this generator.
+Every generated plugin must produce:
+1. **Package Scaffold**: Complete Capacitor plugin structure with valid `package.json`, `tsconfig.json`, and dependencies.
+2. **TypeScript Definitions**: Complete `src/definitions.ts` with JSDoc, interfaces, and listener handles.
+3. **Web Implementation**: Fully functional or stubbed `src/web.ts`.
+4. **Native Sources**: iOS Swift files + `.podspec`, and Android Kotlin/Java files + `build.gradle`.
+5. **Sample App**: Runnable consumer application demonstrating all endpoints.
+6. **Verification Summary**: Output from docgen, build/verify commands, and publish dry-run.
 
 ## References
 
-- `references/input-contract.md`: Structured YAML contract for generator input.
-- `references/scaffolding.md`: Generator invocation, name parity, and scaffold verification.
-- `references/api-design.md`: TypeScript API design, JSDoc, event signatures, and method return types.
-- `references/web-guide.md`: WebPlugin patterns, dynamic import, feature detection, and errors.
-- `references/architecture-patterns.md`: Bridge and Facade patterns plus event parity.
-- `references/ios-implementation.md`: iOS bridge, implementation class, permissions, dependencies, and Podspec.
-- `references/android-implementation.md`: Android bridge, implementation class, permissions, dependencies, and Gradle.
-- `references/configuration.md`: Capacitor config keys under `plugins.<PluginJSName>`.
-- `references/testing-strategies.md`: Local linking, verify commands, hooks, and review workflow.
-- `references/publishing.md`: Package fields, docgen, checklist, and dry-run publishing.
-- `references/sample-app.md`: Sample app requirements that exercise the full API.
-- `references/permission-patterns.md`: Deep-dive on permission flows — multi-permission DispatchGroup on iOS, location delegate, check-before-use / just-in-time / deferred consumer patterns, opening system settings.
-- `references/typescript-implementation.md`: Deep-dive on TypeScript layer — singleton plugin pattern, typed error classes, full event listener handle bookkeeping, helper utilities, Jest scaffolding.
+| File | Purpose |
+| --- | --- |
+| [`references/input-contract.md`](references/input-contract.md) | Structured YAML input schema |
+| [`references/scaffolding.md`](references/scaffolding.md) | Non-interactive generator invocation & naming parity |
+| [`references/api-design.md`](references/api-design.md) | TypeScript contract design, JSDoc, and return types |
+| [`references/web-guide.md`](references/web-guide.md) | WebPlugin implementation, dynamic import, and fallbacks |
+| [`references/architecture-patterns.md`](references/architecture-patterns.md) | Bridge and Facade architecture patterns |
+| [`references/ios-implementation.md`](references/ios-implementation.md) | iOS bridge, Swift implementation, and Podspec setup |
+| [`references/android-implementation.md`](references/android-implementation.md) | Android bridge, Kotlin implementation, and Gradle setup |
+| [`references/permission-patterns.md`](references/permission-patterns.md) | Native permission flows and delegate callbacks |
+| [`references/typescript-implementation.md`](references/typescript-implementation.md) | Advanced TypeScript patterns, handles, and Jest setup |
+| [`references/configuration.md`](references/configuration.md) | Capacitor configuration keys under `plugins.<name>` |
+| [`references/testing-strategies.md`](references/testing-strategies.md) | Verification commands and testing workflows |
+| [`references/sample-app.md`](references/sample-app.md) | Minimum sample app validation requirements |
+| [`references/publishing.md`](references/publishing.md) | Pre-publish checklist and dry-run commands |
